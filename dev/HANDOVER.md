@@ -1,5 +1,40 @@
 # HANDOVER
 
+## Session: 2026-01-13 (Abend)
+
+### Summary
+
+Phase 1 (Basis-Infrastruktur) abgeschlossen. Frontend + Backend bereit für Entwicklung.
+
+### Completed
+
+- ✅ bits-ui v2.15.4 installiert
+- ✅ Backend-Struktur: `src/agents/`, `api/`, `models/`, `tools/`, `plugins/`
+- ✅ FastAPI v0.128.0 mit Health-Endpoint (`/health`)
+- ✅ CORS für Frontend konfiguriert
+- ✅ Root Makefile: `make dev`, `make check`
+
+### In Progress
+
+- Phase 2: Konzept & Plan
+
+### Blockers
+
+- Keine
+
+### Notes
+
+- `make dev` startet beide Server parallel (Ctrl+C beendet beide)
+- Health-Endpoint getestet: `{"status":"ok"}`
+
+### Next Session
+
+1. Mockups-Ordner erstellen (`docs/mockups/`)
+2. Agent-Architektur dokumentieren
+3. API-Kontrakt definieren (OpenAPI Spec)
+
+---
+
 ## Session: 2026-01-13 (Nachmittag)
 
 ### Summary
@@ -14,25 +49,10 @@ ESLint → Biome Migration abgeschlossen. Initial Commit für Monorepo erstellt.
 - ✅ Backend `.git` entfernt für echtes Monorepo
 - ✅ Initial Commit: `834e22a`
 
-### In Progress
-
-- Phase 1: Basis-Infrastruktur (2/5 Tasks done)
-
-### Blockers
-
-- Keine
-
 ### Notes
 
 - Biome CSS-Support für Tailwind 4 (`@plugin`) noch nicht verfügbar → CSS excluded
 - Biome erkennt Svelte Template-Bindings nicht als "genutzt" → False Positive Warnings
-
-### Next Session
-
-1. bits-ui installieren
-2. Backend Ordnerstruktur anlegen (`src/agents/`, `src/api/`, etc.)
-3. FastAPI + Pydantic hinzufügen
-4. Root Makefile erstellen
 
 ---
 

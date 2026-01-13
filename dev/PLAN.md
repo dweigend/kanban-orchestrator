@@ -14,12 +14,12 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [x] `.claude/` Setup generieren
 - [x] `dev/` Workflow-Docs generieren
 
-### Phase 1: Basis-Infrastruktur 🔄
+### Phase 1: Basis-Infrastruktur ✅
 - [x] Frontend: ESLint → Biome Migration
-- [ ] Frontend: bits-ui installieren
-- [ ] Backend: Modulare Ordnerstruktur (`src/agents/`, `src/api/`, etc.)
-- [ ] Backend: FastAPI + Pydantic hinzufügen
-- [ ] Root: Makefile für `make dev`
+- [x] Frontend: bits-ui installieren
+- [x] Backend: Modulare Ordnerstruktur (`src/agents/`, `src/api/`, etc.)
+- [x] Backend: FastAPI + Pydantic hinzufügen
+- [x] Root: Makefile für `make dev`
 
 ### Phase 2: Konzept & Plan
 - [ ] Mockups-Ordner erstellen (`docs/mockups/`)
@@ -56,8 +56,8 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ## Current Focus
 
-**Phase:** 1 - Basis-Infrastruktur
-**Next Task:** bits-ui installieren
+**Phase:** 2 - Konzept & Plan
+**Next Task:** Mockups-Ordner erstellen
 
 ---
 
