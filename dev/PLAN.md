@@ -53,7 +53,19 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [x] Settings Dialog → Sidebar Panel refactoren
 - [x] Task CRUD in Sidebar integrieren (TaskEditor)
 - [x] Function Panel mit Tabs redesignen
-- [ ] API Integration für Task CRUD
+
+### Phase 5.6: UX Refactor ✅
+- [x] Einheitliche Menüstruktur (alles im Header)
+- [x] Sidebar-Tabs als Icon-Buttons im Header
+- [x] Sidebar nur Inhalt, keine eigene Navigation
+- [x] Resizable Sidebar
+- [x] Controlled Component Pattern
+
+### Phase 5.7: API Integration (next)
+- [ ] Task CRUD mit Backend verbinden
+- [ ] SSE für Live-Updates
+- [ ] TaskCard Click → Edit in Sidebar
+- [ ] Drag & Drop für Task-Verschiebung
 
 ### Phase 6: Polish & Plugins
 - [ ] Plugin-System Implementation
@@ -65,17 +77,15 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ## Current Focus
 
-**Phase:** 5.5 → 6 (API Integration + Polish)
-**Next Task:** Task CRUD mit Backend verbinden, SSE für Live-Updates
+**Phase:** 5.7 (API Integration)
+**Next Task:** Task CRUD mit Backend verbinden
 
 ---
 
 ## Backlog
 
-*Probleme und Ideas für spätere Sessions:*
-
-- (noch leer)
+- `TaskEditor.svelte:65-77` → `validateForm()` implementieren
 
 ---
 
-*Updated: 2026-01-13 (Phase 5.5 completed)*
+*Updated: 2026-01-13 (Phase 5.6 UX Refactor completed)*

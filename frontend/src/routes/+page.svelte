@@ -1,13 +1,14 @@
 <script lang="ts">
 import Board from '$lib/components/kanban/Board.svelte';
-import Header from '$lib/components/layout/Header.svelte';
+import Header, { type SidebarTab } from '$lib/components/layout/Header.svelte';
 import FunctionPanel from '$lib/components/panel/FunctionPanel.svelte';
 import type { Agent } from '$lib/types/agent';
 import type { Task } from '$lib/types/task';
 
-// State
+// UI State
 let viewMode = $state('hub-view');
 let sidebarVisible = $state(true);
+let activeTab = $state<SidebarTab>('overview');
 let editingTask = $state<Task | null>(null);
 
 // Mock data for demonstration
@@ -106,22 +107,20 @@ function handleViewChange(mode: string) {
 	viewMode = mode;
 }
 
-function handleSidebarToggle() {
-	sidebarVisible = !sidebarVisible;
+function handleTabChange(tab: SidebarTab) {
+	activeTab = tab;
+	// Open sidebar when clicking a tab button
+	if (!sidebarVisible) {
+		sidebarVisible = true;
+	}
+	// Reset editing task when switching away from new-task
+	if (tab !== 'new-task') {
+		editingTask = null;
+	}
 }
 
-function handleAddTask() {
-	// Create a new empty task for the editor
-	const newTask: Task = {
-		id: '', // Empty id = new task
-		title: '',
-		description: '',
-		status: 'TODO',
-		type: 'neutral',
-		created_at: new Date().toISOString(),
-	};
-	editingTask = newTask;
-	sidebarVisible = true; // Ensure sidebar is visible
+function handleSidebarToggle() {
+	sidebarVisible = !sidebarVisible;
 }
 
 function handleTaskSave(task: Task) {
@@ -129,7 +128,7 @@ function handleTaskSave(task: Task) {
 		// Create new task with generated ID
 		const createdTask: Task = {
 			...task,
-			id: String(Date.now()), // Simple ID generation for now
+			id: String(Date.now()),
 		};
 		tasks.push(createdTask);
 	} else {
@@ -139,10 +138,8 @@ function handleTaskSave(task: Task) {
 			tasks[index] = task;
 		}
 	}
-	editingTask = null;
-}
-
-function handleTaskCancel() {
+	// Switch back to overview after save
+	activeTab = 'overview';
 	editingTask = null;
 }
 
@@ -165,9 +162,11 @@ function handleSearch(query: string) {
 	<Header
 		projectName="vibe-kanban"
 		{viewMode}
+		{activeTab}
+		{sidebarVisible}
 		onViewChange={handleViewChange}
+		onTabChange={handleTabChange}
 		onSidebarToggle={handleSidebarToggle}
-		onAddTask={handleAddTask}
 	/>
 
 	<main class="flex-1 flex overflow-hidden">
@@ -177,10 +176,10 @@ function handleSearch(query: string) {
 			<FunctionPanel
 				{agents}
 				{logs}
+				{activeTab}
 				{editingTask}
 				onSearch={handleSearch}
 				onTaskSave={handleTaskSave}
-				onTaskCancel={handleTaskCancel}
 			/>
 		{/if}
 	</main>

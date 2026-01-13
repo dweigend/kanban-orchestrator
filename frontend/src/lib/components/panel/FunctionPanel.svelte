@@ -1,9 +1,5 @@
 <script lang="ts">
-import { Separator, Tabs } from 'bits-ui';
-import Gauge from 'phosphor-svelte/lib/Gauge';
-import Gear from 'phosphor-svelte/lib/Gear';
-import PencilSimple from 'phosphor-svelte/lib/PencilSimple';
-import Robot from 'phosphor-svelte/lib/Robot';
+import { Separator } from 'bits-ui';
 import type { Agent } from '$lib/types/agent';
 import type { Task } from '$lib/types/task';
 import AgentList from './AgentList.svelte';
@@ -21,6 +17,8 @@ interface LogEntry {
 	source?: string;
 }
 
+export type SidebarTab = 'overview' | 'agents' | 'settings' | 'new-task';
+
 interface Props {
 	projectName?: string;
 	projectStatus?: string;
@@ -28,10 +26,10 @@ interface Props {
 	projectTags?: string[];
 	agents?: Agent[];
 	logs?: LogEntry[];
+	activeTab?: SidebarTab;
 	editingTask?: Task | null;
 	onSearch?: (query: string) => void;
 	onTaskSave?: (task: Task) => void;
-	onTaskCancel?: () => void;
 }
 
 const {
@@ -41,58 +39,51 @@ const {
 	projectTags = ['React', 'Tailwind', 'MCP'],
 	agents = [],
 	logs = [],
+	activeTab = 'overview',
 	editingTask = null,
 	onSearch,
 	onTaskSave,
-	onTaskCancel,
 }: Props = $props();
 
-// Active tab - switches to 'editor' when editingTask is set
-const activeTab = $derived(editingTask ? 'editor' : 'overview');
+// Resize state
+let sidebarWidth = $state(320);
+let isResizing = $state(false);
+
+function handleMouseDown(e: MouseEvent) {
+	isResizing = true;
+	e.preventDefault();
+}
+
+function handleMouseMove(e: MouseEvent) {
+	if (!isResizing) return;
+	const newWidth = window.innerWidth - e.clientX;
+	sidebarWidth = Math.max(280, Math.min(600, newWidth));
+}
+
+function handleMouseUp() {
+	isResizing = false;
+}
 </script>
 
-<aside
-	class="w-[var(--sidebar-width)] border-l border-[var(--border-default)] bg-[var(--bg-elevated)] flex flex-col overflow-hidden"
->
-	<Tabs.Root value={activeTab} class="flex flex-col h-full">
-		<!-- Tab List -->
-		<Tabs.List
-			class="flex border-b border-[var(--border-muted)] bg-[var(--bg-surface)] shrink-0"
-		>
-			<Tabs.Trigger
-				value="overview"
-				class="flex items-center gap-1.5 px-3 py-2 text-xs text-uppercase-tracking text-[var(--text-muted)] hover:text-[var(--text-primary)] border-b-2 border-transparent data-[state=active]:border-[var(--accent-primary)] data-[state=active]:text-[var(--text-primary)] transition-colors"
-			>
-				<Gauge class="size-4" />
-				Overview
-			</Tabs.Trigger>
-			<Tabs.Trigger
-				value="agents"
-				class="flex items-center gap-1.5 px-3 py-2 text-xs text-uppercase-tracking text-[var(--text-muted)] hover:text-[var(--text-primary)] border-b-2 border-transparent data-[state=active]:border-[var(--accent-primary)] data-[state=active]:text-[var(--text-primary)] transition-colors"
-			>
-				<Robot class="size-4" />
-				Agents
-			</Tabs.Trigger>
-			<Tabs.Trigger
-				value="settings"
-				class="flex items-center gap-1.5 px-3 py-2 text-xs text-uppercase-tracking text-[var(--text-muted)] hover:text-[var(--text-primary)] border-b-2 border-transparent data-[state=active]:border-[var(--accent-primary)] data-[state=active]:text-[var(--text-primary)] transition-colors"
-			>
-				<Gear class="size-4" />
-				Settings
-			</Tabs.Trigger>
-			{#if editingTask}
-				<Tabs.Trigger
-					value="editor"
-					class="flex items-center gap-1.5 px-3 py-2 text-xs text-uppercase-tracking text-[var(--accent-primary)] border-b-2 border-transparent data-[state=active]:border-[var(--accent-primary)] transition-colors"
-				>
-					<PencilSimple class="size-4" />
-					Edit Task
-				</Tabs.Trigger>
-			{/if}
-		</Tabs.List>
+<svelte:window onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
 
-		<!-- Overview Tab -->
-		<Tabs.Content value="overview" class="flex-1 flex flex-col min-h-0 overflow-hidden">
+<aside
+	class="border-l border-[var(--border-default)] bg-[var(--bg-elevated)] flex flex-col overflow-hidden relative"
+	style="width: {sidebarWidth}px"
+>
+	<!-- Resize Handle -->
+	<div
+		class="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-[var(--accent-primary)] transition-colors z-10"
+		class:bg-[var(--accent-primary)]={isResizing}
+		onmousedown={handleMouseDown}
+		role="separator"
+		aria-orientation="vertical"
+		tabindex="0"
+	></div>
+
+	<!-- Content based on activeTab -->
+	{#if activeTab === 'overview'}
+		<div class="flex-1 flex flex-col min-h-0 overflow-hidden">
 			<div class="py-3">
 				<SearchBar {onSearch} />
 			</div>
@@ -109,27 +100,18 @@ const activeTab = $derived(editingTask ? 'editor' : 'overview');
 			<div class="py-3 flex-1 min-h-0">
 				<SystemLog {logs} />
 			</div>
-		</Tabs.Content>
-
-		<!-- Agents Tab -->
-		<Tabs.Content value="agents" class="flex-1 flex flex-col min-h-0 overflow-y-auto p-3">
+		</div>
+	{:else if activeTab === 'agents'}
+		<div class="flex-1 flex flex-col min-h-0 overflow-y-auto p-3">
 			<AgentList {agents} />
-		</Tabs.Content>
-
-		<!-- Settings Tab -->
-		<Tabs.Content value="settings" class="flex-1 min-h-0 overflow-y-auto">
+		</div>
+	{:else if activeTab === 'settings'}
+		<div class="flex-1 min-h-0 overflow-y-auto">
 			<SettingsPanel />
-		</Tabs.Content>
-
-		<!-- Task Editor Tab (contextual) -->
-		{#if editingTask}
-			<Tabs.Content value="editor" class="flex-1 min-h-0 overflow-y-auto">
-				<TaskEditor
-					task={editingTask}
-					onSave={onTaskSave}
-					onCancel={onTaskCancel}
-				/>
-			</Tabs.Content>
-		{/if}
-	</Tabs.Root>
+		</div>
+	{:else if activeTab === 'new-task'}
+		<div class="flex-1 min-h-0 overflow-y-auto">
+			<TaskEditor task={editingTask} onSave={onTaskSave} />
+		</div>
+	{/if}
 </aside>

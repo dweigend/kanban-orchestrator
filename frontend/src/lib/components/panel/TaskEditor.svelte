@@ -4,18 +4,29 @@ import CaretDown from 'phosphor-svelte/lib/CaretDown';
 import Check from 'phosphor-svelte/lib/Check';
 import FloppyDisk from 'phosphor-svelte/lib/FloppyDisk';
 import Trash from 'phosphor-svelte/lib/Trash';
-import X from 'phosphor-svelte/lib/X';
 import type { Task, TaskStatus, TaskType } from '$lib/types/task';
 import { TASK_STATUS_LABELS, TASK_TYPE_LABELS } from '$lib/types/task';
 
 interface Props {
-	task: Task;
+	task?: Task | null;
 	onSave?: (task: Task) => void;
-	onCancel?: () => void;
 	onDelete?: (taskId: string) => void;
 }
 
-const { task, onSave, onCancel, onDelete }: Props = $props();
+const { task = null, onSave, onDelete }: Props = $props();
+
+// Default empty task for new tasks
+const defaultTask: Task = {
+	id: '',
+	title: '',
+	description: '',
+	status: 'TODO',
+	type: 'neutral',
+	created_at: new Date().toISOString(),
+};
+
+// Use provided task or default
+const currentTask = $derived(task ?? defaultTask);
 
 // Form state - initialized and reset via effect when task changes
 let title = $state('');
@@ -26,14 +37,14 @@ let errors = $state<{ title?: string }>({});
 
 // Reset form when task prop changes
 $effect(() => {
-	title = task.title;
-	description = task.description ?? '';
-	status = task.status;
-	type = task.type;
+	title = currentTask.title;
+	description = currentTask.description ?? '';
+	status = currentTask.status;
+	type = currentTask.type;
 	errors = {};
 });
 
-const isNewTask = $derived(!task.id || task.id === '');
+const isNewTask = $derived(!currentTask.id || currentTask.id === '');
 
 const typeOptions = Object.entries(TASK_TYPE_LABELS).map(([value, label]) => ({
 	value: value as TaskType,
@@ -80,7 +91,7 @@ function handleSave() {
 	if (!validateForm()) return;
 
 	const updatedTask: Task = {
-		...task,
+		...currentTask,
 		title: title.trim(),
 		description: description.trim() || undefined,
 		status,
@@ -91,8 +102,8 @@ function handleSave() {
 }
 
 function handleDelete() {
-	if (task.id) {
-		onDelete?.(task.id);
+	if (currentTask.id) {
+		onDelete?.(currentTask.id);
 	}
 }
 </script>
@@ -101,28 +112,18 @@ function handleDelete() {
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-4">
 		<h2 class="text-sm font-semibold text-uppercase-tracking">
-			{isNewTask ? 'Create Task' : 'Edit Task'}
+			{isNewTask ? 'New Task' : 'Edit Task'}
 		</h2>
-		<div class="flex items-center gap-2">
-			{#if !isNewTask}
-				<button
-					type="button"
-					onclick={handleDelete}
-					class="p-1.5 rounded hover:bg-red-500/20 text-[var(--text-muted)] hover:text-red-400 transition-colors"
-					title="Delete task"
-				>
-					<Trash class="size-4" />
-				</button>
-			{/if}
+		{#if !isNewTask}
 			<button
 				type="button"
-				onclick={onCancel}
-				class="p-1.5 rounded hover:bg-[var(--bg-hover)] text-[var(--text-muted)] transition-colors"
-				title="Cancel"
+				onclick={handleDelete}
+				class="p-1.5 rounded hover:bg-red-500/20 text-[var(--text-muted)] hover:text-red-400 transition-colors"
+				title="Delete task"
 			>
-				<X class="size-4" />
+				<Trash class="size-4" />
 			</button>
-		</div>
+		{/if}
 	</div>
 
 	<!-- Form -->

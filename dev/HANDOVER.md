@@ -1,48 +1,52 @@
 # HANDOVER
 
-## Session: 2026-01-13 (Abend) - Phase 5.5 Sidebar Refactor
+## Session: 2026-01-13 (Abend 2) - UX Refactor: Einheitliche Menüstruktur
 
 ### Summary
 
-Sidebar-First Architecture implementiert. FunctionPanel mit Tabs, Settings als Panel, TaskEditor für Create/Edit.
+Doppelte Menü-Struktur eliminiert. Alle Navigation jetzt im Header, Sidebar zeigt nur Inhalt.
 
 ### Completed
 
-- ✅ FunctionPanel mit bits-ui `Tabs` (Overview, Agents, Settings, dynamischer Editor-Tab)
-- ✅ SettingsPanel.svelte aus Dialog extrahiert (Accordion-Struktur beibehalten)
-- ✅ TaskEditor.svelte für Task Create/Edit mit Select für Type/Status
-- ✅ Header: Settings-Button entfernt, Add-Task Button wired
-- ✅ SettingsDialog.svelte gelöscht
-- ✅ Quality Checks bestanden (svelte-check + Biome)
+- ✅ Header: Sidebar-Tabs als Icon-Buttons (📊 🤖 ⚙️ ➕)
+- ✅ Header: Sidebar-Toggle Button (◧)
+- ✅ Sidebar: Tab-Leiste komplett entfernt
+- ✅ Sidebar: Nur noch Inhalt (Overview/Agents/Settings/TaskEditor)
+- ✅ Sidebar: Resizable via Drag am linken Rand
+- ✅ TaskEditor: X-Button entfernt (Cancel = anderer Tab)
+- ✅ Controlled Component Pattern: activeTab State in Page
 
-### Component Structure
+### UI Structure (Final)
 
 ```
-FunctionPanel (Tabs)
-├── Overview Tab → SearchBar + ProjectOverview + SystemLog
-├── Agents Tab → AgentList
-├── Settings Tab → SettingsPanel (Accordion mit 5 Sections)
-└── Editor Tab → TaskEditor (erscheint bei editingTask)
+Header: [Logo] [Breadcrumb] | [Hub/Board] | [📊] [🤖] [⚙️] [+] | [◧] | [Project] [DW]
+                                           ↑ Sidebar-Tabs    ↑ Toggle
+
+Sidebar: NUR Inhalt (keine eigene Navigation)
+         - Overview: Search + ProjectOverview + SystemLog
+         - Agents: AgentList
+         - Settings: SettingsPanel (Accordion)
+         - New Task: TaskEditor
 ```
 
 ### Code Patterns
 
 ```typescript
-// Svelte 5: Form-State mit $effect für Prop-Reset
-let title = $state('');
-$effect(() => {
-  title = task.title;  // Reset wenn task prop sich ändert
-});
+// Controlled Sidebar Tab - State in Page, nicht in Sidebar
+let activeTab = $state<SidebarTab>('overview');
 
-// Dynamischer Tab via $derived
-const activeTab = $derived(editingTask ? 'editor' : 'overview');
+function handleTabChange(tab: SidebarTab) {
+  activeTab = tab;
+  if (!sidebarVisible) sidebarVisible = true;  // Auto-open
+}
+
+// Header exportiert den Type für Page
+export type SidebarTab = 'overview' | 'agents' | 'settings' | 'new-task';
 ```
 
 ### Open TODO
 
-- `TaskEditor.svelte:52-65` → `validateForm()` Funktion implementieren
-  - Title required check
-  - Optional: max length, sanitization
+- `TaskEditor.svelte:65-77` → `validateForm()` implementieren
 
 ### Next Session: API Integration
 
@@ -56,16 +60,29 @@ const activeTab = $derived(editingTask ? 'editor' : 'overview');
    - Real-time Kanban-Board updates
 
 3. **TaskCard Edit-Integration**
-   - Click auf TaskCard → öffnet TaskEditor im Sidebar
+   - Click auf TaskCard → öffnet TaskEditor
+
+4. **Drag & Drop**
+   - Tasks zwischen Spalten verschieben
 
 ### Blockers
 
 - Keine
 
-### Notes
+---
 
-- Dev-Server auf Port 5175 (5173/5174 waren belegt)
-- Biome "noUnusedImports" Warnings für Svelte-Template-Usage sind false positives
+## Session: 2026-01-13 (Abend) - Phase 5.5 Sidebar Refactor
+
+### Summary
+
+Sidebar-First Architecture implementiert. FunctionPanel mit Tabs, Settings als Panel, TaskEditor für Create/Edit.
+
+### Completed
+
+- ✅ FunctionPanel mit bits-ui `Tabs` (Overview, Agents, Settings, dynamischer Editor-Tab)
+- ✅ SettingsPanel.svelte aus Dialog extrahiert
+- ✅ TaskEditor.svelte für Task Create/Edit
+- ✅ SettingsDialog.svelte gelöscht
 
 ---
 
