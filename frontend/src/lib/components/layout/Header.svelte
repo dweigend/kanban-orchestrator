@@ -1,7 +1,6 @@
 <script lang="ts">
 import { Menubar, Separator, Tabs } from 'bits-ui';
 import Folder from 'phosphor-svelte/lib/Folder';
-import Gear from 'phosphor-svelte/lib/Gear';
 import Plus from 'phosphor-svelte/lib/Plus';
 import Sidebar from 'phosphor-svelte/lib/Sidebar';
 import SquaresFour from 'phosphor-svelte/lib/SquaresFour';
@@ -10,16 +9,16 @@ interface Props {
 	projectName?: string;
 	viewMode?: string;
 	onViewChange?: (mode: string) => void;
-	onSettingsClick?: () => void;
 	onSidebarToggle?: () => void;
+	onAddTask?: () => void;
 }
 
 const {
 	projectName = 'vibe-kanban',
 	viewMode = 'hub-view',
 	onViewChange,
-	onSettingsClick,
 	onSidebarToggle,
+	onAddTask,
 }: Props = $props();
 </script>
 
@@ -114,19 +113,11 @@ const {
 
 		<button
 			type="button"
+			onclick={() => onAddTask?.()}
 			class="size-9 flex items-center justify-center rounded border border-[var(--border-default)] hover:bg-[var(--bg-hover)] transition-colors focus-ring"
 			aria-label="Add new task"
 		>
 			<Plus class="size-4" />
-		</button>
-
-		<button
-			type="button"
-			onclick={() => onSettingsClick?.()}
-			class="size-9 flex items-center justify-center rounded border border-[var(--border-default)] hover:bg-[var(--bg-hover)] transition-colors focus-ring"
-			aria-label="Settings"
-		>
-			<Gear class="size-4" />
 		</button>
 
 		<!-- User Avatar Placeholder -->

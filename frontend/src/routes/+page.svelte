@@ -2,14 +2,13 @@
 import Board from '$lib/components/kanban/Board.svelte';
 import Header from '$lib/components/layout/Header.svelte';
 import FunctionPanel from '$lib/components/panel/FunctionPanel.svelte';
-import SettingsDialog from '$lib/components/settings/SettingsDialog.svelte';
 import type { Agent } from '$lib/types/agent';
 import type { Task } from '$lib/types/task';
 
 // State
 let viewMode = $state('hub-view');
 let sidebarVisible = $state(true);
-let settingsOpen = $state(false);
+let editingTask = $state<Task | null>(null);
 
 // Mock data for demonstration
 const tasks: Task[] = $state([
@@ -111,8 +110,40 @@ function handleSidebarToggle() {
 	sidebarVisible = !sidebarVisible;
 }
 
-function handleSettingsClick() {
-	settingsOpen = true;
+function handleAddTask() {
+	// Create a new empty task for the editor
+	const newTask: Task = {
+		id: '', // Empty id = new task
+		title: '',
+		description: '',
+		status: 'TODO',
+		type: 'neutral',
+		created_at: new Date().toISOString(),
+	};
+	editingTask = newTask;
+	sidebarVisible = true; // Ensure sidebar is visible
+}
+
+function handleTaskSave(task: Task) {
+	if (task.id === '') {
+		// Create new task with generated ID
+		const createdTask: Task = {
+			...task,
+			id: String(Date.now()), // Simple ID generation for now
+		};
+		tasks.push(createdTask);
+	} else {
+		// Update existing task
+		const index = tasks.findIndex((t) => t.id === task.id);
+		if (index !== -1) {
+			tasks[index] = task;
+		}
+	}
+	editingTask = null;
+}
+
+function handleTaskCancel() {
+	editingTask = null;
 }
 
 function handleSearch(query: string) {
@@ -135,17 +166,22 @@ function handleSearch(query: string) {
 		projectName="vibe-kanban"
 		{viewMode}
 		onViewChange={handleViewChange}
-		onSettingsClick={handleSettingsClick}
 		onSidebarToggle={handleSidebarToggle}
+		onAddTask={handleAddTask}
 	/>
 
 	<main class="flex-1 flex overflow-hidden">
 		<Board {tasks} />
 
 		{#if sidebarVisible}
-			<FunctionPanel {agents} {logs} onSearch={handleSearch} />
+			<FunctionPanel
+				{agents}
+				{logs}
+				{editingTask}
+				onSearch={handleSearch}
+				onTaskSave={handleTaskSave}
+				onTaskCancel={handleTaskCancel}
+			/>
 		{/if}
 	</main>
 </div>
-
-<SettingsDialog bind:open={settingsOpen} />

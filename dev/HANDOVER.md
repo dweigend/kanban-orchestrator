@@ -1,5 +1,74 @@
 # HANDOVER
 
+## Session: 2026-01-13 (Abend) - Phase 5.5 Sidebar Refactor
+
+### Summary
+
+Sidebar-First Architecture implementiert. FunctionPanel mit Tabs, Settings als Panel, TaskEditor für Create/Edit.
+
+### Completed
+
+- ✅ FunctionPanel mit bits-ui `Tabs` (Overview, Agents, Settings, dynamischer Editor-Tab)
+- ✅ SettingsPanel.svelte aus Dialog extrahiert (Accordion-Struktur beibehalten)
+- ✅ TaskEditor.svelte für Task Create/Edit mit Select für Type/Status
+- ✅ Header: Settings-Button entfernt, Add-Task Button wired
+- ✅ SettingsDialog.svelte gelöscht
+- ✅ Quality Checks bestanden (svelte-check + Biome)
+
+### Component Structure
+
+```
+FunctionPanel (Tabs)
+├── Overview Tab → SearchBar + ProjectOverview + SystemLog
+├── Agents Tab → AgentList
+├── Settings Tab → SettingsPanel (Accordion mit 5 Sections)
+└── Editor Tab → TaskEditor (erscheint bei editingTask)
+```
+
+### Code Patterns
+
+```typescript
+// Svelte 5: Form-State mit $effect für Prop-Reset
+let title = $state('');
+$effect(() => {
+  title = task.title;  // Reset wenn task prop sich ändert
+});
+
+// Dynamischer Tab via $derived
+const activeTab = $derived(editingTask ? 'editor' : 'overview');
+```
+
+### Open TODO
+
+- `TaskEditor.svelte:52-65` → `validateForm()` Funktion implementieren
+  - Title required check
+  - Optional: max length, sanitization
+
+### Next Session: API Integration
+
+1. **Task CRUD mit Backend verbinden**
+   - POST /api/tasks (create)
+   - PUT /api/tasks/:id (update)
+   - DELETE /api/tasks/:id (delete)
+
+2. **SSE für Live-Updates**
+   - EventSource für task events
+   - Real-time Kanban-Board updates
+
+3. **TaskCard Edit-Integration**
+   - Click auf TaskCard → öffnet TaskEditor im Sidebar
+
+### Blockers
+
+- Keine
+
+### Notes
+
+- Dev-Server auf Port 5175 (5173/5174 waren belegt)
+- Biome "noUnusedImports" Warnings für Svelte-Template-Usage sind false positives
+
+---
+
 ## Session: 2026-01-13 (Nachmittag 3) - Zwischen-Session Setup
 
 ### Summary
@@ -21,43 +90,6 @@ Settings Dialog fertiggestellt und getestet. Session-Abschluss mit Vorbereitung 
 - ❌ Keine modalen Fenster für Task-Editor/Settings
 - ✅ Hauptfenster: NUR Hub-View + Kanban-View
 - ✅ Sidebar: ALLE Interaktionen (Settings, Task-Editor, Details)
-
-### Next Session: Sidebar Refactor + Task CRUD
-
-**Ziel:** Alle Funktionen in Sidebar integrieren
-
-1. **Settings → Sidebar Panel**
-   - SettingsDialog.svelte → SettingsPanel.svelte refactoren
-   - Als Tab im Function Panel integrieren
-
-2. **Task CRUD in Sidebar**
-   - Task erstellen: Formular im Panel
-   - Task bearbeiten: Detail-View im Panel
-   - Task löschen: Inline-Confirmation
-   - Task-Ergebnis anzeigen: Result-View
-
-3. **Function Panel Redesign**
-   ```
-   FunctionPanel/
-   ├── Tabs: Overview | Agents | Settings | [TaskEditor]
-   ├── Overview: ProjectOverview + SystemLog
-   ├── Agents: AgentList
-   ├── Settings: (from Dialog)
-   └── TaskEditor: Create/Edit/View (contextual)
-   ```
-
-4. **API Integration**
-   - Task CRUD mit Backend verbinden
-   - SSE für Live-Updates
-
-### Blockers
-
-- Keine
-
-### Notes
-
-- bits-ui Slider braucht `type="single"` und `index={0}` für Thumb
-- Settings Dialog als Referenz behalten für Accordion-Struktur
 
 ---
 

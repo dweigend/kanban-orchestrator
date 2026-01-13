@@ -48,11 +48,11 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [ ] Drag & Drop für Task-Verschiebung
 - [ ] Agent-Status Live-View (SSE)
 
-### Phase 5.5: Sidebar Refactor (Zwischen-Session)
-- [ ] **Design-Regel:** Sidebar-First Architecture
-- [ ] Settings Dialog → Sidebar Panel refactoren
-- [ ] Task CRUD in Sidebar integrieren
-- [ ] Function Panel mit Tabs redesignen
+### Phase 5.5: Sidebar Refactor ✅
+- [x] **Design-Regel:** Sidebar-First Architecture
+- [x] Settings Dialog → Sidebar Panel refactoren
+- [x] Task CRUD in Sidebar integrieren (TaskEditor)
+- [x] Function Panel mit Tabs redesignen
 - [ ] API Integration für Task CRUD
 
 ### Phase 6: Polish & Plugins
@@ -65,8 +65,8 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ## Current Focus
 
-**Phase:** 5.5 (Sidebar Refactor - Zwischen-Session)
-**Next Task:** Sidebar-First Architecture implementieren
+**Phase:** 5.5 → 6 (API Integration + Polish)
+**Next Task:** Task CRUD mit Backend verbinden, SSE für Live-Updates
 
 ---
 
@@ -78,4 +78,4 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ---
 
-*Updated: 2026-01-13 (Phase 5.5 geplant)*
+*Updated: 2026-01-13 (Phase 5.5 completed)*
