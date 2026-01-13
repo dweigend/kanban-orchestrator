@@ -28,11 +28,11 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [ ] Datenmodell: Task, Workflow, Agent-Run
 - [ ] Plugin-System Konzept
 
-### Phase 3: Backend Core
-- [ ] FastAPI App Setup mit CORS
-- [ ] SQLite + SQLAlchemy Models
-- [ ] Task CRUD Endpoints
-- [ ] SSE für Live-Updates
+### Phase 3: Backend Core ✅
+- [x] FastAPI App Setup mit CORS
+- [x] SQLite + SQLAlchemy Models (async)
+- [x] Task CRUD Endpoints
+- [x] SSE für Live-Updates (EventBus)
 
 ### Phase 4: Agent Integration
 - [ ] Orchestrator Agent (Claude SDK)
@@ -56,8 +56,8 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ## Current Focus
 
-**Phase:** 2 - Konzept & Plan
-**Next Task:** Mockups-Ordner erstellen
+**Phase:** 4 oder 5 (Agent Integration oder Frontend)
+**Next Task:** User-Entscheidung - Backend Agents oder Frontend UI?
 
 ---
 
@@ -69,4 +69,4 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ---
 
-*Updated: 2026-01-13*
+*Updated: 2026-01-13 (Phase 3 complete)*
