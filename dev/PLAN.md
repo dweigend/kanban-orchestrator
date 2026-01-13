@@ -15,7 +15,7 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [x] `dev/` Workflow-Docs generieren
 
 ### Phase 1: Basis-Infrastruktur 🔄
-- [ ] Frontend: ESLint → Biome Migration
+- [x] Frontend: ESLint → Biome Migration
 - [ ] Frontend: bits-ui installieren
 - [ ] Backend: Modulare Ordnerstruktur (`src/agents/`, `src/api/`, etc.)
 - [ ] Backend: FastAPI + Pydantic hinzufügen
@@ -57,7 +57,7 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 ## Current Focus
 
 **Phase:** 1 - Basis-Infrastruktur
-**Next Task:** ESLint → Biome Migration
+**Next Task:** bits-ui installieren
 
 ---
 

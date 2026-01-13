@@ -1,6 +1,42 @@
 # HANDOVER
 
-## Session: 2026-01-13
+## Session: 2026-01-13 (Nachmittag)
+
+### Summary
+
+ESLint → Biome Migration abgeschlossen. Initial Commit für Monorepo erstellt.
+
+### Completed
+
+- ✅ ESLint + 6 zugehörige Packages entfernt
+- ✅ Biome 2.3.11 installiert und konfiguriert
+- ✅ `package.json` Scripts aktualisiert (`bun lint`, `bun format`)
+- ✅ Backend `.git` entfernt für echtes Monorepo
+- ✅ Initial Commit: `834e22a`
+
+### In Progress
+
+- Phase 1: Basis-Infrastruktur (2/5 Tasks done)
+
+### Blockers
+
+- Keine
+
+### Notes
+
+- Biome CSS-Support für Tailwind 4 (`@plugin`) noch nicht verfügbar → CSS excluded
+- Biome erkennt Svelte Template-Bindings nicht als "genutzt" → False Positive Warnings
+
+### Next Session
+
+1. bits-ui installieren
+2. Backend Ordnerstruktur anlegen (`src/agents/`, `src/api/`, etc.)
+3. FastAPI + Pydantic hinzufügen
+4. Root Makefile erstellen
+
+---
+
+## Session: 2026-01-13 (Vormittag)
 
 ### Summary
 
@@ -11,38 +47,8 @@ Projekt-Setup und Architektur-Review abgeschlossen. `.claude/` und `dev/` Strukt
 - ✅ Projekt-Struktur analysiert
 - ✅ Architektur bestätigt: Monorepo mit `backend/` + `frontend/` ist korrekt
 - ✅ Entscheidungen getroffen: Makefile, SQLite
-- ✅ Setup-Files generiert:
-  - `CLAUDE.md`
-  - `.claude/rules/fullstack.md`
-  - `.claude/commands/start.md`
-  - `dev/WORKFLOW.md`
-  - `dev/PLAN.md`
-  - `dev/HANDOVER.md`
-  - `dev/git-workflow.md`
-
-### In Progress
-
-- Phase 1: Basis-Infrastruktur
-  - Nächster Schritt: ESLint → Biome Migration
-
-### Blockers
-
-- Keine
-
-### Notes
-
-- Frontend nutzt noch ESLint statt Biome
-- bits-ui noch nicht installiert
-- Backend hat nur Hello World Stub
-
-### Next Session
-
-1. ESLint entfernen, Biome installieren
-2. bits-ui + @tailwindcss/forms hinzufügen
-3. Backend Ordnerstruktur anlegen
-4. FastAPI + Pydantic hinzufügen
-5. Root Makefile erstellen
+- ✅ Setup-Files generiert
 
 ---
 
-*Previous sessions below...*
+*Previous sessions above...*
