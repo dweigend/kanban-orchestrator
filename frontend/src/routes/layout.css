@@ -1,3 +1,213 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+/* =============================================================================
+   KANBAN ORCHESTRATOR - BRUTALIST DESIGN SYSTEM
+   High-contrast UI for data-dense applications
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   CSS Custom Properties (Design Tokens)
+   ----------------------------------------------------------------------------- */
+:root {
+  /* Typography */
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-size-xs: 0.75rem;   /* 12px */
+  --font-size-sm: 0.875rem;  /* 14px */
+  --font-size-base: 1rem;    /* 16px */
+  --font-size-lg: 1.125rem;  /* 18px */
+  --font-size-xl: 1.25rem;   /* 20px */
+
+  /* Spacing */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px - gutter */
+  --space-6: 1.5rem;   /* 24px - margin */
+  --space-8: 2rem;     /* 32px */
+
+  /* Layout */
+  --header-height: 3.5rem;   /* 56px */
+  --sidebar-width: 320px;
+  --border-width: 1px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Backgrounds */
+  --bg-base: #0a0a0a;
+  --bg-elevated: #141414;
+  --bg-surface: #1a1a1a;
+  --bg-hover: #262626;
+
+  /* Borders */
+  --border-default: #3f3f46;   /* zinc-700 */
+  --border-muted: #27272a;     /* zinc-800 */
+  --border-focus: #a78bfa;     /* violet-400 */
+  --border-error: #ef4444;     /* red-500 */
+
+  /* Text */
+  --text-primary: #fafafa;     /* zinc-50 */
+  --text-secondary: #a1a1aa;   /* zinc-400 */
+  --text-muted: #71717a;       /* zinc-500 */
+  --text-inverse: #0a0a0a;
+
+  /* Task Type Colors */
+  --task-research: #3b82f6;    /* blue-500 */
+  --task-dev: #f97316;         /* orange-500 */
+  --task-notes: #eab308;       /* yellow-500 */
+  --task-neutral: #525250;     /* zinc-600 */
+
+  /* Status Colors */
+  --status-active: #22c55e;    /* green-500 */
+  --status-idle: #71717a;      /* zinc-500 */
+  --status-error: #ef4444;     /* red-500 */
+  --status-busy: #f97316;      /* orange-500 */
+
+  /* Accent */
+  --accent-primary: #a78bfa;   /* violet-400 */
+  --accent-hover: #8b5cf6;     /* violet-500 */
+}
+
+/* -----------------------------------------------------------------------------
+   Base Styles
+   ----------------------------------------------------------------------------- */
+html {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* -----------------------------------------------------------------------------
+   Tailwind Theme Extension
+   ----------------------------------------------------------------------------- */
+@theme {
+  /* Font Family */
+  --font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Colors - Background */
+  --color-bg-base: #0a0a0a;
+  --color-bg-elevated: #141414;
+  --color-bg-surface: #1a1a1a;
+  --color-bg-hover: #262626;
+
+  /* Colors - Border */
+  --color-border-default: #3f3f46;
+  --color-border-muted: #27272a;
+  --color-border-focus: #a78bfa;
+  --color-border-error: #ef4444;
+
+  /* Colors - Text */
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #71717a;
+
+  /* Colors - Task Types */
+  --color-task-research: #3b82f6;
+  --color-task-dev: #f97316;
+  --color-task-notes: #eab308;
+  --color-task-neutral: #525250;
+
+  /* Colors - Status */
+  --color-status-active: #22c55e;
+  --color-status-idle: #71717a;
+  --color-status-error: #ef4444;
+  --color-status-busy: #f97316;
+
+  /* Colors - Accent */
+  --color-accent: #a78bfa;
+  --color-accent-hover: #8b5cf6;
+}
+
+/* -----------------------------------------------------------------------------
+   Utility Classes
+   ----------------------------------------------------------------------------- */
+
+/* Text utilities */
+.text-uppercase-tracking {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Border utilities */
+.border-brutalist {
+  border: var(--border-width) solid var(--border-default);
+}
+
+/* Focus ring for accessibility */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--border-default);
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   Animation Keyframes
+   ----------------------------------------------------------------------------- */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-from-top {
+  from { transform: translateY(-4px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slide-in-from-bottom {
+  from { transform: translateY(4px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fade-in 150ms ease-out;
+}
+
+.animate-slide-in {
+  animation: slide-in-from-top 150ms ease-out;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}

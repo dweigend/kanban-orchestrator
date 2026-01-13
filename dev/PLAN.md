@@ -40,11 +40,20 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [ ] MCP Tools: OpenAlex, BibTeX
 - [ ] Google ADK für komplexe Workflows
 
-### Phase 5: Frontend Core
-- [ ] Kanban-Board Layout
-- [ ] Task-Cards mit Drag & Drop
-- [ ] Workflow-Orchestrator Panel
+### Phase 5: Frontend Core (in progress)
+- [x] Kanban-Board Layout
+- [x] Task-Cards mit DropdownMenu
+- [x] Function Panel (Sidebar)
+- [x] Settings Dialog (wird refactored)
+- [ ] Drag & Drop für Task-Verschiebung
 - [ ] Agent-Status Live-View (SSE)
+
+### Phase 5.5: Sidebar Refactor (Zwischen-Session)
+- [ ] **Design-Regel:** Sidebar-First Architecture
+- [ ] Settings Dialog → Sidebar Panel refactoren
+- [ ] Task CRUD in Sidebar integrieren
+- [ ] Function Panel mit Tabs redesignen
+- [ ] API Integration für Task CRUD
 
 ### Phase 6: Polish & Plugins
 - [ ] Plugin-System Implementation
@@ -56,8 +65,8 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ## Current Focus
 
-**Phase:** 4 oder 5 (Agent Integration oder Frontend)
-**Next Task:** User-Entscheidung - Backend Agents oder Frontend UI?
+**Phase:** 5.5 (Sidebar Refactor - Zwischen-Session)
+**Next Task:** Sidebar-First Architecture implementieren
 
 ---
 
@@ -69,4 +78,4 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ---
 
-*Updated: 2026-01-13 (Phase 3 complete)*
+*Updated: 2026-01-13 (Phase 5.5 geplant)*

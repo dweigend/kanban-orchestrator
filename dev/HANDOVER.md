@@ -1,5 +1,109 @@
 # HANDOVER
 
+## Session: 2026-01-13 (Nachmittag 3) - Zwischen-Session Setup
+
+### Summary
+
+Settings Dialog fertiggestellt und getestet. Session-Abschluss mit Vorbereitung für Refactor-Session.
+
+### Completed
+
+- ✅ Settings Dialog mit bits-ui `Dialog`, `Accordion`, `Select`, `Slider`, `Switch`
+- ✅ 5 Accordion-Sections: Appearance, Editor Config, Git, Notifications, Privacy
+- ✅ Chrome Extension Test: Settings Dialog funktioniert vollständig
+- ✅ Session-Dokumentation aktualisiert
+
+### Design-Entscheidung: Sidebar-First Architecture
+
+**NEUE REGEL:** Alle Funktionen werden in die Sidebar (Function Panel) integriert!
+
+- ❌ Keine Popup-Dialoge für Funktionen
+- ❌ Keine modalen Fenster für Task-Editor/Settings
+- ✅ Hauptfenster: NUR Hub-View + Kanban-View
+- ✅ Sidebar: ALLE Interaktionen (Settings, Task-Editor, Details)
+
+### Next Session: Sidebar Refactor + Task CRUD
+
+**Ziel:** Alle Funktionen in Sidebar integrieren
+
+1. **Settings → Sidebar Panel**
+   - SettingsDialog.svelte → SettingsPanel.svelte refactoren
+   - Als Tab im Function Panel integrieren
+
+2. **Task CRUD in Sidebar**
+   - Task erstellen: Formular im Panel
+   - Task bearbeiten: Detail-View im Panel
+   - Task löschen: Inline-Confirmation
+   - Task-Ergebnis anzeigen: Result-View
+
+3. **Function Panel Redesign**
+   ```
+   FunctionPanel/
+   ├── Tabs: Overview | Agents | Settings | [TaskEditor]
+   ├── Overview: ProjectOverview + SystemLog
+   ├── Agents: AgentList
+   ├── Settings: (from Dialog)
+   └── TaskEditor: Create/Edit/View (contextual)
+   ```
+
+4. **API Integration**
+   - Task CRUD mit Backend verbinden
+   - SSE für Live-Updates
+
+### Blockers
+
+- Keine
+
+### Notes
+
+- bits-ui Slider braucht `type="single"` und `index={0}` für Thumb
+- Settings Dialog als Referenz behalten für Accordion-Struktur
+
+---
+
+## Session: 2026-01-13 (Nachmittag 2)
+
+### Summary
+
+Phase 5 (Frontend Core) begonnen. Komplettes Kanban-Board UI mit bits-ui implementiert und getestet.
+
+### Completed
+
+- ✅ Design System aus Mockups analysiert → "Brutalist System"
+- ✅ `dev/FRONTEND-PLAN.md` mit Component-Mapping erstellt
+- ✅ Zentrale CSS-Datei mit Design Tokens (`layout.css`)
+- ✅ TypeScript Types: `Task`, `Agent`, Status/Type enums
+- ✅ Header mit bits-ui `Menubar`, `Tabs`, `Separator`
+- ✅ Kanban Board mit 3 Spalten (TODO/IN_PROGRESS/DONE)
+- ✅ TaskCard mit `DropdownMenu` (Edit, Open, Delete)
+- ✅ Function Panel: SearchBar, ProjectOverview (`Accordion`), AgentList (`Tooltip`, `ScrollArea`), SystemLog
+- ✅ Tooltip.Provider im Layout für bits-ui v2
+- ✅ phosphor-svelte Icons installiert
+- ✅ Biome `useConst: off` für Svelte 5 `$state()` Kompatibilität
+- ✅ Alle Quality Checks bestanden (svelte-check + Biome)
+- ✅ Chrome Extension Test: Alle Interaktionen funktionieren
+
+### Components Created
+
+```
+frontend/src/lib/
+├── components/
+│   ├── layout/Header.svelte
+│   ├── kanban/Board.svelte, Column.svelte, TaskCard.svelte
+│   └── panel/FunctionPanel.svelte, AgentList.svelte, SystemLog.svelte,
+│         ProjectOverview.svelte, SearchBar.svelte
+└── types/task.ts, agent.ts
+```
+
+### Notes
+
+- bits-ui v2 braucht `Tooltip.Provider` im Root Layout
+- JetBrains Mono Font via Google Fonts geladen
+- Mock-Daten in `+page.svelte` für Demo
+- Dev-Server läuft auf Port 5174 (5173 war belegt)
+
+---
+
 ## Session: 2026-01-13 (Nacht)
 
 ### Summary
