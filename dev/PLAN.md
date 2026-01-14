@@ -6,106 +6,63 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ---
 
-## Phases
+## Abgeschlossene Phasen
 
-### Phase 0: Setup ✅
-- [x] Projekt-Struktur analysieren
-- [x] Architektur-Entscheidungen treffen
-- [x] `.claude/` Setup generieren
-- [x] `dev/` Workflow-Docs generieren
+### Phase 1-3: Infrastructure ✅
+- Backend: FastAPI + SQLAlchemy + SSE
+- Frontend: SvelteKit + bits-ui + Tailwind
+- Task CRUD mit Live-Updates
 
-### Phase 1: Basis-Infrastruktur ✅
-- [x] Frontend: ESLint → Biome Migration
-- [x] Frontend: bits-ui installieren
-- [x] Backend: Modulare Ordnerstruktur (`src/agents/`, `src/api/`, etc.)
-- [x] Backend: FastAPI + Pydantic hinzufügen
-- [x] Root: Makefile für `make dev`
+### Phase 4.1: Agent MVP ✅
+- Claude Agent SDK Integration
+- Project/AgentRun Models
+- MCP Registry + Filesystem Server
+- Git Auto-Checkpoints
+- SSE Agent Log Streaming
 
-### Phase 2: Konzept & Plan
-- [x] Mockups-Ordner erstellen (`dev/ui/`)
-- [ ] Agent-Architektur dokumentieren
-- [ ] API-Kontrakt definieren (OpenAPI Spec)
-- [ ] Datenmodell: Task, Workflow, Agent-Run
-- [ ] Plugin-System Konzept
-
-### Phase 3: Backend Core ✅
-- [x] FastAPI App Setup mit CORS
-- [x] SQLite + SQLAlchemy Models (async)
-- [x] Task CRUD Endpoints
-- [x] SSE für Live-Updates (EventBus)
-
-### Phase 4: Agent Integration (MVP) ✅
-- [x] Orchestrator Agent (Claude Agent SDK)
-- [x] MCP Infrastructure (Registry + Filesystem)
-- [x] Project Model mit Workspace
-- [x] AgentRun Model für Tracking
-- [x] Git Auto-Checkpoints
-- [x] SSE Agent Log Streaming
-- [ ] Perplexity MCP (Phase 4.2)
-- [ ] OpenAlex/BibTeX MCP (Phase 4.2)
-- [ ] Human-in-the-Loop UI (Phase 4.2)
-- [ ] Workflow Templates (Phase 4.2)
-
-### Phase 5: Frontend Core ✅
-- [x] Kanban-Board Layout
-- [x] Task-Cards mit DropdownMenu
-- [x] Function Panel (Sidebar)
-- [x] Settings Panel
-- [ ] Drag & Drop für Task-Verschiebung
-- [ ] Agent-Status Live-View (SSE)
-
-### Phase 5.5: Sidebar Refactor ✅
-- [x] **Design-Regel:** Sidebar-First Architecture
-- [x] Settings Dialog → Sidebar Panel refactoren
-- [x] Task CRUD in Sidebar integrieren (TaskEditor)
-- [x] Function Panel mit Tabs redesignen
-
-### Phase 5.6: UX Refactor ✅
-- [x] Einheitliche Menüstruktur (alles im Header)
-- [x] Sidebar-Tabs als Icon-Buttons im Header
-- [x] Sidebar nur Inhalt, keine eigene Navigation
-- [x] Resizable Sidebar
-- [x] Controlled Component Pattern
-
-### Phase 5.7: API Integration ✅
-- [x] Task CRUD mit Backend verbinden
-- [x] SSE für Live-Updates
-- [x] Form Validation (TaskEditor)
-- [ ] TaskCard Click → Edit in Sidebar
-- [ ] Drag & Drop für Task-Verschiebung
-
-### Phase 5.8: UI Completion ✅
-- [x] TaskCard Click → öffnet Editor
-- [x] TaskCard Dropdown → Edit/Delete funktional
-- [x] Drag & Drop zwischen Spalten
-- [x] Toast Notifications (svelte-sonner)
-
-### Phase 6: Polish & Plugins
-- [ ] Plugin-System Implementation
-- [ ] Error Handling & Logging
-- [ ] Performance Optimization
-- [ ] Documentation
+### Phase 5: Frontend UI ✅
+- Kanban Board mit Drag & Drop
+- Sidebar-First Architecture
+- Task Editor in Sidebar
+- Toast Notifications
 
 ---
 
-## Current Focus
+## Aktuelle Phase: 4.2 - Agent UI Integration
 
-**Phase:** 4.2 (Agent Integration - Advanced Features)
-**Next Tasks:**
-- Perplexity MCP Server
-- Workflow Templates UI
-- Human-in-the-Loop (NEEDS_REVIEW Spalte)
-- Multi-Project UI
+### Sofort (UI Wiring)
+- [ ] Run Button auf TaskCard
+- [ ] AgentLog Tab in Sidebar
+- [ ] NEEDS_REVIEW Spalte
+- [ ] Spinner während Agent läuft
+
+### Danach (Multi-Project)
+- [ ] Project Selector im Header
+- [ ] Tasks nach Project filtern
+- [ ] Default Project erstellen
+
+### Später (MCP Erweiterung)
+- [ ] Perplexity MCP Server
+- [ ] Workflow Templates Model + UI
+- [ ] Human-in-the-Loop Flow
+
+---
+
+## Phase 6: Polish (Future)
+
+- [ ] Plugin-System
+- [ ] Error Handling & Logging
+- [ ] Performance Optimization
+- [ ] ARCHITECTURE.md Dokumentation
 
 ---
 
 ## Backlog
 
-- Vite Proxy für Production CORS Setup
-- Plugin-System (Phase 6)
-- Error Handling & Logging
-- Performance Optimization
+- Vite Proxy für Production CORS
+- OpenAlex/BibTeX MCP Server
+- Google ADK für komplexe Workflows
 
 ---
 
-*Updated: 2026-01-14 (Phase 4 MVP completed)*
+*Updated: 2026-01-14*
