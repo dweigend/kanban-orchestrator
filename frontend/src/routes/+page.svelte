@@ -2,6 +2,8 @@
 import Board from '$lib/components/kanban/Board.svelte';
 import Header, { type SidebarTab } from '$lib/components/layout/Header.svelte';
 import FunctionPanel from '$lib/components/panel/FunctionPanel.svelte';
+import { subscribeToEvents } from '$lib/services/events';
+import * as taskApi from '$lib/services/tasks';
 import type { Agent } from '$lib/types/agent';
 import type { Task } from '$lib/types/task';
 
@@ -11,50 +13,12 @@ let sidebarVisible = $state(true);
 let activeTab = $state<SidebarTab>('overview');
 let editingTask = $state<Task | null>(null);
 
-// Mock data for demonstration
-const tasks: Task[] = $state([
-	{
-		id: '04',
-		title: 'Marktanalyse KI-Tools 2026',
-		description: 'Comprehensive market analysis of AI tools in 2026',
-		status: 'TODO',
-		type: 'research',
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: '22',
-		title: 'Refactor Sidebar Component',
-		description: 'Improve sidebar component structure and performance',
-		status: 'TODO',
-		type: 'dev',
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: '15',
-		title: 'Meeting Notizen: UX Sync',
-		description: 'Notes from the weekly UX sync meeting',
-		status: 'TODO',
-		type: 'notes',
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: '18',
-		title: 'Baumarten Recherche',
-		description: 'Research on different tree species for the project',
-		status: 'IN_PROGRESS',
-		type: 'research',
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: '07',
-		title: 'Dateistruktur Setup',
-		description: 'Set up the file structure for the new module',
-		status: 'DONE',
-		type: 'dev',
-		created_at: new Date().toISOString(),
-	},
-]);
+// Data State
+let tasks = $state<Task[]>([]);
+let loading = $state(true);
+let error = $state<string | null>(null);
 
+// Mock agents (will be connected to backend later)
 const agents: Agent[] = $state([
 	{
 		id: '1',
@@ -80,6 +44,7 @@ const agents: Agent[] = $state([
 	},
 ]);
 
+// Mock logs (will be connected to backend later)
 const logs = $state([
 	{
 		id: '1',
@@ -102,6 +67,57 @@ const logs = $state([
 	},
 ]);
 
+// Load tasks on mount
+async function loadTasks() {
+	loading = true;
+	error = null;
+	try {
+		tasks = await taskApi.fetchTasks();
+	} catch (e) {
+		error = e instanceof Error ? e.message : 'Failed to load tasks';
+		console.error('Failed to load tasks:', e);
+	} finally {
+		loading = false;
+	}
+}
+
+// Initial load
+$effect(() => {
+	loadTasks();
+});
+
+// SSE subscription for real-time updates
+$effect(() => {
+	const unsubscribe = subscribeToEvents((event) => {
+		switch (event.type) {
+			case 'task_created':
+				if (event.task) {
+					// Only add if not already present (avoid duplicates from own actions)
+					if (!tasks.find((t) => t.id === event.task!.id)) {
+						tasks = [...tasks, event.task];
+					}
+				}
+				break;
+			case 'task_updated':
+				if (event.task) {
+					tasks = tasks.map((t) =>
+						t.id === event.task!.id
+							? { ...event.task!, type: t.type, description: t.description }
+							: t,
+					);
+				}
+				break;
+			case 'task_deleted':
+				if (event.taskId) {
+					tasks = tasks.filter((t) => t.id !== event.taskId);
+				}
+				break;
+		}
+	});
+
+	return unsubscribe;
+});
+
 // Handlers
 function handleViewChange(mode: string) {
 	viewMode = mode;
@@ -109,11 +125,9 @@ function handleViewChange(mode: string) {
 
 function handleTabChange(tab: SidebarTab) {
 	activeTab = tab;
-	// Open sidebar when clicking a tab button
 	if (!sidebarVisible) {
 		sidebarVisible = true;
 	}
-	// Reset editing task when switching away from new-task
 	if (tab !== 'new-task') {
 		editingTask = null;
 	}
@@ -123,24 +137,43 @@ function handleSidebarToggle() {
 	sidebarVisible = !sidebarVisible;
 }
 
-function handleTaskSave(task: Task) {
-	if (task.id === '') {
-		// Create new task with generated ID
-		const createdTask: Task = {
-			...task,
-			id: String(Date.now()),
-		};
-		tasks.push(createdTask);
-	} else {
-		// Update existing task
-		const index = tasks.findIndex((t) => t.id === task.id);
-		if (index !== -1) {
-			tasks[index] = task;
+async function handleTaskSave(task: Task) {
+	error = null;
+	try {
+		if (!task.id || task.id === '') {
+			// Create new task - SSE will add it to the list (avoid duplicate)
+			await taskApi.createTask(task);
+		} else {
+			// Update existing task
+			const updated = await taskApi.updateTask(task.id, task);
+			// Preserve local-only fields
+			tasks = tasks.map((t) =>
+				t.id === updated.id
+					? { ...updated, type: task.type, description: task.description }
+					: t,
+			);
 		}
+		// Reset UI state after successful save
+		activeTab = 'overview';
+		editingTask = null;
+	} catch (e) {
+		error = e instanceof Error ? e.message : 'Failed to save task';
+		console.error('Failed to save task:', e);
 	}
-	// Switch back to overview after save
-	activeTab = 'overview';
-	editingTask = null;
+}
+
+async function handleTaskDelete(taskId: string) {
+	error = null;
+	try {
+		await taskApi.deleteTask(taskId);
+		// SSE will remove from list, but also update locally for immediate feedback
+		tasks = tasks.filter((t) => t.id !== taskId);
+		editingTask = null;
+		activeTab = 'overview';
+	} catch (e) {
+		error = e instanceof Error ? e.message : 'Failed to delete task';
+		console.error('Failed to delete task:', e);
+	}
 }
 
 function handleSearch(query: string) {
@@ -170,7 +203,24 @@ function handleSearch(query: string) {
 	/>
 
 	<main class="flex-1 flex overflow-hidden">
-		<Board {tasks} />
+		{#if loading}
+			<div class="flex-1 flex items-center justify-center text-[var(--text-muted)]">
+				Loading tasks...
+			</div>
+		{:else if error}
+			<div class="flex-1 flex flex-col items-center justify-center gap-4">
+				<p class="text-red-400">{error}</p>
+				<button
+					type="button"
+					onclick={loadTasks}
+					class="px-4 py-2 text-sm border border-[var(--border-default)] rounded hover:bg-[var(--bg-hover)] transition-colors"
+				>
+					Retry
+				</button>
+			</div>
+		{:else}
+			<Board {tasks} />
+		{/if}
 
 		{#if sidebarVisible}
 			<FunctionPanel
@@ -180,6 +230,7 @@ function handleSearch(query: string) {
 				{editingTask}
 				onSearch={handleSearch}
 				onTaskSave={handleTaskSave}
+				onTaskDelete={handleTaskDelete}
 			/>
 		{/if}
 	</main>

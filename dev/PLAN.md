@@ -40,11 +40,11 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [ ] MCP Tools: OpenAlex, BibTeX
 - [ ] Google ADK für komplexe Workflows
 
-### Phase 5: Frontend Core (in progress)
+### Phase 5: Frontend Core ✅
 - [x] Kanban-Board Layout
 - [x] Task-Cards mit DropdownMenu
 - [x] Function Panel (Sidebar)
-- [x] Settings Dialog (wird refactored)
+- [x] Settings Panel
 - [ ] Drag & Drop für Task-Verschiebung
 - [ ] Agent-Status Live-View (SSE)
 
@@ -61,11 +61,18 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [x] Resizable Sidebar
 - [x] Controlled Component Pattern
 
-### Phase 5.7: API Integration (next)
-- [ ] Task CRUD mit Backend verbinden
-- [ ] SSE für Live-Updates
+### Phase 5.7: API Integration ✅
+- [x] Task CRUD mit Backend verbinden
+- [x] SSE für Live-Updates
+- [x] Form Validation (TaskEditor)
 - [ ] TaskCard Click → Edit in Sidebar
 - [ ] Drag & Drop für Task-Verschiebung
+
+### Phase 5.8: UI Completion (next)
+- [ ] TaskCard Click → öffnet Editor
+- [ ] TaskCard Dropdown → Edit/Delete funktional
+- [ ] Drag & Drop zwischen Spalten
+- [ ] Error Toasts statt inline Errors
 
 ### Phase 6: Polish & Plugins
 - [ ] Plugin-System Implementation
@@ -77,15 +84,16 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ## Current Focus
 
-**Phase:** 5.7 (API Integration)
-**Next Task:** Task CRUD mit Backend verbinden
+**Phase:** 5.8 (UI Completion)
+**Next Task:** TaskCard Click → Edit in Sidebar
 
 ---
 
 ## Backlog
 
-- `TaskEditor.svelte:65-77` → `validateForm()` implementieren
+- Backend: `type`, `description` Felder zu Task Model hinzufügen
+- Vite Proxy für Production CORS Setup
 
 ---
 
-*Updated: 2026-01-13 (Phase 5.6 UX Refactor completed)*
+*Updated: 2026-01-14 (Phase 5.7 API Integration completed)*

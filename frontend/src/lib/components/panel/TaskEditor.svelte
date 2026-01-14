@@ -62,29 +62,19 @@ const selectedTypeLabel = $derived(TASK_TYPE_LABELS[type]);
 const selectedStatusLabel = $derived(TASK_STATUS_LABELS[status]);
 
 /**
- * TODO: Implement validation logic
- *
- * Requirements:
- * - Title must not be empty
- * - Title should be max 100 characters
- * - Return true if valid, false otherwise
- * - Set errors state with appropriate messages
- *
- * Consider: Should we allow empty descriptions?
- * Consider: Do we need to sanitize input?
+ * Validate form before submission
  */
 function validateForm(): boolean {
-	// Clear previous errors
 	errors = {};
+	const trimmedTitle = title.trim();
 
-	// Your validation logic here
-	// Example structure:
-	// if (!title.trim()) {
-	//   errors = { ...errors, title: 'Title is required' };
-	// }
-	// return Object.keys(errors).length === 0;
+	if (!trimmedTitle) {
+		errors = { ...errors, title: 'Title is required' };
+	} else if (trimmedTitle.length > 100) {
+		errors = { ...errors, title: 'Title must be 100 characters or less' };
+	}
 
-	return true; // Placeholder - implement validation
+	return Object.keys(errors).length === 0;
 }
 
 function handleSave() {

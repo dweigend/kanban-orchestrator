@@ -21,9 +21,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# TODO: Production - Use Vite proxy instead of CORS regex
+# Configure vite.config.ts: server.proxy = { '/api': 'http://backend:8000' }
+# Then set allow_origins to specific production domains only
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origin_regex=r"http://localhost:\d+",  # DEV ONLY: allows all localhost ports
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

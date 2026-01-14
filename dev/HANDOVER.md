@@ -1,5 +1,87 @@
 # HANDOVER
 
+## Session: 2026-01-14 - Phase 5.7 API Integration
+
+### Summary
+
+Frontend mit Backend verbunden. Task CRUD + SSE Live-Updates funktionieren.
+
+### Completed
+
+- ✅ Types erweitert: `BackendTaskStatus`, Status-Mapper, `mapBackendToTask()`
+- ✅ API Client: `services/api.ts` (fetch wrapper + ApiError)
+- ✅ Task Service: `services/tasks.ts` (CRUD operations)
+- ✅ SSE Service: `services/events.ts` (subscribeToEvents)
+- ✅ Form Validation: `validateForm()` in TaskEditor
+- ✅ Page Integration: `+page.svelte` mit API-Calls + SSE
+- ✅ CORS Fix: `allow_origin_regex` für alle localhost-Ports
+- ✅ Bug Fix: Duplicate Key Error (SSE-only für Create)
+
+### Architecture
+
+```
+Frontend (SvelteKit)          Backend (FastAPI)
+─────────────────────         ─────────────────
++page.svelte                  /api/tasks (CRUD)
+  └── $effect() ──────────────► GET /api/tasks
+  └── handleTaskSave() ───────► POST/PUT /api/tasks
+  └── handleTaskDelete() ─────► DELETE /api/tasks
+  └── subscribeToEvents() ◄───► GET /api/events (SSE)
+
+services/
+  ├── api.ts      → fetch wrapper
+  ├── tasks.ts    → CRUD operations
+  └── events.ts   → SSE subscription
+
+types/task.ts
+  ├── TaskStatus (uppercase: TODO, IN_PROGRESS, DONE)
+  ├── BackendTaskStatus (lowercase: todo, in_progress, done)
+  └── mapBackendToTask(), mapTaskToCreatePayload()
+```
+
+### Key Decisions
+
+1. **SSE für Create** - Kein lokales Hinzufügen, SSE fügt Task hinzu → vermeidet Duplikate
+2. **CORS Regex** - `allow_origin_regex=r"http://localhost:\d+"` für Dev
+3. **Status Mapping** - Frontend uppercase, Backend lowercase mit Mapper-Functions
+4. **Local-only Fields** - `type`, `description` nur im Frontend (Backend speichert sie nicht)
+
+### Open Issues
+
+- [ ] TaskCard Click → Edit in Sidebar
+- [ ] Drag & Drop für Status-Änderung
+- [ ] Backend: `type`, `description` Felder hinzufügen
+
+### Next Session
+
+1. **TaskCard Integration** - Click öffnet Editor mit Task-Daten
+2. **Drag & Drop** - Tasks zwischen Spalten verschieben
+3. **Backend erweitern** - `type`, `description` zu Task Model
+
+### Files Changed
+
+```
+frontend/src/lib/
+├── types/task.ts           # + BackendTaskStatus, Mapper
+├── services/
+│   ├── api.ts              # NEW: fetch wrapper
+│   ├── tasks.ts            # NEW: CRUD
+│   └── events.ts           # NEW: SSE
+├── components/panel/
+│   ├── TaskEditor.svelte   # + validateForm()
+│   └── FunctionPanel.svelte # + onTaskDelete prop
+└── routes/+page.svelte     # Refactored for API
+
+backend/
+└── main.py                 # CORS regex fix
+```
+
+### Blockers
+
+- Keine
+
+---
+
 ## Session: 2026-01-13 (Abend 2) - UX Refactor: Einheitliche Menüstruktur
 
 ### Summary
@@ -16,236 +98,6 @@ Doppelte Menü-Struktur eliminiert. Alle Navigation jetzt im Header, Sidebar zei
 - ✅ TaskEditor: X-Button entfernt (Cancel = anderer Tab)
 - ✅ Controlled Component Pattern: activeTab State in Page
 
-### UI Structure (Final)
-
-```
-Header: [Logo] [Breadcrumb] | [Hub/Board] | [📊] [🤖] [⚙️] [+] | [◧] | [Project] [DW]
-                                           ↑ Sidebar-Tabs    ↑ Toggle
-
-Sidebar: NUR Inhalt (keine eigene Navigation)
-         - Overview: Search + ProjectOverview + SystemLog
-         - Agents: AgentList
-         - Settings: SettingsPanel (Accordion)
-         - New Task: TaskEditor
-```
-
-### Code Patterns
-
-```typescript
-// Controlled Sidebar Tab - State in Page, nicht in Sidebar
-let activeTab = $state<SidebarTab>('overview');
-
-function handleTabChange(tab: SidebarTab) {
-  activeTab = tab;
-  if (!sidebarVisible) sidebarVisible = true;  // Auto-open
-}
-
-// Header exportiert den Type für Page
-export type SidebarTab = 'overview' | 'agents' | 'settings' | 'new-task';
-```
-
-### Open TODO
-
-- `TaskEditor.svelte:65-77` → `validateForm()` implementieren
-
-### Next Session: API Integration
-
-1. **Task CRUD mit Backend verbinden**
-   - POST /api/tasks (create)
-   - PUT /api/tasks/:id (update)
-   - DELETE /api/tasks/:id (delete)
-
-2. **SSE für Live-Updates**
-   - EventSource für task events
-   - Real-time Kanban-Board updates
-
-3. **TaskCard Edit-Integration**
-   - Click auf TaskCard → öffnet TaskEditor
-
-4. **Drag & Drop**
-   - Tasks zwischen Spalten verschieben
-
-### Blockers
-
-- Keine
-
 ---
 
-## Session: 2026-01-13 (Abend) - Phase 5.5 Sidebar Refactor
-
-### Summary
-
-Sidebar-First Architecture implementiert. FunctionPanel mit Tabs, Settings als Panel, TaskEditor für Create/Edit.
-
-### Completed
-
-- ✅ FunctionPanel mit bits-ui `Tabs` (Overview, Agents, Settings, dynamischer Editor-Tab)
-- ✅ SettingsPanel.svelte aus Dialog extrahiert
-- ✅ TaskEditor.svelte für Task Create/Edit
-- ✅ SettingsDialog.svelte gelöscht
-
----
-
-## Session: 2026-01-13 (Nachmittag 3) - Zwischen-Session Setup
-
-### Summary
-
-Settings Dialog fertiggestellt und getestet. Session-Abschluss mit Vorbereitung für Refactor-Session.
-
-### Completed
-
-- ✅ Settings Dialog mit bits-ui `Dialog`, `Accordion`, `Select`, `Slider`, `Switch`
-- ✅ 5 Accordion-Sections: Appearance, Editor Config, Git, Notifications, Privacy
-- ✅ Chrome Extension Test: Settings Dialog funktioniert vollständig
-- ✅ Session-Dokumentation aktualisiert
-
-### Design-Entscheidung: Sidebar-First Architecture
-
-**NEUE REGEL:** Alle Funktionen werden in die Sidebar (Function Panel) integriert!
-
-- ❌ Keine Popup-Dialoge für Funktionen
-- ❌ Keine modalen Fenster für Task-Editor/Settings
-- ✅ Hauptfenster: NUR Hub-View + Kanban-View
-- ✅ Sidebar: ALLE Interaktionen (Settings, Task-Editor, Details)
-
----
-
-## Session: 2026-01-13 (Nachmittag 2)
-
-### Summary
-
-Phase 5 (Frontend Core) begonnen. Komplettes Kanban-Board UI mit bits-ui implementiert und getestet.
-
-### Completed
-
-- ✅ Design System aus Mockups analysiert → "Brutalist System"
-- ✅ `dev/FRONTEND-PLAN.md` mit Component-Mapping erstellt
-- ✅ Zentrale CSS-Datei mit Design Tokens (`layout.css`)
-- ✅ TypeScript Types: `Task`, `Agent`, Status/Type enums
-- ✅ Header mit bits-ui `Menubar`, `Tabs`, `Separator`
-- ✅ Kanban Board mit 3 Spalten (TODO/IN_PROGRESS/DONE)
-- ✅ TaskCard mit `DropdownMenu` (Edit, Open, Delete)
-- ✅ Function Panel: SearchBar, ProjectOverview (`Accordion`), AgentList (`Tooltip`, `ScrollArea`), SystemLog
-- ✅ Tooltip.Provider im Layout für bits-ui v2
-- ✅ phosphor-svelte Icons installiert
-- ✅ Biome `useConst: off` für Svelte 5 `$state()` Kompatibilität
-- ✅ Alle Quality Checks bestanden (svelte-check + Biome)
-- ✅ Chrome Extension Test: Alle Interaktionen funktionieren
-
-### Components Created
-
-```
-frontend/src/lib/
-├── components/
-│   ├── layout/Header.svelte
-│   ├── kanban/Board.svelte, Column.svelte, TaskCard.svelte
-│   └── panel/FunctionPanel.svelte, AgentList.svelte, SystemLog.svelte,
-│         ProjectOverview.svelte, SearchBar.svelte
-└── types/task.ts, agent.ts
-```
-
-### Notes
-
-- bits-ui v2 braucht `Tooltip.Provider` im Root Layout
-- JetBrains Mono Font via Google Fonts geladen
-- Mock-Daten in `+page.svelte` für Demo
-- Dev-Server läuft auf Port 5174 (5173 war belegt)
-
----
-
-## Session: 2026-01-13 (Nacht)
-
-### Summary
-
-Phase 3 (Backend Core) abgeschlossen. Task CRUD API + SSE Events funktionieren.
-
-### Completed
-
-- ✅ SQLAlchemy 2.0 async mit aiosqlite
-- ✅ Task Model: id, title, status (TODO/IN_PROGRESS/DONE), created_at
-- ✅ Pydantic Schemas: TaskCreate, TaskUpdate, TaskResponse
-- ✅ Task CRUD Service mit Event Publishing
-- ✅ API Routes: POST/GET/PUT/DELETE `/api/tasks`
-- ✅ SSE EventBus: `/api/events` für Live-Updates
-- ✅ Alle Quality Checks bestanden (Ruff + Ty)
-
-### In Progress
-
-- Phase 4: Agent Integration (oder Frontend?)
-
-### Blockers
-
-- Keine
-
-### Notes
-
-- Lifespan Context Manager für DB-Init beim Startup
-- EventBus mit asyncio.Queue pro Client (kein Redis nötig)
-- 30s Heartbeat für SSE Proxy-Kompatibilität
-
-### Next Session
-
-1. Frontend: Kanban-Board Layout mit bits-ui
-2. Frontend: SSE Client für Live-Updates
-3. Oder: Phase 4 Agent Integration
-
----
-
-## Session: 2026-01-13 (Abend)
-
-### Summary
-
-Phase 1 (Basis-Infrastruktur) abgeschlossen. Frontend + Backend bereit für Entwicklung.
-
-### Completed
-
-- ✅ bits-ui v2.15.4 installiert
-- ✅ Backend-Struktur: `src/agents/`, `api/`, `models/`, `tools/`, `plugins/`
-- ✅ FastAPI v0.128.0 mit Health-Endpoint (`/health`)
-- ✅ CORS für Frontend konfiguriert
-- ✅ Root Makefile: `make dev`, `make check`
-
-### Notes
-
-- `make dev` startet beide Server parallel (Ctrl+C beendet beide)
-- Health-Endpoint getestet: `{"status":"ok"}`
-
----
-
-## Session: 2026-01-13 (Nachmittag)
-
-### Summary
-
-ESLint → Biome Migration abgeschlossen. Initial Commit für Monorepo erstellt.
-
-### Completed
-
-- ✅ ESLint + 6 zugehörige Packages entfernt
-- ✅ Biome 2.3.11 installiert und konfiguriert
-- ✅ `package.json` Scripts aktualisiert (`bun lint`, `bun format`)
-- ✅ Backend `.git` entfernt für echtes Monorepo
-- ✅ Initial Commit: `834e22a`
-
-### Notes
-
-- Biome CSS-Support für Tailwind 4 (`@plugin`) noch nicht verfügbar → CSS excluded
-- Biome erkennt Svelte Template-Bindings nicht als "genutzt" → False Positive Warnings
-
----
-
-## Session: 2026-01-13 (Vormittag)
-
-### Summary
-
-Projekt-Setup und Architektur-Review abgeschlossen. `.claude/` und `dev/` Struktur generiert.
-
-### Completed
-
-- ✅ Projekt-Struktur analysiert
-- ✅ Architektur bestätigt: Monorepo mit `backend/` + `frontend/` ist korrekt
-- ✅ Entscheidungen getroffen: Makefile, SQLite
-- ✅ Setup-Files generiert
-
----
-
-*Previous sessions above...*
+*Previous sessions archived...*

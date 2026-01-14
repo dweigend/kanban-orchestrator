@@ -4,9 +4,32 @@
 export type TaskType = 'research' | 'dev' | 'notes' | 'neutral';
 
 /**
- * Task status for Kanban columns
+ * Task status for Kanban columns (frontend uses uppercase)
  */
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
+
+/**
+ * Backend status format (lowercase)
+ */
+export type BackendTaskStatus = 'todo' | 'in_progress' | 'done';
+
+/**
+ * Map frontend status to backend format
+ */
+export const STATUS_TO_BACKEND: Record<TaskStatus, BackendTaskStatus> = {
+	TODO: 'todo',
+	IN_PROGRESS: 'in_progress',
+	DONE: 'done',
+};
+
+/**
+ * Map backend status to frontend format
+ */
+export const STATUS_FROM_BACKEND: Record<BackendTaskStatus, TaskStatus> = {
+	todo: 'TODO',
+	in_progress: 'IN_PROGRESS',
+	done: 'DONE',
+};
 
 /**
  * Task model matching backend schema
@@ -68,3 +91,71 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 	IN_PROGRESS: 'In Progress',
 	DONE: 'Done',
 };
+
+// ─────────────────────────────────────────────────────────────
+// Backend API Types
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Task as returned by backend API
+ */
+export interface BackendTask {
+	id: string;
+	title: string;
+	status: BackendTaskStatus;
+	created_at: string;
+}
+
+/**
+ * Payload for creating a task via API
+ */
+export interface TaskCreatePayload {
+	title: string;
+	status?: BackendTaskStatus;
+}
+
+/**
+ * Payload for updating a task via API
+ */
+export interface TaskUpdatePayload {
+	title?: string;
+	status?: BackendTaskStatus;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Mapping Functions
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Convert backend task to frontend format
+ */
+export function mapBackendToTask(backend: BackendTask): Task {
+	return {
+		id: backend.id,
+		title: backend.title,
+		status: STATUS_FROM_BACKEND[backend.status],
+		type: 'neutral', // Default for backend tasks (not stored in backend)
+		created_at: backend.created_at,
+	};
+}
+
+/**
+ * Convert frontend task to create payload
+ */
+export function mapTaskToCreatePayload(task: Partial<Task>): TaskCreatePayload {
+	return {
+		title: task.title ?? '',
+		status: task.status ? STATUS_TO_BACKEND[task.status] : undefined,
+	};
+}
+
+/**
+ * Convert frontend task to update payload
+ */
+export function mapTaskToUpdatePayload(task: Partial<Task>): TaskUpdatePayload {
+	const payload: TaskUpdatePayload = {};
+	if (task.title !== undefined) payload.title = task.title;
+	if (task.status !== undefined)
+		payload.status = STATUS_TO_BACKEND[task.status];
+	return payload;
+}

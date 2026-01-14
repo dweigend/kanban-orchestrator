@@ -30,6 +30,7 @@ interface Props {
 	editingTask?: Task | null;
 	onSearch?: (query: string) => void;
 	onTaskSave?: (task: Task) => void;
+	onTaskDelete?: (taskId: string) => void;
 }
 
 const {
@@ -43,6 +44,7 @@ const {
 	editingTask = null,
 	onSearch,
 	onTaskSave,
+	onTaskDelete,
 }: Props = $props();
 
 // Resize state
@@ -111,7 +113,7 @@ function handleMouseUp() {
 		</div>
 	{:else if activeTab === 'new-task'}
 		<div class="flex-1 min-h-0 overflow-y-auto">
-			<TaskEditor task={editingTask} onSave={onTaskSave} />
+			<TaskEditor task={editingTask} onSave={onTaskSave} onDelete={onTaskDelete} />
 		</div>
 	{/if}
 </aside>
