@@ -2,6 +2,7 @@
  * SSE Event subscription for real-time updates
  */
 
+import type { AgentLogEvent } from '$lib/types/agent';
 import type { BackendTask, Task } from '$lib/types/task';
 import { mapBackendToTask } from '$lib/types/task';
 
@@ -11,12 +12,14 @@ export type EventType =
 	| 'task_created'
 	| 'task_updated'
 	| 'task_deleted'
+	| 'agent_log'
 	| 'heartbeat';
 
 export interface TaskEvent {
 	type: EventType;
 	task?: Task;
 	taskId?: string;
+	agentLog?: AgentLogEvent;
 }
 
 export type EventCallback = (event: TaskEvent) => void;
@@ -41,6 +44,11 @@ export function subscribeToEvents(callback: EventCallback): () => void {
 	eventSource.addEventListener('task_deleted', (e: MessageEvent) => {
 		const data = JSON.parse(e.data) as { id: string };
 		callback({ type: 'task_deleted', taskId: data.id });
+	});
+
+	eventSource.addEventListener('agent_log', (e: MessageEvent) => {
+		const data = JSON.parse(e.data) as AgentLogEvent;
+		callback({ type: 'agent_log', agentLog: data });
 	});
 
 	eventSource.addEventListener('heartbeat', () => {

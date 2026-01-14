@@ -14,6 +14,7 @@ class EventType(StrEnum):
     TASK_CREATED = "task_created"
     TASK_UPDATED = "task_updated"
     TASK_DELETED = "task_deleted"
+    AGENT_LOG = "agent_log"
     HEARTBEAT = "heartbeat"
 
 

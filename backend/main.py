@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.routes import events, tasks
+from src.api.routes import agent, events, projects, tasks
 from src.database import init_db
 
 
@@ -33,7 +33,9 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(projects.router)
 app.include_router(tasks.router)
+app.include_router(agent.router)
 app.include_router(events.router)
 
 

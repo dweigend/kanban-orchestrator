@@ -6,12 +6,16 @@ export type TaskType = 'research' | 'dev' | 'notes' | 'neutral';
 /**
  * Task status for Kanban columns (frontend uses uppercase)
  */
-export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
+export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'NEEDS_REVIEW' | 'DONE';
 
 /**
  * Backend status format (lowercase)
  */
-export type BackendTaskStatus = 'todo' | 'in_progress' | 'done';
+export type BackendTaskStatus =
+	| 'todo'
+	| 'in_progress'
+	| 'needs_review'
+	| 'done';
 
 /**
  * Map frontend status to backend format
@@ -19,6 +23,7 @@ export type BackendTaskStatus = 'todo' | 'in_progress' | 'done';
 export const STATUS_TO_BACKEND: Record<TaskStatus, BackendTaskStatus> = {
 	TODO: 'todo',
 	IN_PROGRESS: 'in_progress',
+	NEEDS_REVIEW: 'needs_review',
 	DONE: 'done',
 };
 
@@ -28,6 +33,7 @@ export const STATUS_TO_BACKEND: Record<TaskStatus, BackendTaskStatus> = {
 export const STATUS_FROM_BACKEND: Record<BackendTaskStatus, TaskStatus> = {
 	todo: 'TODO',
 	in_progress: 'IN_PROGRESS',
+	needs_review: 'NEEDS_REVIEW',
 	done: 'DONE',
 };
 
@@ -88,7 +94,8 @@ export const TASK_TYPE_LABELS: Record<TaskType, string> = {
  */
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 	TODO: 'To Do',
-	IN_PROGRESS: 'In Progress',
+	IN_PROGRESS: 'Running',
+	NEEDS_REVIEW: 'Review',
 	DONE: 'Done',
 };
 

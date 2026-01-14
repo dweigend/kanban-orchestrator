@@ -1,12 +1,19 @@
 """SQLAlchemy Task model for database persistence."""
 
+from __future__ import annotations
+
 from datetime import datetime
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database import Base
+
+if TYPE_CHECKING:
+    from src.models.agent_run import AgentRun
+    from src.models.project import Project
 
 
 class TaskStatus(StrEnum):
@@ -14,18 +21,40 @@ class TaskStatus(StrEnum):
 
     TODO = "todo"
     IN_PROGRESS = "in_progress"
+    NEEDS_REVIEW = "needs_review"
     DONE = "done"
 
 
 class Task(Base):
-    """Minimal task model for fast iteration."""
+    """Task model with project association and agent support."""
 
     __tablename__ = "tasks"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default=TaskStatus.TODO)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
+    )
+
+    # Project association
+    project_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("projects.id"), nullable=True
+    )
+
+    # Sub-task support
+    parent_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tasks.id"), nullable=True
+    )
+
+    # Relationships
+    project: Mapped[Project | None] = relationship("Project", back_populates="tasks")
+    parent: Mapped[Task | None] = relationship(
+        "Task", remote_side="Task.id", back_populates="subtasks"
+    )
+    subtasks: Mapped[list[Task]] = relationship("Task", back_populates="parent")
+    agent_runs: Mapped[list[AgentRun]] = relationship(
+        "AgentRun", back_populates="task", cascade="all, delete-orphan"
     )

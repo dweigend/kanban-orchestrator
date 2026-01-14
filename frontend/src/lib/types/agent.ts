@@ -39,3 +39,48 @@ export const AGENT_TYPE_ICONS: Record<AgentType, string> = {
 	researcher: 'MagnifyingGlass',
 	architect: 'Blueprint',
 };
+
+// ─────────────────────────────────────────────────────────────
+// Agent Run Types (for task execution)
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Agent run status
+ */
+export type AgentRunStatus =
+	| 'pending'
+	| 'running'
+	| 'needs_review'
+	| 'completed'
+	| 'failed'
+	| 'cancelled';
+
+/**
+ * Agent run record
+ */
+export interface AgentRun {
+	id: string;
+	task_id: string;
+	status: AgentRunStatus;
+	error_message?: string;
+	started_at: string;
+	completed_at?: string;
+}
+
+/**
+ * Agent log entry from SSE stream
+ */
+export interface AgentLogEntry {
+	timestamp: string;
+	type: string;
+	content: string;
+}
+
+/**
+ * SSE event for agent log
+ */
+export interface AgentLogEvent {
+	task_id: string;
+	agent_run_id: string;
+	log: AgentLogEntry;
+}
