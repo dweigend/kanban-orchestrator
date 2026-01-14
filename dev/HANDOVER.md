@@ -1,5 +1,60 @@
 # HANDOVER
 
+## Session: 2026-01-14 - Phase 5.8 UI Completion ✅
+
+### Summary
+
+Phase 5 komplett abgeschlossen! UI ist nun voll funktionsfähig:
+- ✅ TaskCard Click → öffnet Editor in Sidebar
+- ✅ Dropdown Edit/Delete funktional
+- ✅ Drag & Drop zwischen Spalten
+- ✅ Toast Notifications für Feedback
+
+### Completed
+
+- ✅ **Toast System** - svelte-sonner installiert + integriert
+- ✅ **Handler Wiring** - Board erhält jetzt Edit/Delete/Drop Props
+- ✅ **TaskCard Click** - Klick öffnet Editor mit Task-Daten
+- ✅ **Drag & Drop** - Native HTML5, visuelles Feedback bei Drag/Drop
+
+### Architecture Update
+
+```
+TaskCard (draggable)
+  └── ondragstart → setData(taskId)
+  └── onclick → handleEditTask(task)
+
+Column (drop target)
+  └── ondragover/drop → handleTaskDrop(taskId, newStatus)
+
++page.svelte (state management)
+  └── handleEditTask() → editingTask + activeTab
+  └── handleTaskDrop() → API call + Toast
+  └── Toast notifications für alle Aktionen
+```
+
+### Key Files Changed
+
+```
+frontend/src/lib/services/toast.ts          # NEW: Toast helper
+frontend/src/routes/+layout.svelte          # + Toaster component
+frontend/src/routes/+page.svelte            # + handlers, - inline error
+frontend/src/lib/components/kanban/
+├── TaskCard.svelte                         # + draggable, + click
+├── Column.svelte                           # + drop target
+└── Board.svelte                            # + onTaskDrop prop
+```
+
+### Verification
+
+Alle Tests bestanden:
+- `bunx svelte-check --threshold warning` → 0 errors, 3 warnings (a11y)
+- Task erstellen/bearbeiten/löschen → Success Toast
+- Task draggen → Status Update + Toast
+- Klick auf TaskCard → Editor öffnet
+
+---
+
 ## Session: 2026-01-14 - Phase 5.7 API Integration
 
 ### Summary

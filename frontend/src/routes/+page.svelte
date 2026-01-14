@@ -4,8 +4,9 @@ import Header, { type SidebarTab } from '$lib/components/layout/Header.svelte';
 import FunctionPanel from '$lib/components/panel/FunctionPanel.svelte';
 import { subscribeToEvents } from '$lib/services/events';
 import * as taskApi from '$lib/services/tasks';
+import { showError, showSuccess } from '$lib/services/toast';
 import type { Agent } from '$lib/types/agent';
-import type { Task } from '$lib/types/task';
+import type { Task, TaskStatus } from '$lib/types/task';
 
 // UI State
 let viewMode = $state('hub-view');
@@ -16,7 +17,6 @@ let editingTask = $state<Task | null>(null);
 // Data State
 let tasks = $state<Task[]>([]);
 let loading = $state(true);
-let error = $state<string | null>(null);
 
 // Mock agents (will be connected to backend later)
 const agents: Agent[] = $state([
@@ -70,12 +70,10 @@ const logs = $state([
 // Load tasks on mount
 async function loadTasks() {
 	loading = true;
-	error = null;
 	try {
 		tasks = await taskApi.fetchTasks();
 	} catch (e) {
-		error = e instanceof Error ? e.message : 'Failed to load tasks';
-		console.error('Failed to load tasks:', e);
+		showError(e instanceof Error ? e.message : 'Failed to load tasks');
 	} finally {
 		loading = false;
 	}
@@ -138,41 +136,64 @@ function handleSidebarToggle() {
 }
 
 async function handleTaskSave(task: Task) {
-	error = null;
 	try {
 		if (!task.id || task.id === '') {
-			// Create new task - SSE will add it to the list (avoid duplicate)
 			await taskApi.createTask(task);
+			showSuccess('Task created');
 		} else {
-			// Update existing task
 			const updated = await taskApi.updateTask(task.id, task);
-			// Preserve local-only fields
 			tasks = tasks.map((t) =>
 				t.id === updated.id
 					? { ...updated, type: task.type, description: task.description }
 					: t,
 			);
+			showSuccess('Task updated');
 		}
-		// Reset UI state after successful save
 		activeTab = 'overview';
 		editingTask = null;
 	} catch (e) {
-		error = e instanceof Error ? e.message : 'Failed to save task';
-		console.error('Failed to save task:', e);
+		showError(e instanceof Error ? e.message : 'Failed to save task');
 	}
 }
 
 async function handleTaskDelete(taskId: string) {
-	error = null;
 	try {
 		await taskApi.deleteTask(taskId);
-		// SSE will remove from list, but also update locally for immediate feedback
 		tasks = tasks.filter((t) => t.id !== taskId);
 		editingTask = null;
 		activeTab = 'overview';
+		showSuccess('Task deleted');
 	} catch (e) {
-		error = e instanceof Error ? e.message : 'Failed to delete task';
-		console.error('Failed to delete task:', e);
+		showError(e instanceof Error ? e.message : 'Failed to delete task');
+	}
+}
+
+function handleEditTask(task: Task) {
+	editingTask = task;
+	activeTab = 'new-task';
+	if (!sidebarVisible) {
+		sidebarVisible = true;
+	}
+}
+
+function handleDeleteTaskFromBoard(task: Task) {
+	handleTaskDelete(task.id);
+}
+
+async function handleTaskDrop(taskId: string, newStatus: TaskStatus) {
+	const task = tasks.find((t) => t.id === taskId);
+	if (!task || task.status === newStatus) return;
+
+	try {
+		const updated = await taskApi.updateTask(taskId, { status: newStatus });
+		tasks = tasks.map((t) =>
+			t.id === taskId
+				? { ...updated, type: task.type, description: task.description }
+				: t,
+		);
+		showSuccess('Task moved');
+	} catch (e) {
+		showError(e instanceof Error ? e.message : 'Failed to move task');
 	}
 }
 
@@ -207,19 +228,13 @@ function handleSearch(query: string) {
 			<div class="flex-1 flex items-center justify-center text-[var(--text-muted)]">
 				Loading tasks...
 			</div>
-		{:else if error}
-			<div class="flex-1 flex flex-col items-center justify-center gap-4">
-				<p class="text-red-400">{error}</p>
-				<button
-					type="button"
-					onclick={loadTasks}
-					class="px-4 py-2 text-sm border border-[var(--border-default)] rounded hover:bg-[var(--bg-hover)] transition-colors"
-				>
-					Retry
-				</button>
-			</div>
 		{:else}
-			<Board {tasks} />
+			<Board
+				{tasks}
+				onEditTask={handleEditTask}
+				onDeleteTask={handleDeleteTaskFromBoard}
+				onTaskDrop={handleTaskDrop}
+			/>
 		{/if}
 
 		{#if sidebarVisible}

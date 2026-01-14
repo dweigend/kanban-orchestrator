@@ -37,6 +37,7 @@
 	},
 	"dependencies": {
 		"bits-ui": "^2.15.4",
-		"phosphor-svelte": "^3.0.1"
+		"phosphor-svelte": "^3.0.1",
+		"svelte-sonner": "^1.0.7"
 	}
 }

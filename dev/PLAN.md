@@ -68,11 +68,11 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [ ] TaskCard Click → Edit in Sidebar
 - [ ] Drag & Drop für Task-Verschiebung
 
-### Phase 5.8: UI Completion (next)
-- [ ] TaskCard Click → öffnet Editor
-- [ ] TaskCard Dropdown → Edit/Delete funktional
-- [ ] Drag & Drop zwischen Spalten
-- [ ] Error Toasts statt inline Errors
+### Phase 5.8: UI Completion ✅
+- [x] TaskCard Click → öffnet Editor
+- [x] TaskCard Dropdown → Edit/Delete funktional
+- [x] Drag & Drop zwischen Spalten
+- [x] Toast Notifications (svelte-sonner)
 
 ### Phase 6: Polish & Plugins
 - [ ] Plugin-System Implementation
@@ -84,8 +84,8 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ## Current Focus
 
-**Phase:** 5.8 (UI Completion)
-**Next Task:** TaskCard Click → Edit in Sidebar
+**Phase:** 6 (Polish & Plugins)
+**Next Task:** Plugin-System Implementation oder Agent Integration
 
 ---
 

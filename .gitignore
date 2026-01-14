@@ -1,0 +1,25 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python (root level)
+__pycache__/
+*.py[cod]
+.ruff_cache/
+
+# Logs
+*.log
+
+# Local data
+.claude/plans/

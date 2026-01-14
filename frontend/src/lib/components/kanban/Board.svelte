@@ -8,9 +8,11 @@ interface Props {
 	onAddTask?: (status: TaskStatus) => void;
 	onEditTask?: (task: Task) => void;
 	onDeleteTask?: (task: Task) => void;
+	onTaskDrop?: (taskId: string, newStatus: TaskStatus) => void;
 }
 
-const { tasks, onAddTask, onEditTask, onDeleteTask }: Props = $props();
+const { tasks, onAddTask, onEditTask, onDeleteTask, onTaskDrop }: Props =
+	$props();
 
 const columns: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'DONE'];
 
@@ -33,6 +35,7 @@ function getTasksByStatus(status: TaskStatus): Task[] {
 			onAddTask={() => onAddTask?.(status)}
 			{onEditTask}
 			{onDeleteTask}
+			{onTaskDrop}
 		/>
 	{/each}
 </div>

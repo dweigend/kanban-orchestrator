@@ -12,10 +12,41 @@ interface Props {
 	onAddTask?: () => void;
 	onEditTask?: (task: Task) => void;
 	onDeleteTask?: (task: Task) => void;
+	onTaskDrop?: (taskId: string, newStatus: TaskStatus) => void;
 	children?: Snippet;
 }
 
-const { status, tasks, onAddTask, onEditTask, onDeleteTask }: Props = $props();
+const {
+	status,
+	tasks,
+	onAddTask,
+	onEditTask,
+	onDeleteTask,
+	onTaskDrop,
+}: Props = $props();
+
+let isDragOver = $state(false);
+
+function handleDragOver(e: DragEvent) {
+	e.preventDefault();
+	if (e.dataTransfer) {
+		e.dataTransfer.dropEffect = 'move';
+	}
+	isDragOver = true;
+}
+
+function handleDragLeave() {
+	isDragOver = false;
+}
+
+function handleDrop(e: DragEvent) {
+	e.preventDefault();
+	isDragOver = false;
+	const taskId = e.dataTransfer?.getData('text/plain');
+	if (taskId) {
+		onTaskDrop?.(taskId, status);
+	}
+}
 
 const taskCount = $derived(tasks.length);
 </script>
@@ -45,8 +76,15 @@ const taskCount = $derived(tasks.length);
 		</Button.Root>
 	</header>
 
-	<!-- Tasks List -->
-	<div class="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-thin">
+	<!-- Tasks List (Drop Target) -->
+	<div
+		class="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-thin transition-colors"
+		class:bg-[var(--bg-hover)]={isDragOver}
+		ondragover={handleDragOver}
+		ondragleave={handleDragLeave}
+		ondrop={handleDrop}
+		role="list"
+	>
 		{#each tasks as task (task.id)}
 			<TaskCard {task} onEdit={onEditTask} onDelete={onDeleteTask} />
 		{/each}
@@ -54,8 +92,9 @@ const taskCount = $derived(tasks.length);
 		{#if tasks.length === 0}
 			<div
 				class="flex items-center justify-center h-24 border border-dashed border-[var(--border-muted)] rounded text-xs text-[var(--text-muted)]"
+				class:border-[var(--accent-primary)]={isDragOver}
 			>
-				No tasks
+				{isDragOver ? 'Drop here' : 'No tasks'}
 			</div>
 		{/if}
 	</div>

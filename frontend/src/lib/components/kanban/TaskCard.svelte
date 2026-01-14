@@ -26,6 +26,27 @@ const typeIcons: Record<TaskType, typeof MagnifyingGlass> = {
 
 const TypeIcon = $derived(typeIcons[task.type]);
 
+let isDragging = $state(false);
+
+function handleDragStart(e: DragEvent) {
+	isDragging = true;
+	if (e.dataTransfer) {
+		e.dataTransfer.setData('text/plain', task.id);
+		e.dataTransfer.effectAllowed = 'move';
+	}
+}
+
+function handleDragEnd() {
+	isDragging = false;
+}
+
+function handleClick(e: MouseEvent) {
+	// Don't trigger edit if clicking on the dropdown trigger
+	const target = e.target as HTMLElement;
+	if (target.closest('[data-dropdown-trigger]')) return;
+	onEdit?.(task);
+}
+
 function getShortId(id: string): string {
 	const prefix =
 		task.type === 'research' ? 'RES' : task.type === 'dev' ? 'DEV' : 'NOTE';
@@ -34,8 +55,16 @@ function getShortId(id: string): string {
 </script>
 
 <article
-	class="group relative border border-[var(--border-default)] bg-[var(--bg-surface)] rounded-sm overflow-hidden hover:border-[var(--border-focus)] transition-colors"
+	class="group relative border border-[var(--border-default)] bg-[var(--bg-surface)] rounded-sm overflow-hidden hover:border-[var(--border-focus)] transition-colors cursor-pointer"
+	class:opacity-50={isDragging}
 	style="border-left: 4px solid {TASK_TYPE_COLORS[task.type]}"
+	draggable="true"
+	ondragstart={handleDragStart}
+	ondragend={handleDragEnd}
+	onclick={handleClick}
+	onkeydown={(e) => e.key === 'Enter' && onEdit?.(task)}
+	role="button"
+	tabindex="0"
 >
 	<!-- Header -->
 	<div class="flex items-center justify-between px-3 pt-3">
@@ -45,6 +74,7 @@ function getShortId(id: string): string {
 			<DropdownMenu.Trigger
 				class="size-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 hover:bg-[var(--bg-hover)] transition-all focus-ring"
 				aria-label="Task actions"
+				data-dropdown-trigger
 			>
 				<DotsThree class="size-4" weight="bold" />
 			</DropdownMenu.Trigger>
