@@ -1,5 +1,88 @@
 # HANDOVER
 
+## Session: 2026-01-14 - Phase 4 Agent Integration (MVP) ✅
+
+### Summary
+
+Agent-System MVP implementiert! Claude Agent SDK integriert mit:
+- Project/AgentRun Models für Multi-Project Support
+- MCP Plugin-Architektur mit Filesystem Server
+- Orchestrator Agent für Task-Ausführung
+- Git Auto-Checkpoints vor jeder Task-Änderung
+- SSE Agent Log Streaming zum Frontend
+
+### Completed
+
+- ✅ **Project Model** - Workspace-Pfad für Agent-Sandbox
+- ✅ **AgentRun Model** - Tracking von Agent-Ausführungen
+- ✅ **Task erweitert** - description, project_id, parent_id, NEEDS_REVIEW status
+- ✅ **MCP Registry** - Modulare Tool-Registrierung
+- ✅ **Filesystem MCP** - Read/Write/List innerhalb Workspace
+- ✅ **Orchestrator Agent** - Claude SDK Integration mit bypassPermissions
+- ✅ **Git Integration** - Auto-Checkpoint vor Tasks, Commit bei Erfolg
+- ✅ **Agent API** - /api/agent/run, /stop, /runs endpoints
+- ✅ **SSE agent_log** - Live-Streaming von Agent-Output
+- ✅ **AgentLog Component** - Sidebar-Komponente für Log-Anzeige
+
+### Architecture
+
+```
+Backend
+├── src/models/
+│   ├── project.py      # Project with workspace_path
+│   ├── agent_run.py    # AgentRun tracking
+│   └── task.py         # Extended with description, parent_id
+├── src/mcp_servers/
+│   ├── registry.py     # MCP tool registration
+│   └── filesystem/     # Sandboxed file I/O
+├── src/agents/
+│   └── orchestrator.py # Claude Agent SDK integration
+└── src/api/routes/
+    ├── projects.py     # Projects CRUD
+    └── agent.py        # Agent run/stop/list
+
+Frontend
+├── src/lib/types/
+│   ├── task.ts         # + NEEDS_REVIEW status
+│   └── agent.ts        # + AgentRun, AgentLogEntry
+├── src/lib/services/
+│   ├── agent.ts        # Agent API client
+│   └── events.ts       # + agent_log SSE handling
+└── src/lib/components/panel/
+    └── AgentLog.svelte # Log display component
+```
+
+### Key Decisions
+
+1. **Claude Agent SDK subprocess** - Nutzt Claude Max Abo, keine extra API-Kosten
+2. **MCP in src/mcp_servers/** - Eigener Ordner statt `src/mcp` (Konflikt mit mcp package)
+3. **NEEDS_REVIEW Status** - Vorbereitet für Human-in-the-Loop
+4. **Git Auto-Checkpoints** - Sicherheit vor Agent-Änderungen
+5. **bypassPermissions Mode** - YOLO-Mode für Agent innerhalb Workspace
+
+### Open for Phase 4.2
+
+- [ ] NEEDS_REVIEW Spalte im Kanban Board
+- [ ] Run Button auf TaskCard
+- [ ] AgentLog in Sidebar integrieren
+- [ ] Perplexity MCP Server
+- [ ] Workflow Templates in DB
+- [ ] Multi-Project UI (Project Selector)
+
+### Verification
+
+```bash
+# Backend
+cd backend && uvx ty check  # All checks passed
+uv run ruff check --fix . && uv run ruff format .  # Clean
+
+# Frontend
+cd frontend && bunx svelte-check --threshold warning  # 0 errors, 3 warnings
+bunx biome check --write .  # Fixed
+```
+
+---
+
 ## Session: 2026-01-14 - Phase 5.8 UI Completion ✅
 
 ### Summary

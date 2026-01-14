@@ -34,11 +34,17 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [x] Task CRUD Endpoints
 - [x] SSE für Live-Updates (EventBus)
 
-### Phase 4: Agent Integration
-- [ ] Orchestrator Agent (Claude SDK)
-- [ ] Researcher Agent (Perplexity Integration)
-- [ ] MCP Tools: OpenAlex, BibTeX
-- [ ] Google ADK für komplexe Workflows
+### Phase 4: Agent Integration (MVP) ✅
+- [x] Orchestrator Agent (Claude Agent SDK)
+- [x] MCP Infrastructure (Registry + Filesystem)
+- [x] Project Model mit Workspace
+- [x] AgentRun Model für Tracking
+- [x] Git Auto-Checkpoints
+- [x] SSE Agent Log Streaming
+- [ ] Perplexity MCP (Phase 4.2)
+- [ ] OpenAlex/BibTeX MCP (Phase 4.2)
+- [ ] Human-in-the-Loop UI (Phase 4.2)
+- [ ] Workflow Templates (Phase 4.2)
 
 ### Phase 5: Frontend Core ✅
 - [x] Kanban-Board Layout
@@ -84,16 +90,22 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ## Current Focus
 
-**Phase:** 6 (Polish & Plugins)
-**Next Task:** Plugin-System Implementation oder Agent Integration
+**Phase:** 4.2 (Agent Integration - Advanced Features)
+**Next Tasks:**
+- Perplexity MCP Server
+- Workflow Templates UI
+- Human-in-the-Loop (NEEDS_REVIEW Spalte)
+- Multi-Project UI
 
 ---
 
 ## Backlog
 
-- Backend: `type`, `description` Felder zu Task Model hinzufügen
 - Vite Proxy für Production CORS Setup
+- Plugin-System (Phase 6)
+- Error Handling & Logging
+- Performance Optimization
 
 ---
 
-*Updated: 2026-01-14 (Phase 5.7 API Integration completed)*
+*Updated: 2026-01-14 (Phase 4 MVP completed)*
