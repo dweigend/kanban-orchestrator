@@ -22,7 +22,7 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - [x] Root: Makefile für `make dev`
 
 ### Phase 2: Konzept & Plan
-- [ ] Mockups-Ordner erstellen (`docs/mockups/`)
+- [x] Mockups-Ordner erstellen (`dev/ui/`)
 - [ ] Agent-Architektur dokumentieren
 - [ ] API-Kontrakt definieren (OpenAPI Spec)
 - [ ] Datenmodell: Task, Workflow, Agent-Run
