@@ -2,10 +2,12 @@
 import { DropdownMenu } from 'bits-ui';
 import ArrowSquareOut from 'phosphor-svelte/lib/ArrowSquareOut';
 import Chat from 'phosphor-svelte/lib/Chat';
+import CircleNotch from 'phosphor-svelte/lib/CircleNotch';
 import Code from 'phosphor-svelte/lib/Code';
 import DotsThree from 'phosphor-svelte/lib/DotsThree';
 import MagnifyingGlass from 'phosphor-svelte/lib/MagnifyingGlass';
 import Note from 'phosphor-svelte/lib/Note';
+import Play from 'phosphor-svelte/lib/Play';
 import type { Task, TaskType } from '$lib/types/task';
 import { TASK_TYPE_COLORS } from '$lib/types/task';
 
@@ -13,9 +15,17 @@ interface Props {
 	task: Task;
 	onEdit?: (task: Task) => void;
 	onDelete?: (task: Task) => void;
+	onRunAgent?: (task: Task) => void;
+	isAgentRunning?: boolean;
 }
 
-const { task, onEdit, onDelete }: Props = $props();
+const {
+	task,
+	onEdit,
+	onDelete,
+	onRunAgent,
+	isAgentRunning = false,
+}: Props = $props();
 
 const typeIcons: Record<TaskType, typeof MagnifyingGlass> = {
 	research: MagnifyingGlass,
@@ -95,6 +105,19 @@ function getShortId(id: string): string {
 						<ArrowSquareOut class="size-3" />
 						Open
 					</DropdownMenu.Item>
+					<DropdownMenu.Item
+						class="flex items-center gap-2 px-3 py-2 text-xs rounded cursor-pointer hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						onclick={() => onRunAgent?.(task)}
+						disabled={isAgentRunning}
+					>
+						{#if isAgentRunning}
+							<CircleNotch class="size-3 animate-spin" />
+							Running...
+						{:else}
+							<Play class="size-3" />
+							Run Agent
+						{/if}
+					</DropdownMenu.Item>
 					<DropdownMenu.Separator class="my-1 h-px bg-[var(--border-muted)]" />
 					<DropdownMenu.Item
 						class="flex items-center gap-2 px-3 py-2 text-xs rounded cursor-pointer hover:bg-red-500/10 text-red-400 transition-colors"
@@ -118,8 +141,16 @@ function getShortId(id: string): string {
 
 	<!-- Footer with type icon -->
 	<div
-		class="flex items-center justify-end gap-2 px-3 py-2 border-t border-[var(--border-muted)] bg-[var(--bg-elevated)]"
+		class="flex items-center justify-between gap-2 px-3 py-2 border-t border-[var(--border-muted)] bg-[var(--bg-elevated)]"
 	>
+		{#if isAgentRunning}
+			<div class="flex items-center gap-1 text-xs text-orange-400">
+				<CircleNotch class="size-3 animate-spin" />
+				<span>Agent</span>
+			</div>
+		{:else}
+			<span></span>
+		{/if}
 		<TypeIcon class="size-4 text-[var(--text-muted)]" />
 	</div>
 </article>

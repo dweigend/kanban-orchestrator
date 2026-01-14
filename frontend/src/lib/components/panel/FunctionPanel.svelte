@@ -1,8 +1,8 @@
 <script lang="ts">
 import { Separator } from 'bits-ui';
-import type { Agent } from '$lib/types/agent';
+import type { Agent, AgentLogEntry } from '$lib/types/agent';
 import type { Task } from '$lib/types/task';
-import AgentList from './AgentList.svelte';
+import AgentLog from './AgentLog.svelte';
 import ProjectOverview from './ProjectOverview.svelte';
 import SearchBar from './SearchBar.svelte';
 import SettingsPanel from './SettingsPanel.svelte';
@@ -31,6 +31,9 @@ interface Props {
 	onSearch?: (query: string) => void;
 	onTaskSave?: (task: Task) => void;
 	onTaskDelete?: (taskId: string) => void;
+	agentLogs?: AgentLogEntry[];
+	agentTaskTitle?: string;
+	isAgentRunning?: boolean;
 }
 
 const {
@@ -45,6 +48,9 @@ const {
 	onSearch,
 	onTaskSave,
 	onTaskDelete,
+	agentLogs = [],
+	agentTaskTitle = '',
+	isAgentRunning = false,
 }: Props = $props();
 
 // Resize state
@@ -104,8 +110,8 @@ function handleMouseUp() {
 			</div>
 		</div>
 	{:else if activeTab === 'agents'}
-		<div class="flex-1 flex flex-col min-h-0 overflow-y-auto p-3">
-			<AgentList {agents} />
+		<div class="flex-1 flex flex-col min-h-0">
+			<AgentLog logs={agentLogs} taskTitle={agentTaskTitle} isRunning={isAgentRunning} />
 		</div>
 	{:else if activeTab === 'settings'}
 		<div class="flex-1 min-h-0 overflow-y-auto">

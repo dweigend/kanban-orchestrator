@@ -9,12 +9,21 @@ interface Props {
 	onEditTask?: (task: Task) => void;
 	onDeleteTask?: (task: Task) => void;
 	onTaskDrop?: (taskId: string, newStatus: TaskStatus) => void;
+	onRunAgent?: (task: Task) => void;
+	runningAgentTaskId?: string | null;
 }
 
-const { tasks, onAddTask, onEditTask, onDeleteTask, onTaskDrop }: Props =
-	$props();
+const {
+	tasks,
+	onAddTask,
+	onEditTask,
+	onDeleteTask,
+	onTaskDrop,
+	onRunAgent,
+	runningAgentTaskId,
+}: Props = $props();
 
-const columns: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'DONE'];
+const columns: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'NEEDS_REVIEW', 'DONE'];
 
 function getTasksByStatus(status: TaskStatus): Task[] {
 	return tasks.filter((t) => t.status === status);
@@ -36,6 +45,8 @@ function getTasksByStatus(status: TaskStatus): Task[] {
 			{onEditTask}
 			{onDeleteTask}
 			{onTaskDrop}
+			{onRunAgent}
+			{runningAgentTaskId}
 		/>
 	{/each}
 </div>

@@ -13,6 +13,8 @@ interface Props {
 	onEditTask?: (task: Task) => void;
 	onDeleteTask?: (task: Task) => void;
 	onTaskDrop?: (taskId: string, newStatus: TaskStatus) => void;
+	onRunAgent?: (task: Task) => void;
+	runningAgentTaskId?: string | null;
 	children?: Snippet;
 }
 
@@ -23,6 +25,8 @@ const {
 	onEditTask,
 	onDeleteTask,
 	onTaskDrop,
+	onRunAgent,
+	runningAgentTaskId,
 }: Props = $props();
 
 let isDragOver = $state(false);
@@ -86,7 +90,13 @@ const taskCount = $derived(tasks.length);
 		role="list"
 	>
 		{#each tasks as task (task.id)}
-			<TaskCard {task} onEdit={onEditTask} onDelete={onDeleteTask} />
+			<TaskCard
+				{task}
+				onEdit={onEditTask}
+				onDelete={onDeleteTask}
+				{onRunAgent}
+				isAgentRunning={runningAgentTaskId === task.id}
+			/>
 		{/each}
 
 		{#if tasks.length === 0}

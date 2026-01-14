@@ -2,10 +2,11 @@
 import Board from '$lib/components/kanban/Board.svelte';
 import Header, { type SidebarTab } from '$lib/components/layout/Header.svelte';
 import FunctionPanel from '$lib/components/panel/FunctionPanel.svelte';
+import * as agentApi from '$lib/services/agent';
 import { subscribeToEvents } from '$lib/services/events';
 import * as taskApi from '$lib/services/tasks';
 import { showError, showSuccess } from '$lib/services/toast';
-import type { Agent } from '$lib/types/agent';
+import type { Agent, AgentLogEntry } from '$lib/types/agent';
 import type { Task, TaskStatus } from '$lib/types/task';
 
 // UI State
@@ -17,6 +18,11 @@ let editingTask = $state<Task | null>(null);
 // Data State
 let tasks = $state<Task[]>([]);
 let loading = $state(true);
+
+// Agent State
+let runningAgentTaskId = $state<string | null>(null);
+let agentLogs = $state<AgentLogEntry[]>([]);
+let currentAgentTaskTitle = $state<string>('');
 
 // Mock agents (will be connected to backend later)
 const agents: Agent[] = $state([
@@ -110,6 +116,19 @@ $effect(() => {
 					tasks = tasks.filter((t) => t.id !== event.taskId);
 				}
 				break;
+			case 'agent_log':
+				if (event.agentLog) {
+					const { task_id, log } = event.agentLog;
+					// Only collect logs for currently running task
+					if (task_id === runningAgentTaskId) {
+						agentLogs = [...agentLogs, log];
+					}
+					// Agent finished?
+					if (log.type === 'result' || log.type === 'error') {
+						runningAgentTaskId = null;
+					}
+				}
+				break;
 		}
 	});
 
@@ -200,6 +219,33 @@ async function handleTaskDrop(taskId: string, newStatus: TaskStatus) {
 function handleSearch(query: string) {
 	console.log('Search:', query);
 }
+
+async function handleRunAgent(task: Task) {
+	if (runningAgentTaskId) {
+		showError('Agent is already running');
+		return;
+	}
+
+	try {
+		// Reset logs & set running state
+		agentLogs = [];
+		runningAgentTaskId = task.id;
+		currentAgentTaskTitle = task.title;
+
+		// Switch to agents tab
+		activeTab = 'agents';
+		if (!sidebarVisible) {
+			sidebarVisible = true;
+		}
+
+		// Start agent
+		const run = await agentApi.startAgentRun(task.id);
+		showSuccess(`Agent started: ${run.id.slice(0, 8)}`);
+	} catch (e) {
+		runningAgentTaskId = null;
+		showError(e instanceof Error ? e.message : 'Failed to start agent');
+	}
+}
 </script>
 
 <svelte:head>
@@ -234,6 +280,8 @@ function handleSearch(query: string) {
 				onEditTask={handleEditTask}
 				onDeleteTask={handleDeleteTaskFromBoard}
 				onTaskDrop={handleTaskDrop}
+				onRunAgent={handleRunAgent}
+				{runningAgentTaskId}
 			/>
 		{/if}
 
@@ -246,6 +294,9 @@ function handleSearch(query: string) {
 				onSearch={handleSearch}
 				onTaskSave={handleTaskSave}
 				onTaskDelete={handleTaskDelete}
+				{agentLogs}
+				agentTaskTitle={currentAgentTaskTitle}
+				isAgentRunning={runningAgentTaskId !== null}
 			/>
 		{/if}
 	</main>
