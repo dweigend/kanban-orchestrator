@@ -89,12 +89,14 @@ GET  /api/agent/runs/{id}   # Get run details
 [ ] Workflow Templates in DB
 ```
 
-### TODO: ARCHITECTURE.md erstellen
+### ✅ ARCHITECTURE.md erstellt
 
 Umfassende Systemdokumentation mit:
-- Datenfluss-Diagramme
-- Komponenten-Übersicht
+- Datenfluss-Diagramme (ASCII)
+- Komponenten-Übersicht (Backend + Frontend)
 - API-Referenz
+- Status-Tabellen (implementiert vs. geplant)
+- Design Decisions
 
 ---
 
