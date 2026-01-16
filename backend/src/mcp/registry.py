@@ -16,7 +16,7 @@ class MCPServerConfig(TypedDict):
 MCP_REGISTRY: dict[str, MCPServerConfig] = {
     "filesystem": {
         "command": "python",
-        "args": ["-m", "src.mcp_servers.filesystem.server"],
+        "args": ["-m", "src.mcp.filesystem.server"],
         "env": {"WORKSPACE_PATH": "${WORKSPACE_PATH}"},
     },
     # Future MCPs:
