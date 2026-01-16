@@ -1,102 +1,87 @@
 # HANDOVER
 
-## Session: 2026-01-14 - Phase 4 Agent Integration (MVP) ✅
+## Session: 2026-01-16 - Architecture Planning ✅
 
-### Was wurde gebaut
+### Was wurde gemacht
 
-Agent-System MVP mit Claude Agent SDK:
+**Architektur-Planung & Dokumentation:**
 
-```
-Backend                              Frontend
-────────                             ────────
-src/models/                          src/lib/
-├── project.py     # Workspace       ├── types/agent.ts    # AgentRun types
-├── agent_run.py   # Run tracking    ├── services/agent.ts # API client
-└── task.py        # +description    └── components/panel/
-                   # +parent_id          └── AgentLog.svelte
-src/mcp_servers/
-├── registry.py    # Tool registry   src/lib/services/
-└── filesystem/    # File I/O        └── events.ts  # +agent_log SSE
-    └── server.py
-                                     src/lib/types/
-src/agents/                          └── task.ts    # +NEEDS_REVIEW
-└── orchestrator.py # Claude SDK
+1. **Neue Architektur definiert** → `dev/MCP-ARCHITECTURE.md`
+   - Bidirektionale MCP-Integration
+   - Kanban als stabile Orchestration Layer
+   - Plugin Manager Konzept
 
-src/api/routes/
-├── projects.py    # CRUD
-└── agent.py       # run/stop/list
-```
+2. **Key Decisions dokumentiert:**
+   - Decision 1: Claude Agent SDK als Orchestrator
+   - Decision 2: Externe MCPs statt eigene Implementation
+   - Decision 3: Kanban als MCP Server (FastMCP)
+   - Decision 4: Plugin Manager mit Glama API
 
-### Implementierte Features
+3. **Dokumentation aufgeräumt:**
+   - PLAN.md mit Phasen 5-8
+   - FRONTEND-PLAN.md gelöscht (redundant)
+   - ARCHITECTURE.md erweitert
 
-- ✅ **Project Model** - Workspace-Pfad für Agent-Sandbox
-- ✅ **AgentRun Model** - Status: pending/running/completed/failed
-- ✅ **Task erweitert** - description, project_id, parent_id, NEEDS_REVIEW
-- ✅ **MCP Registry** - Modulare Tool-Registrierung in `src/mcp_servers/`
-- ✅ **Filesystem MCP** - read_file, write_file, list_directory (sandboxed)
-- ✅ **Orchestrator** - Claude Agent SDK mit bypassPermissions
-- ✅ **Git Integration** - Auto-Checkpoint vor Task, Commit bei Erfolg
-- ✅ **SSE agent_log** - Live-Streaming von Agent-Output
-- ✅ **AgentLog Component** - Sidebar-Komponente (noch nicht eingebunden)
-
-### Key Decisions
-
-1. **Claude Agent SDK subprocess** - Nutzt Max Abo, keine API-Kosten
-2. **MCP in `src/mcp_servers/`** - Nicht `src/mcp` (Konflikt mit mcp package)
-3. **bypassPermissions Mode** - YOLO innerhalb Workspace
-4. **Git Auto-Checkpoints** - Sicherheit vor Agent-Änderungen
-
-### API Endpoints (neu)
+### Architektur-Übersicht
 
 ```
-POST /api/projects          # Create project
-GET  /api/projects          # List all
-GET  /api/projects/{id}     # Get one
-PUT  /api/projects/{id}     # Update
-DELETE /api/projects/{id}   # Delete
-
-POST /api/agent/run         # Start agent for task
-POST /api/agent/stop/{id}   # Stop running agent
-GET  /api/agent/runs        # List runs (filter: task_id, status)
-GET  /api/agent/runs/{id}   # Get run details
+┌──────────────┐     MCP      ┌──────────────┐     MCP      ┌──────────────┐
+│ Claude Code  │◄────────────►│   Kanban     │◄────────────►│  Perplexity  │
+│   (Client)   │              │(Server+Client)│             │   (Server)   │
+└──────────────┘              └──────────────┘              └──────────────┘
 ```
+
+**Prinzip:** Kanban = Orchestration (stabil), MCPs = Features (austauschbar)
 
 ---
 
-## Nächste Session: Phase 4.2
+## Nächste Session: Phase 5 - Modulares Backend
 
-### Priority 1: UI Integration
-
-```
-[ ] Run Button auf TaskCard
-[ ] AgentLog Tab in Sidebar einbinden
-[ ] NEEDS_REVIEW Spalte im Board
-[ ] Spinner auf Card während Agent läuft
-```
-
-### Priority 2: Multi-Project
+### Priority 1: Refactoring
 
 ```
-[ ] Project Selector im Header
-[ ] Tasks nach Project filtern
-[ ] Default Project bei App-Start
+backend/src/
+├── mcp/                      # Umbenennen von mcp_servers/
+│   ├── registry.py           # existiert
+│   ├── kanban_server.py      # Phase 6
+│   └── discovery.py          # Phase 7
+├── services/
+│   └── agent_service.py      # aus orchestrator.py
+├── agents/
+│   ├── orchestrator.py       # Slim down
+│   └── prompts.py            # Templates
+└── models/
+    └── plugin.py             # Phase 7
 ```
 
-### Priority 3: Weitere MCP Server
+### Priority 2: Cleanup
 
+- [ ] `backend/src/plugins/` löschen (leer)
+- [ ] `backend/src/tools/` löschen (leer)
+- [ ] Mock-Daten aus Frontend entfernen
+
+### Detaillierter Implementierungsplan
+
+**Schritt 1: Ordner umbenennen**
+```bash
+cd backend/src
+mv mcp_servers mcp
+# Imports in orchestrator.py anpassen
 ```
-[ ] Perplexity MCP (Web Search)
-[ ] Workflow Templates in DB
-```
 
-### ✅ ARCHITECTURE.md erstellt
+**Schritt 2: agent_service.py extrahieren**
+- Git-Operationen aus orchestrator.py → `services/git_service.py`
+- Agent-Run-Management → `services/agent_service.py`
+- orchestrator.py auf < 100 Zeilen reduzieren
 
-Umfassende Systemdokumentation mit:
-- Datenfluss-Diagramme (ASCII)
-- Komponenten-Übersicht (Backend + Frontend)
-- API-Referenz
-- Status-Tabellen (implementiert vs. geplant)
-- Design Decisions
+**Schritt 3: prompts.py erstellen**
+- `_build_prompt()` aus orchestrator.py → `agents/prompts.py`
+- Prompt-Templates für verschiedene Task-Typen
+
+**Schritt 4: Cleanup**
+- Leere Ordner löschen
+- Imports prüfen
+- Type checks laufen lassen
 
 ---
 
@@ -114,4 +99,12 @@ bunx biome check --write .
 
 ---
 
-*Updated: 2026-01-14*
+## Referenzen
+
+- **Architektur-Details:** `dev/MCP-ARCHITECTURE.md`
+- **Phasen-Übersicht:** `dev/PLAN.md`
+- **Workflow-Dokumentation:** `dev/WORKFLOW.md`
+
+---
+
+*Updated: 2026-01-16*

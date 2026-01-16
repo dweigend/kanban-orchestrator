@@ -4,6 +4,8 @@
 
 AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Recherche, Programmierung und Prototyping.
 
+**Kernprinzip:** Kanban = Stabile Orchestration, MCPs = Austauschbare Features
+
 ---
 
 ## Abgeschlossene Phasen
@@ -20,49 +22,79 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - Git Auto-Checkpoints
 - SSE Agent Log Streaming
 
-### Phase 5: Frontend UI ✅
-- Kanban Board mit Drag & Drop
-- Sidebar-First Architecture
-- Task Editor in Sidebar
-- Toast Notifications
+### Phase 4.2: Agent UI Integration ✅
+- Run Button auf TaskCard
+- AgentLog Tab in Sidebar
+- NEEDS_REVIEW Spalte
+- Spinner während Agent läuft
 
 ---
 
-## Aktuelle Phase: 4.2 - Agent UI Integration
+## Aktuelle Phase: 5 - Modulares Backend
 
-### Sofort (UI Wiring)
-- [ ] Run Button auf TaskCard
-- [ ] AgentLog Tab in Sidebar
-- [ ] NEEDS_REVIEW Spalte
-- [ ] Spinner während Agent läuft
+**Ziel:** Clean Code, Separation of Concerns
 
-### Danach (Multi-Project)
-- [ ] Project Selector im Header
-- [ ] Tasks nach Project filtern
-- [ ] Default Project erstellen
+### Tasks
+- [ ] `mcp_servers/` → `mcp/` umbenennen
+- [ ] `orchestrator.py` aufteilen (< 100 Zeilen)
+- [ ] `agent_service.py` extrahieren
+- [ ] `prompts.py` für Templates
+- [ ] Leere Ordner löschen (`plugins/`, `tools/`)
 
-### Später (MCP Erweiterung)
-- [ ] Perplexity MCP Server
-- [ ] Workflow Templates Model + UI
-- [ ] Human-in-the-Loop Flow
+**Referenz:** → `dev/MCP-ARCHITECTURE.md` Abschnitt 5
 
 ---
 
-## Phase 6: Polish (Future)
+## Phase 6: Kanban als MCP Server
 
-- [ ] Plugin-System
-- [ ] Error Handling & Logging
-- [ ] Performance Optimization
-- [x] ARCHITECTURE.md Dokumentation ✅
+**Ziel:** Claude Code kann Tasks erstellen
+
+### Tasks
+- [ ] FastMCP installieren (`uv add fastmcp`)
+- [ ] `mcp/kanban_server.py` erstellen
+- [ ] Tools: create_task, list_tasks, get_task_result
+- [ ] In Claude Code registrieren
+
+**Referenz:** → `dev/MCP-ARCHITECTURE.md` Abschnitt 3.3
+
+---
+
+## Phase 7: Plugin Manager
+
+**Ziel:** MCPs aus Registry installieren
+
+### Tasks
+- [ ] `models/plugin.py` Model
+- [ ] `mcp/discovery.py` Glama API Client
+- [ ] `api/routes/plugins.py` REST Endpoints
+- [ ] Frontend: Plugin Manager Tab
+- [ ] Search + Install + Configure UI
+
+**Referenz:** → `dev/MCP-ARCHITECTURE.md` Abschnitt 7
+
+---
+
+## Phase 8: Bidirektionaler Workflow
+
+**Ziel:** Vollständiger Flow UI↔Agent↔MCPs
+
+### Tasks
+- [ ] NEEDS_REVIEW Flow implementieren
+- [ ] Agent setzt Status korrekt
+- [ ] Claude Code → Kanban → Ergebnis zurück
+- [ ] Polling oder Notification für Completion
+
+**Referenz:** → `dev/MCP-ARCHITECTURE.md` Abschnitt 4
 
 ---
 
 ## Backlog
 
-- Vite Proxy für Production CORS
-- OpenAlex/BibTeX MCP Server
-- Google ADK für komplexe Workflows
+- [ ] Vite Proxy für Production CORS
+- [ ] Multi-Project Support (Project Selector)
+- [ ] Knowledge DBs (thematische Spezialisierung)
+- [ ] Workflow Templates
 
 ---
 
-*Updated: 2026-01-14*
+*Updated: 2026-01-16*

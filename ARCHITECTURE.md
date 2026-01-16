@@ -530,4 +530,35 @@ Research Workflow:
 
 ---
 
-*Last updated: 2026-01-14*
+---
+
+## MCP Architecture Vision
+
+Das System folgt dem Prinzip: **Kanban = Orchestration (stabil), MCPs = Features (austauschbar)**
+
+### Bidirektionale Integration
+
+```
+┌──────────────┐     MCP      ┌──────────────┐     MCP      ┌──────────────┐
+│ Claude Code  │◄────────────►│   Kanban     │◄────────────►│  Perplexity  │
+│   (Client)   │              │(Server+Client)│             │   (Server)   │
+└──────────────┘              └──────────────┘              └──────────────┘
+```
+
+**A) Kanban NUTZT MCPs** - Orchestrator ruft externe Tools
+**B) Kanban IST ein MCP** - Claude Code kann Tasks erstellen
+
+### Architekturentscheidungen
+
+| Decision | Entscheidung | Begründung |
+|----------|--------------|------------|
+| Orchestrator | Claude Agent SDK | Max-Abo, kein API-Cost |
+| Tool-Integration | Externe MCPs | Weniger Code, Community-maintained |
+| Kanban MCP | FastMCP | ~50 Zeilen, nutzt bestehende API |
+| Plugin Manager | Glama API | 15,833+ Server, Plug & Play |
+
+**Details:** → `dev/MCP-ARCHITECTURE.md`
+
+---
+
+*Last updated: 2026-01-16*
