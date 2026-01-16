@@ -67,23 +67,24 @@ backend/src/
 
 ---
 
-## Nächste Session: Phase 7 - Plugin Manager
+## Nächste Session: Phase 7.1 - Cleanup & Testing 🧹
 
 ### Ziel
 
-MCPs aus Glama Registry installieren
+Technische Schulden vor Plugin Manager beheben
 
-### Tasks
+### Kritisch (vor Phase 7)
 
-```
-- [ ] `models/plugin.py` Model
-- [ ] `mcp_client/discovery.py` Glama API Client
-- [ ] `api/routes/plugins.py` REST Endpoints
-- [ ] Frontend: Plugin Manager Tab
-- [ ] Search + Install + Configure UI
-```
+- [ ] Basis-Tests schreiben → [#1](https://github.com/dweigend/kanban-orchestrator/issues/1)
+- [ ] Error Handling für `kanban_server.py` → [#2](https://github.com/dweigend/kanban-orchestrator/issues/2)
 
-### Referenz
+### Optional
+
+- [ ] `stop_agent_run()` implementieren → [#3](https://github.com/dweigend/kanban-orchestrator/issues/3)
+- [ ] Settings Persistence → [#4](https://github.com/dweigend/kanban-orchestrator/issues/4)
+- [ ] Services Layer konsolidieren → [#5](https://github.com/dweigend/kanban-orchestrator/issues/5)
+
+### Danach: Phase 7 - Plugin Manager
 
 → `dev/MCP-ARCHITECTURE.md` Abschnitt 7
 

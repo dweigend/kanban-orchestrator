@@ -48,7 +48,22 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ---
 
-## Aktuelle Phase: 7 - Plugin Manager
+## Aktuelle Phase: 7.1 - Cleanup & Testing 🧹
+
+**Ziel:** Technische Schulden vor Plugin Manager beheben
+
+### Kritisch (vor Phase 7)
+- [ ] Basis-Tests schreiben (Task CRUD, Agent Run, MCP Server) → [#1](https://github.com/dweigend/kanban-orchestrator/issues/1)
+- [ ] Error Handling für `kanban_server.py` → [#2](https://github.com/dweigend/kanban-orchestrator/issues/2)
+
+### Optional
+- [ ] `stop_agent_run()` implementieren → [#3](https://github.com/dweigend/kanban-orchestrator/issues/3)
+- [ ] Services nach `services/` verschieben → [#5](https://github.com/dweigend/kanban-orchestrator/issues/5)
+- [ ] Settings Persistence → [#4](https://github.com/dweigend/kanban-orchestrator/issues/4)
+
+---
+
+## Phase 7: Plugin Manager
 
 **Ziel:** MCPs aus Registry installieren
 
@@ -86,4 +101,4 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ---
 
-*Updated: 2026-01-16 (Phase 6 completed)*
+*Updated: 2026-01-16 (Phase 7.1 added)*
