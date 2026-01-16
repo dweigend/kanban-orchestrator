@@ -1,69 +1,91 @@
 # HANDOVER
 
-## Session: 2026-01-16 - Phase 5 Backend Refactoring ✅
+## Session: 2026-01-16 - Phase 6 Kanban MCP Server ✅
 
 ### Was wurde gemacht
 
-**Backend Refactoring (Phase 5):**
+**Phase 6: Kanban als MCP Server:**
 
-1. **Ordner umbenannt:** `mcp_servers/` → `mcp/`
-   - 3 Imports angepasst (registry, orchestrator, __init__)
-   - Cleaner Name, weniger Redundanz
+1. **FastMCP installiert:** `uv add fastmcp`
+   - Bringt `mcp` Paket als Dependency mit
 
-2. **Git-Service extrahiert:** `services/git.py` (63 Zeilen)
-   - `create_checkpoint(workspace, task_id)` - Checkpoint vor Task
-   - `create_commit(workspace, message)` - Commit nach Erfolg
-   - Wiederverwendbar für andere Features
+2. **Namespace-Kollision gelöst:** `mcp/` → `mcp_servers/` + `mcp_client/`
+   - Problem: Lokales `mcp/` Modul verdeckte externes `mcp` Paket
+   - Lösung: Explizite Rollenamen für bidirektionale Architektur
+   - `mcp_servers/` = Wir SIND ein MCP (→ Claude Code)
+   - `mcp_client/` = Wir NUTZEN MCPs (→ Perplexity etc.)
 
-3. **Orchestrator verschlankt:** 272 → 199 Zeilen (−27%)
-   - Helper `_publish_task_update()` für DRY event publishing
-   - Helper `_finalize_run()` für einheitliche Run-Finalisierung
-   - `_build_prompt()` bleibt (gehört zur Agent-Logik)
-   - API-Signatur unverändert
+3. **Kanban MCP Server erstellt:** `mcp_servers/kanban_server.py` (~70 Zeilen)
+   - `create_task(title, description?)` → Task erstellen
+   - `list_tasks()` → Alle Tasks mit Status
+   - `get_task_result(task_id)` → Task-Details abrufen
+   - Thin wrapper um REST API (kein DB-Zugriff)
 
-4. **Dokumentation aktualisiert:**
-   - `CLAUDE.md` - Project Structure aktualisiert
-   - `ARCHITECTURE.md` - Backend Directory Structure
-   - `dev/MCP-ARCHITECTURE.md` - Section 5 aktueller Stand
+4. **Claude Code Integration:** `.mcp.json` im Projekt-Root
+   ```json
+   {
+     "mcpServers": {
+       "kanban": {
+         "command": "uv",
+         "args": ["run", "python", "-m", "src.mcp_servers.kanban_server"],
+         "cwd": "backend",
+         "env": { "KANBAN_API_URL": "http://localhost:8000" }
+       }
+     }
+   }
+   ```
+
+5. **Dokumentation:** Naming Conventions in ARCHITECTURE.md
 
 ### Neue Struktur
 
 ```
 backend/src/
 ├── agents/
-│   └── orchestrator.py      # 199 Zeilen (vorher 272)
-├── api/                     # unverändert
-├── mcp/                     # umbenannt von mcp_servers/
-│   ├── registry.py
+│   └── orchestrator.py
+├── api/
+├── mcp_servers/            # NEU: Wir SIND ein MCP
+│   ├── kanban_server.py    # Claude Code kann Tasks erstellen
 │   └── filesystem/
-├── models/                  # unverändert
-├── services/                # NEU
-│   └── git.py               # Git-Operationen
+│       └── server.py
+├── mcp_client/             # NEU: Wir NUTZEN MCPs
+│   └── registry.py
+├── models/
+├── services/
+│   └── git.py
 └── database.py
 ```
 
-### Nicht gemacht (bewusst)
+### Tests
 
-- ❌ `prompts.py` - Overkill für 20-Zeilen-Builder
-- ❌ `agent_service.py` - orchestrator.py ist jetzt kompakt genug
-- ❌ Leere Ordner löschen - existierten nicht mehr
+- ✅ `list_tasks()` - Alle Tasks abrufen
+- ✅ `create_task()` - Task erstellen
+- ✅ `get_task_result()` - Task-Details abrufen
+- ✅ Orchestrator Import funktioniert
+- ✅ Type Check passed
+- ✅ Ruff passed
 
 ---
 
-## Nächste Session: Phase 6 - Kanban als MCP Server
+## Nächste Session: Phase 7 - Plugin Manager
+
+### Ziel
+
+MCPs aus Glama Registry installieren
 
 ### Tasks
 
 ```
-- [ ] FastMCP installieren (`uv add fastmcp`)
-- [ ] `mcp/kanban_server.py` erstellen
-- [ ] Tools: create_task, list_tasks, get_task_result
-- [ ] In Claude Code registrieren
+- [ ] `models/plugin.py` Model
+- [ ] `mcp_client/discovery.py` Glama API Client
+- [ ] `api/routes/plugins.py` REST Endpoints
+- [ ] Frontend: Plugin Manager Tab
+- [ ] Search + Install + Configure UI
 ```
 
 ### Referenz
 
-→ `dev/MCP-ARCHITECTURE.md` Abschnitt 3.3 + 4
+→ `dev/MCP-ARCHITECTURE.md` Abschnitt 7
 
 ---
 
@@ -76,6 +98,12 @@ uv run ruff check --fix . && uv run ruff format .
 
 # Frontend
 cd frontend && bunx svelte-check --threshold warning
+
+# Test MCP Server (Backend muss laufen)
+cd backend && uv run python -c "
+from src.mcp_servers.kanban_server import list_tasks, create_task
+print(list_tasks())
+"
 ```
 
 ---

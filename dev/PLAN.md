@@ -28,48 +28,33 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 - NEEDS_REVIEW Spalte
 - Spinner während Agent läuft
 
----
-
 ### Phase 5: Modulares Backend ✅
+- `orchestrator.py` refactored (272 → 199 Zeilen)
+- `services/git.py` extrahiert
+- Dokumentation aktualisiert
 
-**Ziel:** Clean Code, Separation of Concerns
-
-**Erledigt:**
-- [x] `mcp_servers/` → `mcp/` umbenannt
-- [x] `orchestrator.py` refactored (272 → 199 Zeilen)
-- [x] `services/git.py` extrahiert (Git-Operationen)
-- [x] Dokumentation aktualisiert
-
-**Nicht nötig:**
-- ~~`prompts.py`~~ - Overkill für 20 Zeilen
-- ~~`agent_service.py`~~ - orchestrator.py kompakt genug
-- ~~Leere Ordner~~ - existierten nicht
-
-**Referenz:** → `dev/MCP-ARCHITECTURE.md` Abschnitt 5
-
----
-
-## Aktuelle Phase: 6 - Kanban als MCP Server
+### Phase 6: Kanban als MCP Server ✅
 
 **Ziel:** Claude Code kann Tasks erstellen
 
-### Tasks
-- [ ] FastMCP installieren (`uv add fastmcp`)
-- [ ] `mcp/kanban_server.py` erstellen
-- [ ] Tools: create_task, list_tasks, get_task_result
-- [ ] In Claude Code registrieren
+**Erledigt:**
+- [x] FastMCP installiert
+- [x] Namespace-Kollision gelöst (`mcp/` → `mcp_servers/` + `mcp_client/`)
+- [x] `kanban_server.py` mit 3 Tools (create_task, list_tasks, get_task_result)
+- [x] `.mcp.json` für Claude Code Integration
+- [x] Naming Conventions dokumentiert in ARCHITECTURE.md
 
 **Referenz:** → `dev/MCP-ARCHITECTURE.md` Abschnitt 3.3
 
 ---
 
-## Phase 7: Plugin Manager
+## Aktuelle Phase: 7 - Plugin Manager
 
 **Ziel:** MCPs aus Registry installieren
 
 ### Tasks
 - [ ] `models/plugin.py` Model
-- [ ] `mcp/discovery.py` Glama API Client
+- [ ] `mcp_client/discovery.py` Glama API Client
 - [ ] `api/routes/plugins.py` REST Endpoints
 - [ ] Frontend: Plugin Manager Tab
 - [ ] Search + Install + Configure UI
@@ -101,4 +86,4 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ---
 
-*Updated: 2026-01-16 (Phase 5 completed)*
+*Updated: 2026-01-16 (Phase 6 completed)*
