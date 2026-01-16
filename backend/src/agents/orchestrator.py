@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,9 +13,10 @@ from claude_agent_sdk.types import ClaudeAgentOptions
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.events import EventType, TaskEvent, event_bus
+from src.mcp.registry import get_mcp_config
 from src.models.agent_run import AgentRun, AgentRunStatus
 from src.models.task import Task, TaskStatus
-from src.mcp_servers.registry import get_mcp_config
+from src.services.git import create_checkpoint, create_commit
 
 if TYPE_CHECKING:
     from src.models.project import Project
@@ -40,57 +40,6 @@ class AgentResult:
     error: str | None = None
 
 
-async def _create_git_checkpoint(workspace: Path, task_id: str) -> bool:
-    """Create a git checkpoint before task execution."""
-    try:
-        result = subprocess.run(
-            ["git", "add", "-A"],
-            cwd=workspace,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        if result.returncode != 0:
-            return False
-
-        result = subprocess.run(
-            ["git", "commit", "-m", f"checkpoint: 📍 before task-{task_id[:8]}"],
-            cwd=workspace,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        # Return code 1 means nothing to commit, which is fine
-        return result.returncode in (0, 1)
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return False
-
-
-async def _create_git_commit(workspace: Path, message: str) -> bool:
-    """Create a git commit after successful task completion."""
-    try:
-        result = subprocess.run(
-            ["git", "add", "-A"],
-            cwd=workspace,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        if result.returncode != 0:
-            return False
-
-        result = subprocess.run(
-            ["git", "commit", "-m", message],
-            cwd=workspace,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        return result.returncode in (0, 1)
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return False
-
-
 def _build_prompt(task: Task, project: Project | None) -> str:
     """Build the agent prompt from task data."""
     parts = [f"# Task: {task.title}"]
@@ -111,6 +60,33 @@ def _build_prompt(task: Task, project: Project | None) -> str:
     parts.append("When done, provide a summary of what was accomplished.")
 
     return "\n".join(parts)
+
+
+async def _publish_task_update(
+    task: Task, extra_data: dict[str, str] | None = None
+) -> None:
+    """Publish a task update event via SSE."""
+    data = {"id": task.id, "title": task.title, "status": task.status}
+    if extra_data:
+        data.update(extra_data)
+    await event_bus.publish(TaskEvent(event_type=EventType.TASK_UPDATED, data=data))
+
+
+async def _finalize_run(
+    db: AsyncSession,
+    agent_run: AgentRun,
+    task: Task,
+    status: AgentRunStatus,
+    task_status: TaskStatus,
+    error_msg: str | None = None,
+) -> None:
+    """Finalize agent run and task with given statuses."""
+    agent_run.status = status
+    agent_run.completed_at = datetime.now(timezone.utc)
+    if error_msg:
+        agent_run.error_message = error_msg
+    task.status = task_status
+    await db.commit()
 
 
 async def run_task(
@@ -142,28 +118,16 @@ async def run_task(
     db.add(agent_run)
     await db.commit()
 
-    # Update task status
+    # Update task status and notify
     task.status = TaskStatus.IN_PROGRESS
     await db.commit()
+    await _publish_task_update(task, {"agent_run_id": agent_run.id})
 
-    # Publish status update
-    await event_bus.publish(
-        TaskEvent(
-            event_type=EventType.TASK_UPDATED,
-            data={
-                "id": task.id,
-                "title": task.title,
-                "status": task.status,
-                "agent_run_id": agent_run.id,
-            },
-        )
-    )
-
-    # Git checkpoint
+    # Git checkpoint before execution
     if workspace.exists():
-        await _create_git_checkpoint(workspace, task.id)
+        create_checkpoint(workspace, task.id)
 
-    # Build options
+    # Build agent options
     mcp_config = get_mcp_config(mcp_tools, str(workspace))
     options = ClaudeAgentOptions(
         cwd=str(workspace),
@@ -173,19 +137,15 @@ async def run_task(
     )
 
     prompt = _build_prompt(task, project)
-    logs: list[dict[str, str]] = []
 
     try:
         async for message in query(prompt=prompt, options=options):
-            # Log each message
+            # Stream log to frontend via SSE
             log_entry = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "type": getattr(message, "type", "unknown"),
-                "content": str(message)[:500],  # Truncate for storage
+                "content": str(message)[:500],
             }
-            logs.append(log_entry)
-
-            # Stream log to frontend via SSE
             await event_bus.publish(
                 TaskEvent(
                     event_type=EventType.AGENT_LOG,
@@ -197,68 +157,36 @@ async def run_task(
                 )
             )
 
-            # Check for completion
-            if hasattr(message, "type") and message.type == "result":
-                if hasattr(message, "subtype") and message.subtype == "success":
-                    # Success - create commit
-                    await _create_git_commit(workspace, f"feat: ✨ {task.title}")
-
-                    agent_run.status = AgentRunStatus.COMPLETED
-                    agent_run.completed_at = datetime.now(timezone.utc)
-                    task.status = TaskStatus.DONE
-                    await db.commit()
-
-                    await event_bus.publish(
-                        TaskEvent(
-                            event_type=EventType.TASK_UPDATED,
-                            data={
-                                "id": task.id,
-                                "title": task.title,
-                                "status": task.status,
-                            },
-                        )
+            # Check for success result
+            if getattr(message, "type", None) == "result":
+                if getattr(message, "subtype", None) == "success":
+                    create_commit(workspace, f"feat: {task.title}")
+                    await _finalize_run(
+                        db, agent_run, task, AgentRunStatus.COMPLETED, TaskStatus.DONE
                     )
-
+                    await _publish_task_update(task)
                     return AgentResult(
                         status=AgentRunStatus.COMPLETED,
                         message="Task completed successfully",
                     )
 
     except Exception as e:
-        # Handle errors
         error_msg = str(e)
-        agent_run.status = AgentRunStatus.FAILED
-        agent_run.error_message = error_msg
-        agent_run.completed_at = datetime.now(timezone.utc)
-        task.status = TaskStatus.TODO  # Reset to TODO on failure
-        await db.commit()
-
-        await event_bus.publish(
-            TaskEvent(
-                event_type=EventType.TASK_UPDATED,
-                data={
-                    "id": task.id,
-                    "title": task.title,
-                    "status": task.status,
-                    "error": error_msg,
-                },
-            )
+        await _finalize_run(
+            db,
+            agent_run,
+            task,
+            AgentRunStatus.FAILED,
+            TaskStatus.TODO,
+            error_msg,
         )
-
-        return AgentResult(
-            status=AgentRunStatus.FAILED,
-            error=error_msg,
-        )
+        await _publish_task_update(task, {"error": error_msg})
+        return AgentResult(status=AgentRunStatus.FAILED, error=error_msg)
 
     # If we get here without explicit result, mark as completed
-    agent_run.status = AgentRunStatus.COMPLETED
-    agent_run.completed_at = datetime.now(timezone.utc)
-    task.status = TaskStatus.DONE
-    await db.commit()
-
+    await _finalize_run(db, agent_run, task, AgentRunStatus.COMPLETED, TaskStatus.DONE)
     return AgentResult(
-        status=AgentRunStatus.COMPLETED,
-        message="Task execution finished",
+        status=AgentRunStatus.COMPLETED, message="Task execution finished"
     )
 
 
