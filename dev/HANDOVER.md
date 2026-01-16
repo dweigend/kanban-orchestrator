@@ -1,87 +1,69 @@
 # HANDOVER
 
-## Session: 2026-01-16 - Architecture Planning ✅
+## Session: 2026-01-16 - Phase 5 Backend Refactoring ✅
 
 ### Was wurde gemacht
 
-**Architektur-Planung & Dokumentation:**
+**Backend Refactoring (Phase 5):**
 
-1. **Neue Architektur definiert** → `dev/MCP-ARCHITECTURE.md`
-   - Bidirektionale MCP-Integration
-   - Kanban als stabile Orchestration Layer
-   - Plugin Manager Konzept
+1. **Ordner umbenannt:** `mcp_servers/` → `mcp/`
+   - 3 Imports angepasst (registry, orchestrator, __init__)
+   - Cleaner Name, weniger Redundanz
 
-2. **Key Decisions dokumentiert:**
-   - Decision 1: Claude Agent SDK als Orchestrator
-   - Decision 2: Externe MCPs statt eigene Implementation
-   - Decision 3: Kanban als MCP Server (FastMCP)
-   - Decision 4: Plugin Manager mit Glama API
+2. **Git-Service extrahiert:** `services/git.py` (63 Zeilen)
+   - `create_checkpoint(workspace, task_id)` - Checkpoint vor Task
+   - `create_commit(workspace, message)` - Commit nach Erfolg
+   - Wiederverwendbar für andere Features
 
-3. **Dokumentation aufgeräumt:**
-   - PLAN.md mit Phasen 5-8
-   - FRONTEND-PLAN.md gelöscht (redundant)
-   - ARCHITECTURE.md erweitert
+3. **Orchestrator verschlankt:** 272 → 199 Zeilen (−27%)
+   - Helper `_publish_task_update()` für DRY event publishing
+   - Helper `_finalize_run()` für einheitliche Run-Finalisierung
+   - `_build_prompt()` bleibt (gehört zur Agent-Logik)
+   - API-Signatur unverändert
 
-### Architektur-Übersicht
+4. **Dokumentation aktualisiert:**
+   - `CLAUDE.md` - Project Structure aktualisiert
+   - `ARCHITECTURE.md` - Backend Directory Structure
+   - `dev/MCP-ARCHITECTURE.md` - Section 5 aktueller Stand
 
-```
-┌──────────────┐     MCP      ┌──────────────┐     MCP      ┌──────────────┐
-│ Claude Code  │◄────────────►│   Kanban     │◄────────────►│  Perplexity  │
-│   (Client)   │              │(Server+Client)│             │   (Server)   │
-└──────────────┘              └──────────────┘              └──────────────┘
-```
-
-**Prinzip:** Kanban = Orchestration (stabil), MCPs = Features (austauschbar)
-
----
-
-## Nächste Session: Phase 5 - Modulares Backend
-
-### Priority 1: Refactoring
+### Neue Struktur
 
 ```
 backend/src/
-├── mcp/                      # Umbenennen von mcp_servers/
-│   ├── registry.py           # existiert
-│   ├── kanban_server.py      # Phase 6
-│   └── discovery.py          # Phase 7
-├── services/
-│   └── agent_service.py      # aus orchestrator.py
 ├── agents/
-│   ├── orchestrator.py       # Slim down
-│   └── prompts.py            # Templates
-└── models/
-    └── plugin.py             # Phase 7
+│   └── orchestrator.py      # 199 Zeilen (vorher 272)
+├── api/                     # unverändert
+├── mcp/                     # umbenannt von mcp_servers/
+│   ├── registry.py
+│   └── filesystem/
+├── models/                  # unverändert
+├── services/                # NEU
+│   └── git.py               # Git-Operationen
+└── database.py
 ```
 
-### Priority 2: Cleanup
+### Nicht gemacht (bewusst)
 
-- [ ] `backend/src/plugins/` löschen (leer)
-- [ ] `backend/src/tools/` löschen (leer)
-- [ ] Mock-Daten aus Frontend entfernen
+- ❌ `prompts.py` - Overkill für 20-Zeilen-Builder
+- ❌ `agent_service.py` - orchestrator.py ist jetzt kompakt genug
+- ❌ Leere Ordner löschen - existierten nicht mehr
 
-### Detaillierter Implementierungsplan
+---
 
-**Schritt 1: Ordner umbenennen**
-```bash
-cd backend/src
-mv mcp_servers mcp
-# Imports in orchestrator.py anpassen
+## Nächste Session: Phase 6 - Kanban als MCP Server
+
+### Tasks
+
+```
+- [ ] FastMCP installieren (`uv add fastmcp`)
+- [ ] `mcp/kanban_server.py` erstellen
+- [ ] Tools: create_task, list_tasks, get_task_result
+- [ ] In Claude Code registrieren
 ```
 
-**Schritt 2: agent_service.py extrahieren**
-- Git-Operationen aus orchestrator.py → `services/git_service.py`
-- Agent-Run-Management → `services/agent_service.py`
-- orchestrator.py auf < 100 Zeilen reduzieren
+### Referenz
 
-**Schritt 3: prompts.py erstellen**
-- `_build_prompt()` aus orchestrator.py → `agents/prompts.py`
-- Prompt-Templates für verschiedene Task-Typen
-
-**Schritt 4: Cleanup**
-- Leere Ordner löschen
-- Imports prüfen
-- Type checks laufen lassen
+→ `dev/MCP-ARCHITECTURE.md` Abschnitt 3.3 + 4
 
 ---
 
@@ -94,16 +76,7 @@ uv run ruff check --fix . && uv run ruff format .
 
 # Frontend
 cd frontend && bunx svelte-check --threshold warning
-bunx biome check --write .
 ```
-
----
-
-## Referenzen
-
-- **Architektur-Details:** `dev/MCP-ARCHITECTURE.md`
-- **Phasen-Übersicht:** `dev/PLAN.md`
-- **Workflow-Dokumentation:** `dev/WORKFLOW.md`
 
 ---
 

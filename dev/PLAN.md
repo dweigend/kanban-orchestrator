@@ -30,22 +30,26 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ---
 
-## Aktuelle Phase: 5 - Modulares Backend
+### Phase 5: Modulares Backend ✅
 
 **Ziel:** Clean Code, Separation of Concerns
 
-### Tasks
-- [ ] `mcp_servers/` → `mcp/` umbenennen
-- [ ] `orchestrator.py` aufteilen (< 100 Zeilen)
-- [ ] `agent_service.py` extrahieren
-- [ ] `prompts.py` für Templates
-- [ ] Leere Ordner löschen (`plugins/`, `tools/`)
+**Erledigt:**
+- [x] `mcp_servers/` → `mcp/` umbenannt
+- [x] `orchestrator.py` refactored (272 → 199 Zeilen)
+- [x] `services/git.py` extrahiert (Git-Operationen)
+- [x] Dokumentation aktualisiert
+
+**Nicht nötig:**
+- ~~`prompts.py`~~ - Overkill für 20 Zeilen
+- ~~`agent_service.py`~~ - orchestrator.py kompakt genug
+- ~~Leere Ordner~~ - existierten nicht
 
 **Referenz:** → `dev/MCP-ARCHITECTURE.md` Abschnitt 5
 
 ---
 
-## Phase 6: Kanban als MCP Server
+## Aktuelle Phase: 6 - Kanban als MCP Server
 
 **Ziel:** Claude Code kann Tasks erstellen
 
@@ -97,4 +101,4 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ---
 
-*Updated: 2026-01-16*
+*Updated: 2026-01-16 (Phase 5 completed)*

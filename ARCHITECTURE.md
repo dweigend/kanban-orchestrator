@@ -92,12 +92,14 @@ backend/
     │       ├── tasks.py       # /api/tasks
     │       ├── agent.py       # /api/agent/*
     │       └── events.py      # /api/events (SSE)
+    ├── services/              # Shared Business Logic
+    │   └── git.py             # Git checkpoint/commit operations
     ├── agents/
-    │   └── orchestrator.py    # Claude Agent SDK Integration
-    └── mcp_servers/
+    │   └── orchestrator.py    # Claude Agent SDK Integration (~200 lines)
+    └── mcp/                   # MCP Integration
         ├── registry.py        # MCP Server Registry
         └── filesystem/
-            └── server.py      # File I/O Tools
+            └── server.py      # File I/O Tools (sandboxed)
 ```
 
 ### Database Schema
@@ -209,7 +211,7 @@ GET    /api/events                SSE stream (text/event-stream)
 ### MCP Server System
 
 ```
-mcp_servers/
+mcp/
 ├── registry.py        # Central configuration
 └── filesystem/
     └── server.py      # Sandboxed file operations
@@ -456,7 +458,7 @@ onMount(() => {
 | AgentList.svelte | ✅ MVP | Mock data (needs backend) |
 | AgentLog.svelte | ✅ MVP | SSE integration |
 | ProjectOverview.svelte | ✅ MVP | Basic info |
-| Run Button on TaskCard | 🔲 Planned | UI integration |
+| Run Button on TaskCard | ✅ Complete | UI integration |
 | Project Selector | 🔲 Planned | Multi-project support |
 
 ---
@@ -471,7 +473,7 @@ The orchestrator runs with `bypassPermissions=true` (YOLO mode) within the sandb
 
 ### 2. MCP Server Registry Pattern
 
-MCP servers are modular and registered in `mcp_servers/registry.py`. New capabilities (Perplexity, OpenAlex) can be added without modifying the orchestrator.
+MCP servers are modular and registered in `mcp/registry.py`. New capabilities (Perplexity, OpenAlex) can be added without modifying the orchestrator.
 
 ### 3. Git Auto-Checkpoints
 

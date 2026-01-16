@@ -70,18 +70,17 @@ make check
 kanban-orchestrator/
 ├── backend/
 │   ├── src/
-│   │   ├── agents/          # Claude SDK Agents
-│   │   ├── tools/           # MCP Tools (Perplexity, OpenAlex, BibTeX)
-│   │   ├── api/             # FastAPI Routes
-│   │   ├── models/          # Pydantic Models
-│   │   └── plugins/         # Plugin System
+│   │   ├── agents/          # Claude SDK Agent Orchestrator
+│   │   ├── api/             # FastAPI Routes + Services
+│   │   ├── mcp/             # MCP Server Registry + Filesystem
+│   │   ├── models/          # SQLAlchemy Models
+│   │   └── services/        # Business Logic (git, etc.)
 │   ├── tests/
 │   └── pyproject.toml
 ├── frontend/
 │   ├── src/
 │   │   ├── lib/
 │   │   │   ├── components/  # UI Components
-│   │   │   ├── stores/      # State Management
 │   │   │   ├── services/    # API Client
 │   │   │   └── types/       # TypeScript Interfaces
 │   │   └── routes/          # SvelteKit Pages
@@ -164,4 +163,4 @@ kanban-orchestrator/
 2. Follow `dev/WORKFLOW.md`
 3. Update `dev/HANDOVER.md` at end
 
-*Generated: 2026-01-13*
+*Updated: 2026-01-16*

@@ -162,6 +162,8 @@ Claude Code                 Kanban MCP Server           Backend
 
 ## 5. Modulare Backend-Struktur
 
+### Aktueller Stand (Phase 5 ✅)
+
 ```
 backend/src/
 ├── api/
@@ -169,32 +171,46 @@ backend/src/
 │   │   ├── tasks.py          # Task CRUD
 │   │   ├── projects.py       # Project CRUD
 │   │   ├── agent.py          # Agent runs
-│   │   ├── events.py         # SSE
-│   │   └── plugins.py        # Plugin Manager API
-│   └── schemas.py
+│   │   └── events.py         # SSE
+│   ├── schemas.py
+│   ├── task_service.py       # Task Business Logic
+│   └── project_service.py    # Project Business Logic
 │
-├── services/                  # Business Logic
-│   ├── task_service.py
-│   ├── project_service.py
-│   ├── agent_service.py      # aus orchestrator.py
-│   └── plugin_service.py     # Install/Uninstall
+├── services/                  # Shared Business Logic ✅ NEU
+│   └── git.py                # Git checkpoint/commit operations
 │
 ├── agents/
-│   ├── orchestrator.py       # Slim (< 100 Zeilen)
-│   └── prompts.py            # Prompt Templates
+│   └── orchestrator.py       # ~200 Zeilen (refactored)
 │
-├── mcp/                       # MCP Integration
+├── mcp/                       # MCP Integration (umbenannt von mcp_servers/)
 │   ├── registry.py           # Config für externe MCPs
-│   ├── kanban_server.py      # Kanban als MCP (FastMCP)
-│   └── discovery.py          # Glama/Smithery API
+│   └── filesystem/
+│       └── server.py         # Sandboxed file operations
 │
 ├── models/
 │   ├── task.py
 │   ├── project.py
-│   ├── agent_run.py
-│   └── plugin.py             # Installierte Plugins
+│   └── agent_run.py
 │
 └── database.py
+```
+
+### Geplante Erweiterungen (Phase 6-7)
+
+```
+backend/src/
+├── api/routes/
+│   └── plugins.py            # Plugin Manager API (Phase 7)
+│
+├── services/
+│   └── plugin_service.py     # Install/Uninstall (Phase 7)
+│
+├── mcp/
+│   ├── kanban_server.py      # Kanban als MCP (Phase 6)
+│   └── discovery.py          # Glama/Smithery API (Phase 7)
+│
+└── models/
+    └── plugin.py             # Installierte Plugins (Phase 7)
 ```
 
 ---
@@ -261,4 +277,4 @@ Plugin Manager Tab
 
 ---
 
-*Created: 2026-01-16*
+*Updated: 2026-01-16*
