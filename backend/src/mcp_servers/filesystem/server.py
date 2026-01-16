@@ -6,7 +6,7 @@ This MCP server provides sandboxed file I/O within a specified workspace directo
 import os
 from pathlib import Path
 
-from mcp.server import FastMCP
+from mcp.server import FastMCP  # type: ignore[import-untyped]
 
 # Get workspace from environment
 WORKSPACE_PATH = os.environ.get("WORKSPACE_PATH", ".")

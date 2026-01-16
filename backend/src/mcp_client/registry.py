@@ -12,19 +12,14 @@ class MCPServerConfig(TypedDict):
     env: dict[str, str]
 
 
-# Registry of available MCP servers
+# Registry of available MCP servers (used by orchestrator to spawn MCP processes)
+# Note: These are INTERNAL servers that Kanban uses, not the external Kanban MCP
 MCP_REGISTRY: dict[str, MCPServerConfig] = {
     "filesystem": {
         "command": "python",
-        "args": ["-m", "src.mcp.filesystem.server"],
+        "args": ["-m", "src.mcp_servers.filesystem.server"],
         "env": {"WORKSPACE_PATH": "${WORKSPACE_PATH}"},
     },
-    # Future MCPs:
-    # "perplexity": {
-    #     "command": "python",
-    #     "args": ["-m", "src.mcp_servers.perplexity.server"],
-    #     "env": {"PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}"},
-    # },
 }
 
 

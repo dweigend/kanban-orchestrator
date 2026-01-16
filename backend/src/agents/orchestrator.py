@@ -13,7 +13,7 @@ from claude_agent_sdk.types import ClaudeAgentOptions
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.events import EventType, TaskEvent, event_bus
-from src.mcp.registry import get_mcp_config
+from src.mcp_client import get_mcp_config
 from src.models.agent_run import AgentRun, AgentRunStatus
 from src.models.task import Task, TaskStatus
 from src.services.git import create_checkpoint, create_commit

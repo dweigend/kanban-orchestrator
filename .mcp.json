@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "kanban": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "src.mcp_servers.kanban_server"],
+      "cwd": "backend",
+      "env": {
+        "KANBAN_API_URL": "http://localhost:8000"
+      }
+    }
+  }
+}

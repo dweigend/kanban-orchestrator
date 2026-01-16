@@ -96,10 +96,12 @@ backend/
     │   └── git.py             # Git checkpoint/commit operations
     ├── agents/
     │   └── orchestrator.py    # Claude Agent SDK Integration (~200 lines)
-    └── mcp/                   # MCP Integration
-        ├── registry.py        # MCP Server Registry
-        └── filesystem/
-            └── server.py      # File I/O Tools (sandboxed)
+    ├── mcp_servers/           # MCP servers WE EXPOSE (Kanban → external clients)
+    │   ├── kanban_server.py   # Tools for Claude Code (create_task, list_tasks)
+    │   └── filesystem/
+    │       └── server.py      # File I/O Tools (sandboxed)
+    └── mcp_client/            # MCP config for servers WE USE (Kanban → external MCPs)
+        └── registry.py        # Registry of MCP servers the orchestrator can spawn
 ```
 
 ### Database Schema
@@ -208,16 +210,58 @@ GET    /api/events                SSE stream (text/event-stream)
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### MCP Server System
+### MCP Architecture
+
+The system uses MCP (Model Context Protocol) bidirectionally:
 
 ```
-mcp/
-├── registry.py        # Central configuration
+┌─────────────────────────────────────────────────────────────────┐
+│                    MCP BIDIRECTIONAL FLOW                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  DIRECTION A: Kanban USES MCPs (mcp_client/)                   │
+│  ───────────────────────────────────────────                   │
+│  Orchestrator → spawns MCP servers for agent tools             │
+│                                                                 │
+│  ┌──────────────┐      ┌─────────────────┐                     │
+│  │ Orchestrator │ ───► │ Filesystem MCP  │                     │
+│  │ (Claude SDK) │      │ Perplexity MCP  │ (future)            │
+│  └──────────────┘      └─────────────────┘                     │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  DIRECTION B: Kanban IS an MCP (mcp_servers/)                  │
+│  ────────────────────────────────────────────                  │
+│  Claude Code → creates tasks in Kanban board                   │
+│                                                                 │
+│  ┌─────────────┐      ┌──────────────┐      ┌──────────┐       │
+│  │ Claude Code │ ───► │ Kanban MCP   │ ───► │ REST API │       │
+│  └─────────────┘      └──────────────┘      └──────────┘       │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Directory Structure:**
+
+```
+mcp_servers/              # Servers WE EXPOSE to external clients
+├── kanban_server.py      # Claude Code can create/query tasks
 └── filesystem/
-    └── server.py      # Sandboxed file operations
+    └── server.py         # Sandboxed file I/O for agents
+
+mcp_client/               # Config for servers WE USE
+└── registry.py           # Registry the orchestrator spawns from
 ```
 
-**Available Tools (Filesystem MCP):**
+**Kanban MCP Tools (mcp_servers/kanban_server.py):**
+
+| Tool | Description |
+|------|-------------|
+| `create_task(title, description?)` | Create task in board |
+| `list_tasks()` | List all tasks with status |
+| `get_task_result(task_id)` | Get task details + results |
+
+**Filesystem MCP Tools (mcp_servers/filesystem/server.py):**
 
 | Tool | Description |
 |------|-------------|
@@ -228,7 +272,7 @@ mcp/
 | `delete_file(path)` | Delete file |
 | `file_exists(path)` | Check file existence |
 
-All operations are sandboxed within the project's `workspace_path`.
+All filesystem operations are sandboxed within the project's `workspace_path`.
 
 ---
 
@@ -460,6 +504,38 @@ onMount(() => {
 | ProjectOverview.svelte | ✅ MVP | Basic info |
 | Run Button on TaskCard | ✅ Complete | UI integration |
 | Project Selector | 🔲 Planned | Multi-project support |
+
+---
+
+## Naming Conventions
+
+### MCP Directory Naming
+
+The MCP-related directories follow a **client/server perspective** naming convention:
+
+| Directory | Role | Meaning |
+|-----------|------|---------|
+| `mcp_servers/` | **We ARE an MCP** | Servers we expose to external clients |
+| `mcp_client/` | **We USE MCPs** | Config for servers we consume |
+
+**Why this naming?**
+
+The external Python package `mcp` would conflict with a local `mcp/` folder. Instead of generic names, we chose explicit role-based names:
+
+- `mcp_servers/` → Contains actual FastMCP server implementations
+- `mcp_client/` → Contains registry/config for spawning external MCP servers
+
+This makes the bidirectional MCP architecture immediately clear from the folder structure.
+
+### General Naming Patterns
+
+| Pattern | Convention | Example |
+|---------|------------|---------|
+| **Models** | Singular, PascalCase | `Task`, `Project`, `AgentRun` |
+| **Services** | Domain + `_service.py` | `task_service.py`, `git.py` |
+| **Routes** | Plural, resource name | `tasks.py`, `projects.py` |
+| **MCP Servers** | Feature + `_server.py` | `kanban_server.py`, `filesystem/server.py` |
+| **Schemas** | Model + `Create/Response` | `TaskCreate`, `TaskResponse` |
 
 ---
 

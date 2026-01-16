@@ -72,7 +72,8 @@ kanban-orchestrator/
 │   ├── src/
 │   │   ├── agents/          # Claude SDK Agent Orchestrator
 │   │   ├── api/             # FastAPI Routes + Services
-│   │   ├── mcp/             # MCP Server Registry + Filesystem
+│   │   ├── mcp_servers/     # MCP servers WE EXPOSE (Kanban → Claude Code)
+│   │   ├── mcp_client/      # MCP config for servers WE USE (Orchestrator → MCPs)
 │   │   ├── models/          # SQLAlchemy Models
 │   │   └── services/        # Business Logic (git, etc.)
 │   ├── tests/
