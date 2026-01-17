@@ -137,10 +137,16 @@ async def execute_agent_run(
 
     try:
         async for message in query(prompt=prompt, options=options):
+            # Determine message type from class name (SDK types don't have .type attr)
+            msg_class = message.__class__.__name__
+            msg_type = msg_class.replace(
+                "Message", ""
+            ).lower()  # ResultMessage → result
+
             # Stream log to frontend via SSE
             log_entry = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-                "type": getattr(message, "type", "unknown"),
+                "type": msg_type,
                 "content": str(message)[:500],
             }
             await event_bus.publish(
@@ -155,7 +161,7 @@ async def execute_agent_run(
             )
 
             # Check for success result
-            if getattr(message, "type", None) == "result":
+            if msg_type == "result":
                 if getattr(message, "subtype", None) == "success":
                     create_commit(workspace, f"feat: {task.title}")
                     await _finalize_run(
