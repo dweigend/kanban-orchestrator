@@ -1,12 +1,13 @@
 """Agent execution API endpoints."""
 
 from typing import Any
+from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.agents.orchestrator import run_task, stop_agent_run
+from src.agents.orchestrator import execute_agent_run, stop_agent_run
 from src.api.schemas import AgentRunCreate, AgentRunResponse
 from src.database import get_db
 from src.models.agent_run import AgentRun, AgentRunStatus
@@ -16,15 +17,22 @@ from src.models.task import Task
 router = APIRouter(prefix="/api/agent", tags=["agent"])
 
 
-async def _run_task_background(
+async def _run_agent_background(
+    agent_run_id: str,
     task_id: str,
     project_id: str | None,
     mcp_tools: list[str] | None,
 ) -> None:
-    """Background task runner."""
+    """Background task runner - continues an existing AgentRun."""
     from src.database import AsyncSessionLocal
 
     async with AsyncSessionLocal() as db:
+        # Fetch the existing agent run
+        result = await db.execute(select(AgentRun).where(AgentRun.id == agent_run_id))
+        agent_run = result.scalar_one_or_none()
+        if not agent_run:
+            return
+
         # Fetch task
         result = await db.execute(select(Task).where(Task.id == task_id))
         task = result.scalar_one_or_none()
@@ -37,7 +45,7 @@ async def _run_task_background(
             result = await db.execute(select(Project).where(Project.id == project_id))
             project = result.scalar_one_or_none()
 
-        await run_task(db, task, project, mcp_tools)
+        await execute_agent_run(db, agent_run, task, project, mcp_tools)
 
 
 @router.post(
@@ -62,7 +70,7 @@ async def start_agent_run(
     result = await db.execute(
         select(AgentRun).where(
             AgentRun.task_id == run_data.task_id,
-            AgentRun.status == AgentRunStatus.RUNNING,
+            AgentRun.status.in_([AgentRunStatus.PENDING, AgentRunStatus.RUNNING]),
         )
     )
     if result.scalar_one_or_none():
@@ -70,23 +78,28 @@ async def start_agent_run(
             status_code=409, detail="Task already has an active agent run"
         )
 
-    # Start background task
+    # Create AgentRun with PENDING status BEFORE background task
+    agent_run = AgentRun(
+        id=str(uuid4()),
+        task_id=task.id,
+        status=AgentRunStatus.PENDING,
+        started_at=None,  # Will be set when agent starts running
+    )
+    db.add(agent_run)
+    await db.commit()
+    await db.refresh(agent_run)
+
+    # Start background task with the real agent_run_id
     background_tasks.add_task(
-        _run_task_background,
+        _run_agent_background,
+        agent_run.id,
         task.id,
         task.project_id,
         ["filesystem"],  # Default MCP tools
     )
 
-    # Return placeholder response (actual run is created in background)
-    return AgentRunResponse(
-        id="pending",
-        task_id=run_data.task_id,
-        status=AgentRunStatus.PENDING,
-        error_message=None,
-        started_at=None,  # type: ignore
-        completed_at=None,
-    )
+    # Return real AgentRun (not placeholder!)
+    return AgentRunResponse.model_validate(agent_run)
 
 
 @router.post("/stop/{run_id}", status_code=status.HTTP_200_OK)

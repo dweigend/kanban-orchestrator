@@ -46,20 +46,41 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 **Referenz:** → `dev/MCP-ARCHITECTURE.md` Abschnitt 3.3
 
----
-
-## Aktuelle Phase: 7.1 - Cleanup & Testing 🧹
+### Phase 7.1: Cleanup & Testing ✅
 
 **Ziel:** Technische Schulden vor Plugin Manager beheben
 
-### Kritisch (vor Phase 7)
-- [ ] Basis-Tests schreiben (Task CRUD, Agent Run, MCP Server) → [#1](https://github.com/dweigend/kanban-orchestrator/issues/1)
-- [ ] Error Handling für `kanban_server.py` → [#2](https://github.com/dweigend/kanban-orchestrator/issues/2)
+**Erledigt:**
+- [x] Test-Infrastruktur (pytest-asyncio, conftest.py, in-memory SQLite)
+- [x] 44 Tests (Task CRUD, Project CRUD, Agent API, MCP Server)
+- [x] Error Handling für `kanban_server.py` (KanbanAPIError, input validation)
+- [x] Bug fix: `AgentRunResponse.started_at` optional
 
-### Optional
-- [ ] `stop_agent_run()` implementieren → [#3](https://github.com/dweigend/kanban-orchestrator/issues/3)
-- [ ] Services nach `services/` verschieben → [#5](https://github.com/dweigend/kanban-orchestrator/issues/5)
-- [ ] Settings Persistence → [#4](https://github.com/dweigend/kanban-orchestrator/issues/4)
+---
+
+## Aktuelle Phase: 7.2 - Test-Session & Debugging 🧪
+
+**Ziel:** System End-to-End testen und alle Bugs fixen
+
+**Tracking:** → `dev/DEBUG-REPORT.md`
+
+### Workflow
+1. Alle Issues in DEBUG-REPORT.md dokumentieren
+2. Issues einzeln abarbeiten (🔴 → 🟡 → 🟢)
+3. Fixes verifizieren
+4. Erst wenn alles 🟢 → weiter zu Phase 7
+
+### Bekannte Issues
+- [x] Port 8000 belegt → Makefile auto-cleanup
+- [x] DB Schema veraltet → `rm backend/kanban.db`
+- [ ] Weitere Issues → siehe DEBUG-REPORT.md
+
+### Tests
+- [ ] Backend API (Task/Project/Agent CRUD)
+- [ ] Frontend UI (Kanban Board, Drag&Drop)
+- [ ] Agent Flow (Task → Agent → Completion)
+- [ ] SSE Events (Live-Updates)
+- [ ] MCP Server (Claude Code Integration)
 
 ---
 
@@ -94,11 +115,19 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 
 ## Backlog
 
+### Architektur-Verbesserungen
+- [ ] **OpenAPI Codegen** - TypeScript-Types aus Pydantic generieren
+  - Löst: ARCH-001, ARCH-002, ARCH-004 (siehe DEBUG-REPORT.md)
+  - `npx openapi-typescript http://localhost:8000/openapi.json -o src/lib/types/api.ts`
+- [ ] **Runtime-Validierung (Zod)** - Frontend validiert Backend-Responses
+  - Löst: ARCH-003
+- [ ] **Project Selector UI** - Frontend nutzt Project-API (existiert bereits im Backend)
+
+### Infrastruktur
 - [ ] Vite Proxy für Production CORS
-- [ ] Multi-Project Support (Project Selector)
 - [ ] Knowledge DBs (thematische Spezialisierung)
 - [ ] Workflow Templates
 
 ---
 
-*Updated: 2026-01-16 (Phase 7.1 added)*
+*Updated: 2026-01-16 (Backlog: Architektur-Verbesserungen)*

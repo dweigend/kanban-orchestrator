@@ -1,15 +1,35 @@
 /**
- * Task type categories with associated colors
+ * Task type definitions and mapping utilities.
+ *
+ * This module defines:
+ * - TaskType: Visual category (research/dev/notes/neutral)
+ * - TaskStatus: Kanban column state (TODO/IN_PROGRESS/NEEDS_REVIEW/DONE)
+ * - Task: Full task interface matching backend schema
+ * - Mapping functions for backend ↔ frontend conversion
+ *
+ * IMPORTANT: Keep in sync with backend:
+ * - Pydantic schemas: backend/src/api/schemas.py
+ * - SQLAlchemy models: backend/src/models/task.py
+ */
+
+// ─────────────────────────────────────────────────────────────
+// Type Definitions
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Task type categories with associated colors.
+ * Matches backend TaskType enum (lowercase).
  */
 export type TaskType = 'research' | 'dev' | 'notes' | 'neutral';
 
 /**
- * Task status for Kanban columns (frontend uses uppercase)
+ * Task status for Kanban columns.
+ * Frontend uses UPPERCASE for display constants.
  */
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'NEEDS_REVIEW' | 'DONE';
 
 /**
- * Backend status format (lowercase)
+ * Backend status format (lowercase, matches Python StrEnum).
  */
 export type BackendTaskStatus =
 	| 'todo'
@@ -17,8 +37,12 @@ export type BackendTaskStatus =
 	| 'needs_review'
 	| 'done';
 
+// ─────────────────────────────────────────────────────────────
+// Status Mapping
+// ─────────────────────────────────────────────────────────────
+
 /**
- * Map frontend status to backend format
+ * Map frontend status to backend format.
  */
 export const STATUS_TO_BACKEND: Record<TaskStatus, BackendTaskStatus> = {
 	TODO: 'todo',
@@ -28,7 +52,7 @@ export const STATUS_TO_BACKEND: Record<TaskStatus, BackendTaskStatus> = {
 };
 
 /**
- * Map backend status to frontend format
+ * Map backend status to frontend format.
  */
 export const STATUS_FROM_BACKEND: Record<BackendTaskStatus, TaskStatus> = {
 	todo: 'TODO',
@@ -37,8 +61,13 @@ export const STATUS_FROM_BACKEND: Record<BackendTaskStatus, TaskStatus> = {
 	done: 'DONE',
 };
 
+// ─────────────────────────────────────────────────────────────
+// Task Interfaces
+// ─────────────────────────────────────────────────────────────
+
 /**
- * Task model matching backend schema
+ * Full task model used in frontend components.
+ * Status uses UPPERCASE for display.
  */
 export interface Task {
 	id: string;
@@ -46,31 +75,52 @@ export interface Task {
 	description?: string;
 	status: TaskStatus;
 	type: TaskType;
+	project_id?: string;
+	parent_id?: string;
 	created_at: string;
-	updated_at?: string;
 }
 
 /**
- * Payload for creating a new task
+ * Task as returned by backend API.
+ * Status uses lowercase (Python enum format).
+ */
+export interface BackendTask {
+	id: string;
+	title: string;
+	description: string | null;
+	status: BackendTaskStatus;
+	type: TaskType; // Backend now stores type
+	project_id: string | null;
+	parent_id: string | null;
+	created_at: string;
+}
+
+/**
+ * Payload for creating a new task.
  */
 export interface TaskCreate {
 	title: string;
 	description?: string;
 	type?: TaskType;
+	status?: BackendTaskStatus;
 }
 
 /**
- * Payload for updating an existing task
+ * Payload for updating an existing task.
  */
 export interface TaskUpdate {
 	title?: string;
 	description?: string;
-	status?: TaskStatus;
+	status?: BackendTaskStatus;
 	type?: TaskType;
 }
 
+// ─────────────────────────────────────────────────────────────
+// Display Constants
+// ─────────────────────────────────────────────────────────────
+
 /**
- * Color mapping for task types
+ * Color mapping for task types (CSS custom properties).
  */
 export const TASK_TYPE_COLORS: Record<TaskType, string> = {
 	research: 'var(--task-research)',
@@ -80,7 +130,7 @@ export const TASK_TYPE_COLORS: Record<TaskType, string> = {
 };
 
 /**
- * Labels for task types
+ * Labels for task types.
  */
 export const TASK_TYPE_LABELS: Record<TaskType, string> = {
 	research: 'Research',
@@ -90,7 +140,7 @@ export const TASK_TYPE_LABELS: Record<TaskType, string> = {
 };
 
 /**
- * Labels for task status columns
+ * Labels for task status columns.
  */
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 	TODO: 'To Do',
@@ -100,69 +150,46 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 };
 
 // ─────────────────────────────────────────────────────────────
-// Backend API Types
-// ─────────────────────────────────────────────────────────────
-
-/**
- * Task as returned by backend API
- */
-export interface BackendTask {
-	id: string;
-	title: string;
-	status: BackendTaskStatus;
-	created_at: string;
-}
-
-/**
- * Payload for creating a task via API
- */
-export interface TaskCreatePayload {
-	title: string;
-	status?: BackendTaskStatus;
-}
-
-/**
- * Payload for updating a task via API
- */
-export interface TaskUpdatePayload {
-	title?: string;
-	status?: BackendTaskStatus;
-}
-
-// ─────────────────────────────────────────────────────────────
 // Mapping Functions
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Convert backend task to frontend format
+ * Convert backend task to frontend format.
+ * Transforms status from lowercase to UPPERCASE.
  */
 export function mapBackendToTask(backend: BackendTask): Task {
 	return {
 		id: backend.id,
 		title: backend.title,
+		description: backend.description ?? undefined,
 		status: STATUS_FROM_BACKEND[backend.status],
-		type: 'neutral', // Default for backend tasks (not stored in backend)
+		type: backend.type, // Now persisted in backend
+		project_id: backend.project_id ?? undefined,
+		parent_id: backend.parent_id ?? undefined,
 		created_at: backend.created_at,
 	};
 }
 
 /**
- * Convert frontend task to create payload
+ * Convert frontend task to create payload.
  */
-export function mapTaskToCreatePayload(task: Partial<Task>): TaskCreatePayload {
+export function mapTaskToCreatePayload(task: Partial<Task>): TaskCreate {
 	return {
 		title: task.title ?? '',
+		description: task.description,
+		type: task.type,
 		status: task.status ? STATUS_TO_BACKEND[task.status] : undefined,
 	};
 }
 
 /**
- * Convert frontend task to update payload
+ * Convert frontend task to update payload.
  */
-export function mapTaskToUpdatePayload(task: Partial<Task>): TaskUpdatePayload {
-	const payload: TaskUpdatePayload = {};
+export function mapTaskToUpdatePayload(task: Partial<Task>): TaskUpdate {
+	const payload: TaskUpdate = {};
 	if (task.title !== undefined) payload.title = task.title;
-	if (task.status !== undefined)
-		payload.status = STATUS_TO_BACKEND[task.status];
+	if (task.description !== undefined) payload.description = task.description;
+	if (task.status !== undefined) payload.status = STATUS_TO_BACKEND[task.status];
+	if (task.type !== undefined) payload.type = task.type;
 	return payload;
 }

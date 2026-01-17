@@ -1,5 +1,6 @@
 """Async database configuration for SQLite + SQLAlchemy 2.0."""
 
+import os
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
@@ -9,7 +10,8 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-DATABASE_URL = "sqlite+aiosqlite:///./kanban.db"
+# Support in-memory DB for tests via environment variable
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./kanban.db")
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 

@@ -3,7 +3,7 @@ import Board from '$lib/components/kanban/Board.svelte';
 import Header, { type SidebarTab } from '$lib/components/layout/Header.svelte';
 import FunctionPanel from '$lib/components/panel/FunctionPanel.svelte';
 import * as agentApi from '$lib/services/agent';
-import { subscribeToEvents } from '$lib/services/events';
+import { subscribeToEvents, type ConnectionState } from '$lib/services/events';
 import * as taskApi from '$lib/services/tasks';
 import { showError, showSuccess } from '$lib/services/toast';
 import type { Agent, AgentLogEntry } from '$lib/types/agent';
@@ -23,6 +23,9 @@ let loading = $state(true);
 let runningAgentTaskId = $state<string | null>(null);
 let agentLogs = $state<AgentLogEntry[]>([]);
 let currentAgentTaskTitle = $state<string>('');
+
+// Connection State
+let connectionState = $state<ConnectionState>('connecting');
 
 // Mock agents (will be connected to backend later)
 const agents: Agent[] = $state([
@@ -92,44 +95,54 @@ $effect(() => {
 
 // SSE subscription for real-time updates
 $effect(() => {
-	const unsubscribe = subscribeToEvents((event) => {
-		switch (event.type) {
-			case 'task_created':
-				if (event.task) {
-					// Only add if not already present (avoid duplicates from own actions)
-					if (!tasks.find((t) => t.id === event.task!.id)) {
-						tasks = [...tasks, event.task];
+	const unsubscribe = subscribeToEvents({
+		onEvent: (event) => {
+			switch (event.type) {
+				case 'task_created':
+					if (event.task) {
+						// Only add if not already present (avoid duplicates from own actions)
+						if (!tasks.find((t) => t.id === event.task!.id)) {
+							tasks = [...tasks, event.task];
+						}
 					}
-				}
-				break;
-			case 'task_updated':
-				if (event.task) {
-					tasks = tasks.map((t) =>
-						t.id === event.task!.id
-							? { ...event.task!, type: t.type, description: t.description }
-							: t,
-					);
-				}
-				break;
-			case 'task_deleted':
-				if (event.taskId) {
-					tasks = tasks.filter((t) => t.id !== event.taskId);
-				}
-				break;
-			case 'agent_log':
-				if (event.agentLog) {
-					const { task_id, log } = event.agentLog;
-					// Only collect logs for currently running task
-					if (task_id === runningAgentTaskId) {
-						agentLogs = [...agentLogs, log];
+					break;
+				case 'task_updated':
+					if (event.task) {
+						// Backend now includes type, so use it directly
+						tasks = tasks.map((t) =>
+							t.id === event.task!.id ? event.task! : t,
+						);
 					}
-					// Agent finished?
-					if (log.type === 'result' || log.type === 'error') {
-						runningAgentTaskId = null;
+					break;
+				case 'task_deleted':
+					if (event.taskId) {
+						tasks = tasks.filter((t) => t.id !== event.taskId);
 					}
-				}
-				break;
-		}
+					break;
+				case 'agent_log':
+					if (event.agentLog) {
+						const { task_id, log } = event.agentLog;
+						// Only collect logs for currently running task
+						if (task_id === runningAgentTaskId) {
+							agentLogs = [...agentLogs, log];
+						}
+						// Agent finished?
+						if (log.type === 'result' || log.type === 'error') {
+							runningAgentTaskId = null;
+						}
+					}
+					break;
+			}
+		},
+		onConnectionChange: (state) => {
+			connectionState = state;
+			if (state === 'disconnected') {
+				showError('Connection lost. Reconnecting...');
+			} else if (state === 'connected') {
+				// Reload tasks after reconnection to ensure consistency
+				loadTasks();
+			}
+		},
 	});
 
 	return unsubscribe;
@@ -161,11 +174,8 @@ async function handleTaskSave(task: Task) {
 			showSuccess('Task created');
 		} else {
 			const updated = await taskApi.updateTask(task.id, task);
-			tasks = tasks.map((t) =>
-				t.id === updated.id
-					? { ...updated, type: task.type, description: task.description }
-					: t,
-			);
+			// Backend now stores type and description, use response directly
+			tasks = tasks.map((t) => (t.id === updated.id ? updated : t));
 			showSuccess('Task updated');
 		}
 		activeTab = 'overview';
@@ -205,11 +215,8 @@ async function handleTaskDrop(taskId: string, newStatus: TaskStatus) {
 
 	try {
 		const updated = await taskApi.updateTask(taskId, { status: newStatus });
-		tasks = tasks.map((t) =>
-			t.id === taskId
-				? { ...updated, type: task.type, description: task.description }
-				: t,
-		);
+		// Backend returns full task with type and description
+		tasks = tasks.map((t) => (t.id === taskId ? updated : t));
 		showSuccess('Task moved');
 	} catch (e) {
 		showError(e instanceof Error ? e.message : 'Failed to move task');

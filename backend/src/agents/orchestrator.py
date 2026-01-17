@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
-from uuid import uuid4
 
 from claude_agent_sdk import query
 from claude_agent_sdk.types import ClaudeAgentOptions
@@ -89,16 +88,18 @@ async def _finalize_run(
     await db.commit()
 
 
-async def run_task(
+async def execute_agent_run(
     db: AsyncSession,
+    agent_run: AgentRun,
     task: Task,
     project: Project | None,
     mcp_tools: list[str] | None = None,
 ) -> AgentResult:
-    """Execute a task using the Claude Agent SDK.
+    """Execute an existing agent run using the Claude Agent SDK.
 
     Args:
         db: Database session
+        agent_run: The pre-created AgentRun (in PENDING status)
         task: The task to execute
         project: The project containing workspace path
         mcp_tools: List of MCP tools to enable (default: ["filesystem"])
@@ -109,13 +110,9 @@ async def run_task(
     workspace_path = project.workspace_path if project else "."
     workspace = Path(workspace_path).resolve()
 
-    # Create agent run record
-    agent_run = AgentRun(
-        id=str(uuid4()),
-        task_id=task.id,
-        status=AgentRunStatus.RUNNING,
-    )
-    db.add(agent_run)
+    # Transition to RUNNING and set started_at
+    agent_run.status = AgentRunStatus.RUNNING
+    agent_run.started_at = datetime.now(timezone.utc)
     await db.commit()
 
     # Update task status and notify
