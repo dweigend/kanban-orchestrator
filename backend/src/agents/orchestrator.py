@@ -65,7 +65,17 @@ async def _publish_task_update(
     task: Task, extra_data: dict[str, str] | None = None
 ) -> None:
     """Publish a task update event via SSE."""
-    data = {"id": task.id, "title": task.title, "status": task.status}
+    data = {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "result": task.result,
+        "status": task.status,
+        "type": task.type,
+        "project_id": task.project_id,
+        "parent_id": task.parent_id,
+        "created_at": task.created_at.isoformat() if task.created_at else None,
+    }
     if extra_data:
         data.update(extra_data)
     await event_bus.publish(TaskEvent(event_type=EventType.TASK_UPDATED, data=data))

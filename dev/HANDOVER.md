@@ -1,175 +1,212 @@
 # HANDOVER
 
-## Aktuelle Phase: 7.2 - Test-Session & Debugging 🧪
+## Phase: 7.3 - Cleanup 🧹
+
+---
+
+## Session 2026-01-17 ✅
+
+**Fixes:**
+1. Agent Message Type Detection (`orchestrator.py`)
+2. Task Result Field (End-to-End)
+3. SSE sendet alle Task-Felder
+4. Pydantic Schemas mit Field-Beschreibungen
+
+---
+
+## Architektur-Entscheidung: Backend = Source of Truth
+
+### Warum?
+
+**Problem:** Frontend und Backend haben separate Type-Definitionen, die manuell synchron gehalten werden müssen. Jede Änderung (neues Feld, neuer Task-Type) erfordert Anpassungen an beiden Stellen.
+
+**Lösung:** Das Backend definiert ALLE Datenstrukturen. Das Frontend liest diese und rendert dynamisch.
+
+**Vorteile:**
+- Eine Quelle der Wahrheit (Single Source of Truth)
+- Änderungen nur im Backend nötig
+- Frontend passt sich automatisch an
+- LLMs können Backend-Schemas direkt nutzen (Pydantic → JSON Schema)
+
+### Was bleibt gleich
+
+Das aktuelle System ist gut aufgebaut:
+- SQLAlchemy Models für DB
+- Pydantic Schemas für API
+- TypeScript Types für Frontend
+
+**Nicht alles neu bauen!** Stattdessen: Schrittweise erweitern.
+
+---
+
+## Schema-Driven UI Konzept (GitHub #6)
+
+> **Hinweis:** Die folgenden Ideen sind ein Ausgangspunkt für weitere Überlegungen - keine fertigen Anweisungen. Bitte zuerst die Codebasis analysieren und prüfen, wo elegantes Refactoring möglich ist. Ziel: Einfacher werden, nicht komplizierter.
+
+### Grundidee
+
+```
+Backend (Pydantic)          Frontend (Svelte)
+─────────────────          ─────────────────
+TaskResponse               TaskEditor
+  - id: str                  - rendert Felder basierend
+  - title: str                 auf Schema
+  - description: str?        - kennt UI-Komponenten für
+  - result: str?               jeden Feld-Typ
+  - status: enum
+  - type: enum
+```
+
+### Schritt 1: Field-Typen definieren (Backend)
+
+Einfache Enum für UI-Rendering-Hints:
+
+```python
+class FieldType(StrEnum):
+    TEXT = "text"           # Einzeiliges Input
+    TEXTAREA = "textarea"   # Mehrzeiliges Input
+    SELECT = "select"       # Dropdown (braucht options)
+    READONLY = "readonly"   # Nur Anzeige (z.B. Result)
+    DATETIME = "datetime"   # Datum/Zeit Anzeige
+```
+
+### Schritt 2: Schema-Endpoint (Backend)
+
+```python
+@app.get("/api/schema/task")
+def get_task_schema():
+    return {
+        "fields": [
+            {"name": "title", "type": "text", "required": True},
+            {"name": "description", "type": "textarea"},
+            {"name": "result", "type": "readonly"},  # Agent füllt das
+            {"name": "status", "type": "select", "options": ["todo", "in_progress", "done"]},
+            {"name": "type", "type": "select", "options": ["research", "dev", "notes"]},
+        ]
+    }
+```
+
+### Schritt 3: Dynamisches Rendering (Frontend)
+
+```svelte
+{#each schema.fields as field}
+  {#if field.type === 'text'}
+    <TextInput name={field.name} required={field.required} />
+  {:else if field.type === 'textarea'}
+    <TextArea name={field.name} />
+  {:else if field.type === 'readonly'}
+    <ReadonlyDisplay name={field.name} />
+  {:else if field.type === 'select'}
+    <Select name={field.name} options={field.options} />
+  {/if}
+{/each}
+```
+
+### Was das ermöglicht
+
+- Neues Feld im Backend → Frontend zeigt es automatisch
+- Verschiedene Task-Types mit unterschiedlichen Feldern
+- MCP-spezifische Felder ohne Frontend-Änderung
+
+---
+
+## Pydantic Best Practices (KISS)
 
 ### Ziel
 
-**System End-to-End testen** - Frontend, Backend, Agent Flow, SSE Events
+Lesbar, typsicher, gut dokumentiert - nicht over-engineered.
 
-### Wichtiges Dokument
+### Regeln
 
-**→ `dev/DEBUG-REPORT.md`** - Zentrales Tracking aller Issues + Architektur-Erkenntnisse
+1. **Jedes Feld hat eine `description`** (LLMs nutzen das)
+2. **Beispiele wo sinnvoll** (nicht für jedes Feld)
+3. **Validierung nur wo nötig** (min_length für title, nicht für alles)
+4. **Klare Docstrings** für die Klasse
+5. **`ConfigDict(from_attributes=True)`** für ORM-Konvertierung
 
-### Nächste Session: Weiteres Debugging & Testing
+### Beispiel (aktuell gut)
 
-**Start mit:**
-1. `make dev` - Server starten
-2. Browser: `http://localhost:5173`
-3. Test-Checkliste in DEBUG-REPORT.md durchgehen
+```python
+class TaskCreate(BaseModel):
+    """Create a new task on the Kanban board."""
 
-### Status
-
-| Kategorie | Status |
-|-----------|--------|
-| Startup Issues | 🟢 Gefixt (Port cleanup, DB Schema) |
-| Unit Tests | 🟢 44 passed |
-| E2E Tests | ⬜ Noch nicht durchgeführt |
-| Architektur-Schulden | 🟠 4 dokumentiert (OpenAPI Codegen geplant) |
-
-### Offene Test-Checkliste
-
-Siehe `dev/DEBUG-REPORT.md` - Abschnitte:
-- Backend API Tests (9 Endpoints)
-- Frontend UI Tests (8 Checks)
-- Agent Flow Tests (5 Checks)
-
----
-
-## Session: 2026-01-16 (Nacht) - Architektur-Analyse ✅
-
-### Was wurde gemacht
-
-**Architektur-Review der Frontend↔Backend Kommunikation:**
-
-1. **Datenfluss dokumentiert:**
-   - TypeScript Interfaces → JSON → Pydantic Schemas
-   - `mapBackendToTask()` Mapping-Pattern analysiert
-   - Pydantic-Validierung verstanden
-
-2. **4 Architektur-Schulden identifiziert:**
-   - ARCH-001: Keine automatische Schema-Sync (🔴 Hoch)
-   - ARCH-002: Manuelle Mapping-Funktionen (🟠 Mittel)
-   - ARCH-003: Keine Runtime-Validierung (🟠 Mittel)
-   - ARCH-004: Doppelte Typ-Definitionen (🟡 Niedrig)
-
-3. **Lösung geplant:**
-   - OpenAPI Codegen für Type-Safety
-   - Priorität: Phase 8+ (nach Plugin Manager)
-
-### Erkenntnisse
-
-- Frontend ist reine UI-Schicht ohne Datenpersistenz
-- Ohne Backend → Frontend zeigt "Loading..." ewig
-- Project-API existiert, aber Frontend nutzt sie noch nicht (hardcoded Header)
-- MCP-Modus funktioniert: Claude Code kann direkt Backend-API nutzen
-
-### Dokumentiert in
-
-- `dev/DEBUG-REPORT.md` → Architektur-Erkenntnisse Sektion
-
----
-
-## Session: 2026-01-16 (Abend) - Startup Fix ✅
-
-### Problem
-
-`make dev` startete Backend nicht:
-- "Address already in use" auf Port 8000
-- Alle API-Calls schlugen fehl (404, 422)
-
-### Lösung
-
-**Makefile:** Auto Port Cleanup vor Backend-Start
-
-```makefile
-dev:
-	@lsof -ti:8000 | xargs kill -9 2>/dev/null || true
-	# ... rest
+    title: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Brief task title",
+    )
+    description: str | None = Field(
+        None,
+        description="Detailed task description",
+    )
+    status: TaskStatus = Field(
+        TaskStatus.TODO,
+        description="Initial Kanban column",
+    )
 ```
 
-### Geänderte Dateien
+### Nicht over-engineeren
 
-- `Makefile` - Port cleanup für `dev` und `backend` targets
-
-### Verifiziert
-
-- ✅ Frontend↔Backend API-Contracts aligned
-- ✅ Status-Konvertierung korrekt (IN_PROGRESS → in_progress)
-- ✅ Alle Routes registriert
-
----
-
-## Session: 2026-01-16 - Phase 7.1 Cleanup & Testing ✅
-
-### Was wurde gemacht
-
-**Issue #1: Basis-Tests schreiben:**
-
-1. **Test-Infrastruktur:**
-   - `pytest-asyncio` hinzugefügt
-   - `pytest.ini` mit async mode config
-   - `conftest.py` mit DB fixtures (in-memory SQLite)
-   - `database.py` → env-based `DATABASE_URL`
-
-2. **API Tests (25 Tests):**
-   - `test_tasks.py` - 11 Tests (CRUD + Validation)
-   - `test_projects.py` - 10 Tests (CRUD + Validation)
-   - `test_agent.py` - 4 Tests + 1 skipped (Background Task Issue)
-
-3. **Bug gefunden & gefixt:**
-   - `AgentRunResponse.started_at` war required, sollte optional sein
-   - Tests haben Pydantic ValidationError aufgedeckt
-
-**Issue #2: Error Handling für kanban_server.py:**
-
-4. **MCP Server refactored (~165 Zeilen):**
-   - `KanbanAPIError` custom exception
-   - `_handle_response()` für JSON parsing
-   - Try/except für `ConnectError`, `TimeoutException`
-   - Input-Validierung (empty title/task_id)
-   - Safe `.get()` statt `[]` für Response fields
-   - Error returns als `{"error": "message"}`
-
-5. **MCP Server Tests (19 Tests):**
-   - Input validation tests
-   - Error handling tests (connection, timeout, HTTP errors)
-   - Success path tests mit mocks
-
-### Test Results
-
+❌ Zu viel:
+```python
+title: Annotated[str, Field(
+    min_length=1,
+    max_length=255,
+    pattern=r'^[A-Za-z].*',
+    description="...",
+    examples=["...", "...", "..."],
+    json_schema_extra={"ui_component": "text", "placeholder": "..."}
+)]
 ```
-======================== 44 passed, 1 skipped in 0.18s =========================
+
+✅ Genug:
+```python
+title: str = Field(..., min_length=1, max_length=255, description="Brief task title")
 ```
 
 ---
 
-## Nach Phase 7.2: Phase 7 - Plugin Manager
+## Nächste Sessions
 
-- [ ] `models/plugin.py` Model
-- [ ] `mcp_client/discovery.py` Glama API Client
-- [ ] `api/routes/plugins.py` REST Endpoints
-- [ ] Frontend: Plugin Manager Tab
+### Session A: Backend
 
-**Referenz:** → `dev/MCP-ARCHITECTURE.md` Abschnitt 7
+**Erst erkunden, dann entscheiden:**
+1. Codebasis analysieren - wo gibt es Redundanz?
+2. Refactoring-Möglichkeiten identifizieren
+3. Elegantere Lösungen finden (weniger Code, nicht mehr)
+
+**Checklist:**
+- [ ] Schemas reviewen und vereinfachen
+- [ ] Error Handling standardisieren
+- [ ] Schema-Endpoint evaluieren (für dynamisches Frontend)
+- [ ] Tests für neue Funktionalität
+- [ ] Pydantic Best Practices prüfen
+
+### Session B: Frontend
+
+**Erst erkunden, dann entscheiden:**
+1. Komponenten-Struktur verstehen
+2. Wo kann vereinfacht werden?
+3. Was braucht das Frontend wirklich vom Backend?
+
+**Checklist:**
+- [ ] Unused Imports entfernen (53 Biome Warnings)
+- [ ] TypeScript Types mit Backend synchronisieren
+- [ ] Dynamischer Field-Renderer evaluieren
+- [ ] A11y Warnings fixen
+- [ ] Redundante Komponenten identifizieren
 
 ---
 
-## Verification Commands
+## Commands
 
 ```bash
-# DB Reset (bei Schema-Problemen)
-rm -f backend/kanban.db
-
-# Server starten
-make dev
-
-# Backend Tests
-cd backend && uv run pytest -v
-
-# Quality Gates
-make check
+make dev                    # Server starten
+cd backend && uv run pytest # Tests
+make check                  # Quality Gates
 ```
 
 ---
 
-*Updated: 2026-01-16 (Architektur-Analyse Session)*
+*Updated: 2026-01-17*

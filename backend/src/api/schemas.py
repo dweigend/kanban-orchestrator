@@ -1,9 +1,15 @@
 """Pydantic schemas for API request/response validation.
 
 This module defines all API contracts between frontend and backend.
-All schemas use `from_attributes=True` to enable ORM model conversion.
+Schemas are designed for both API validation AND LLM structured output.
 
-Schemas are organized by domain:
+Design Principles:
+- Every field has a description (LLMs use these for understanding)
+- Examples provided via json_schema_extra (helps LLM generation)
+- Validators for business logic
+- from_attributes=True for ORM model conversion
+
+Schemas by domain:
 - Project: ProjectCreate, ProjectUpdate, ProjectResponse
 - Task: TaskCreate, TaskUpdate, TaskResponse
 - AgentRun: AgentRunCreate, AgentRunResponse
@@ -15,7 +21,7 @@ IMPORTANT: Keep these schemas in sync with:
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.models.agent_run import AgentRunStatus
 from src.models.task import TaskStatus, TaskType
@@ -27,28 +33,50 @@ from src.models.task import TaskStatus, TaskType
 
 
 class ProjectCreate(BaseModel):
-    """Schema for creating a new project."""
+    """Create a new project workspace for task organization."""
 
-    name: str = Field(..., min_length=1, max_length=255)
-    workspace_path: str = Field(..., min_length=1, max_length=1024)
+    name: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Human-readable project name",
+        examples=["My Research Project", "Web App Development"],
+    )
+    workspace_path: str = Field(
+        ...,
+        min_length=1,
+        max_length=1024,
+        description="Absolute filesystem path to the project workspace directory",
+        examples=["/home/user/projects/my-app", "/Users/dev/workspace"],
+    )
 
 
 class ProjectUpdate(BaseModel):
-    """Schema for updating an existing project."""
+    """Update an existing project. Only provided fields will be modified."""
 
-    name: str | None = Field(None, min_length=1, max_length=255)
-    workspace_path: str | None = Field(None, min_length=1, max_length=1024)
+    name: str | None = Field(
+        None,
+        min_length=1,
+        max_length=255,
+        description="New project name",
+    )
+    workspace_path: str | None = Field(
+        None,
+        min_length=1,
+        max_length=1024,
+        description="New workspace path",
+    )
 
 
 class ProjectResponse(BaseModel):
-    """Schema for project API responses."""
+    """Project data returned by API endpoints."""
 
-    id: str
-    name: str
-    workspace_path: str
-    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
 
-    model_config = {"from_attributes": True}
+    id: str = Field(description="Unique project identifier (UUID)")
+    name: str = Field(description="Human-readable project name")
+    workspace_path: str = Field(description="Filesystem path to project workspace")
+    created_at: datetime = Field(description="Project creation timestamp (ISO 8601)")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -57,55 +85,110 @@ class ProjectResponse(BaseModel):
 
 
 class TaskCreate(BaseModel):
-    """Schema for creating a new task.
+    """Create a new task on the Kanban board.
 
-    Fields:
-        title: Required task title (1-255 chars)
-        description: Optional detailed description
-        status: Initial status (default: todo)
-        type: Task category for visual distinction (default: neutral)
-        project_id: Optional project association
-        parent_id: Optional parent task for subtasks
+    Tasks represent work items that can be processed by AI agents.
+    Each task has a type (research/dev/notes) and moves through
+    status columns (todo → in_progress → done).
     """
 
-    title: str = Field(..., min_length=1, max_length=255)
-    description: str | None = None
-    status: TaskStatus = TaskStatus.TODO
-    type: TaskType = TaskType.NEUTRAL
-    project_id: str | None = None
-    parent_id: str | None = None
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "title": "Research Kanban methodologies",
+                    "description": "Find best practices for Kanban in software teams",
+                    "type": "research",
+                },
+                {
+                    "title": "Implement user authentication",
+                    "description": "Add JWT-based auth to the API",
+                    "type": "dev",
+                    "status": "todo",
+                },
+            ]
+        }
+    )
+
+    title: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Brief task title displayed on the Kanban card",
+        examples=["Research AI agents", "Fix login bug", "Write documentation"],
+    )
+    description: str | None = Field(
+        None,
+        description="Detailed task description with context and requirements",
+        examples=["Investigate how AI agents can automate research tasks..."],
+    )
+    status: TaskStatus = Field(
+        TaskStatus.TODO,
+        description="Initial Kanban column: todo, in_progress, needs_review, or done",
+    )
+    type: TaskType = Field(
+        TaskType.NEUTRAL,
+        description="Task category for visual distinction: research, dev, notes, or neutral",
+    )
+    project_id: str | None = Field(
+        None,
+        description="UUID of parent project (optional)",
+    )
+    parent_id: str | None = Field(
+        None,
+        description="UUID of parent task for subtask hierarchy (optional)",
+    )
 
 
 class TaskUpdate(BaseModel):
-    """Schema for updating an existing task.
+    """Update an existing task. Only provided fields will be modified."""
 
-    All fields are optional - only provided fields will be updated.
-    """
-
-    title: str | None = Field(None, min_length=1, max_length=255)
-    description: str | None = None
-    status: TaskStatus | None = None
-    type: TaskType | None = None
+    title: str | None = Field(
+        None,
+        min_length=1,
+        max_length=255,
+        description="New task title",
+    )
+    description: str | None = Field(
+        None,
+        description="New task description",
+    )
+    status: TaskStatus | None = Field(
+        None,
+        description="New Kanban status: todo, in_progress, needs_review, or done",
+    )
+    type: TaskType | None = Field(
+        None,
+        description="New task type: research, dev, notes, or neutral",
+    )
 
 
 class TaskResponse(BaseModel):
-    """Schema for task API responses.
+    """Task data returned by API endpoints.
 
-    This is the canonical task format returned by all endpoints.
-    Keep in sync with frontend Task interface.
+    This is the canonical task format used across the system.
+    The result field contains AI agent output after task completion.
     """
 
-    id: str
-    title: str
-    description: str | None
-    result: str | None  # Agent result (temporary until Schema-Driven UI)
-    status: TaskStatus
-    type: TaskType
-    project_id: str | None
-    parent_id: str | None
-    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
 
-    model_config = {"from_attributes": True}
+    id: str = Field(description="Unique task identifier (UUID)")
+    title: str = Field(description="Brief task title displayed on Kanban card")
+    description: str | None = Field(
+        description="Detailed task description with context and requirements"
+    )
+    result: str | None = Field(
+        description="AI agent output/result after task completion (populated by agent)"
+    )
+    status: TaskStatus = Field(
+        description="Current Kanban column: todo, in_progress, needs_review, or done"
+    )
+    type: TaskType = Field(
+        description="Task category: research, dev, notes, or neutral"
+    )
+    project_id: str | None = Field(description="Parent project UUID (if assigned)")
+    parent_id: str | None = Field(description="Parent task UUID (for subtasks)")
+    created_at: datetime = Field(description="Task creation timestamp (ISO 8601)")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -114,30 +197,38 @@ class TaskResponse(BaseModel):
 
 
 class AgentRunCreate(BaseModel):
-    """Schema for starting an agent run."""
+    """Start an AI agent run for a specific task.
 
-    task_id: str
+    The agent will process the task and populate the result field.
+    """
+
+    task_id: str = Field(
+        ...,
+        description="UUID of the task to process",
+        examples=["550e8400-e29b-41d4-a716-446655440000"],
+    )
 
 
 class AgentRunResponse(BaseModel):
-    """Schema for agent run API responses.
+    """Agent run status and metadata returned by API endpoints.
 
-    Fields:
-        id: Unique run identifier (real UUID, not placeholder)
-        task_id: Associated task
-        status: Current run status (pending → running → completed/failed/cancelled)
-        logs: JSON string of log entries (nullable)
-        error_message: Error details if status is 'failed'
-        started_at: None for PENDING, set when agent starts RUNNING
-        completed_at: Set when run finishes (any terminal state)
+    Lifecycle: pending → running → completed/failed/cancelled
     """
 
-    id: str
-    task_id: str
-    status: AgentRunStatus
-    logs: str | None
-    error_message: str | None
-    started_at: datetime | None
-    completed_at: datetime | None
+    model_config = ConfigDict(from_attributes=True)
 
-    model_config = {"from_attributes": True}
+    id: str = Field(description="Unique run identifier (UUID)")
+    task_id: str = Field(description="UUID of the associated task")
+    status: AgentRunStatus = Field(
+        description="Current run status: pending, running, completed, failed, or cancelled"
+    )
+    logs: str | None = Field(
+        description="JSON string of agent log entries (for debugging)"
+    )
+    error_message: str | None = Field(description="Error details if status is 'failed'")
+    started_at: datetime | None = Field(
+        description="Timestamp when agent started running (None if pending)"
+    )
+    completed_at: datetime | None = Field(
+        description="Timestamp when run finished (any terminal state)"
+    )
