@@ -1,5 +1,7 @@
 """Project CRUD API endpoints."""
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,6 +9,7 @@ from src.api import project_service
 from src.api.schemas import ProjectCreate, ProjectResponse, ProjectUpdate
 from src.database import get_db
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
 
@@ -35,6 +38,7 @@ async def get_project(
     """Get a single project by ID."""
     project = await project_service.get_project(db, project_id)
     if not project:
+        logger.warning("Project not found: %s", project_id)
         raise HTTPException(status_code=404, detail="Project not found")
     return ProjectResponse.model_validate(project)
 
@@ -48,6 +52,7 @@ async def update_project(
     """Update an existing project."""
     project = await project_service.update_project(db, project_id, project_data)
     if not project:
+        logger.warning("Project not found for update: %s", project_id)
         raise HTTPException(status_code=404, detail="Project not found")
     return ProjectResponse.model_validate(project)
 
@@ -60,4 +65,5 @@ async def delete_project(
     """Delete a project."""
     deleted = await project_service.delete_project(db, project_id)
     if not deleted:
+        logger.warning("Project not found for deletion: %s", project_id)
         raise HTTPException(status_code=404, detail="Project not found")

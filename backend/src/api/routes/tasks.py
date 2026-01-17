@@ -1,5 +1,7 @@
 """Task CRUD API endpoints."""
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,6 +9,7 @@ from src.api import task_service
 from src.api.schemas import TaskCreate, TaskResponse, TaskUpdate
 from src.database import get_db
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
 
@@ -35,6 +38,7 @@ async def get_task(
     """Get a single task by ID."""
     task = await task_service.get_task(db, task_id)
     if not task:
+        logger.warning("Task not found: %s", task_id)
         raise HTTPException(status_code=404, detail="Task not found")
     return TaskResponse.model_validate(task)
 
@@ -48,6 +52,7 @@ async def update_task(
     """Update an existing task."""
     task = await task_service.update_task(db, task_id, task_data)
     if not task:
+        logger.warning("Task not found for update: %s", task_id)
         raise HTTPException(status_code=404, detail="Task not found")
     return TaskResponse.model_validate(task)
 
@@ -60,4 +65,5 @@ async def delete_task(
     """Delete a task."""
     deleted = await task_service.delete_task(db, task_id)
     if not deleted:
+        logger.warning("Task not found for deletion: %s", task_id)
         raise HTTPException(status_code=404, detail="Task not found")

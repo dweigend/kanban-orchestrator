@@ -96,6 +96,7 @@ kanban-orchestrator/
 ## Principles
 
 - **KISS** - Simplest solution wins
+- **Backend = Source of Truth** - Schema-API definiert Datenstrukturen
 - **Separation of Concerns** - Clear backend/frontend split
 - **Type Safety** - Python type hints + TypeScript types
 - **API Contract** - Define interfaces clearly
@@ -172,4 +173,4 @@ Bei Commits immer prüfen, dass der richtige Author gesetzt ist.
 2. Follow `dev/WORKFLOW.md`
 3. Update `dev/HANDOVER.md` at end
 
-*Updated: 2026-01-16*
+*Updated: 2026-01-17*

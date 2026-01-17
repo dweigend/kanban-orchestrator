@@ -1,5 +1,6 @@
 """Agent execution API endpoints."""
 
+import logging
 from typing import Any
 from uuid import uuid4
 
@@ -14,6 +15,7 @@ from src.models.agent_run import AgentRun, AgentRunStatus
 from src.models.project import Project
 from src.models.task import Task
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/agent", tags=["agent"])
 
 
@@ -64,6 +66,7 @@ async def start_agent_run(
     result = await db.execute(select(Task).where(Task.id == run_data.task_id))
     task = result.scalar_one_or_none()
     if not task:
+        logger.warning("Task not found for agent run: %s", run_data.task_id)
         raise HTTPException(status_code=404, detail="Task not found")
 
     # Check if task already has an active run
@@ -74,6 +77,7 @@ async def start_agent_run(
         )
     )
     if result.scalar_one_or_none():
+        logger.warning("Task already has active run: %s", run_data.task_id)
         raise HTTPException(
             status_code=409, detail="Task already has an active agent run"
         )
@@ -111,9 +115,15 @@ async def stop_agent(
     result = await db.execute(select(AgentRun).where(AgentRun.id == run_id))
     agent_run = result.scalar_one_or_none()
     if not agent_run:
+        logger.warning("Agent run not found for stop: %s", run_id)
         raise HTTPException(status_code=404, detail="Agent run not found")
 
     if agent_run.status != AgentRunStatus.RUNNING:
+        logger.warning(
+            "Stop requested for non-running agent: %s (status: %s)",
+            run_id,
+            agent_run.status,
+        )
         raise HTTPException(status_code=400, detail="Agent is not running")
 
     success = await stop_agent_run(db, agent_run)
@@ -150,5 +160,6 @@ async def get_agent_run(
     result = await db.execute(select(AgentRun).where(AgentRun.id == run_id))
     agent_run = result.scalar_one_or_none()
     if not agent_run:
+        logger.warning("Agent run not found: %s", run_id)
         raise HTTPException(status_code=404, detail="Agent run not found")
     return AgentRunResponse.model_validate(agent_run)

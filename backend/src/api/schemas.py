@@ -20,6 +20,7 @@ IMPORTANT: Keep these schemas in sync with:
 """
 
 from datetime import datetime
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -219,6 +220,7 @@ class AgentRunResponse(BaseModel):
 
     id: str = Field(description="Unique run identifier (UUID)")
     task_id: str = Field(description="UUID of the associated task")
+    created_at: datetime = Field(description="Run creation timestamp (ISO 8601)")
     status: AgentRunStatus = Field(
         description="Current run status: pending, running, completed, failed, or cancelled"
     )
@@ -232,3 +234,36 @@ class AgentRunResponse(BaseModel):
     completed_at: datetime | None = Field(
         description="Timestamp when run finished (any terminal state)"
     )
+
+
+# ─────────────────────────────────────────────────────────────
+# Schema Metadata (for dynamic frontend rendering)
+# ─────────────────────────────────────────────────────────────
+
+
+class FieldType(StrEnum):
+    """UI rendering hints for form fields."""
+
+    TEXT = "text"
+    TEXTAREA = "textarea"
+    SELECT = "select"
+    READONLY = "readonly"
+    DATETIME = "datetime"
+
+
+class SchemaField(BaseModel):
+    """Field definition for dynamic form rendering."""
+
+    name: str = Field(description="Field identifier matching the API field name")
+    type: FieldType = Field(description="UI component type for rendering")
+    required: bool = Field(default=False, description="Whether field is required")
+    description: str = Field(default="", description="Help text for the field")
+    options: list[str] | None = Field(
+        default=None, description="Valid values for select fields"
+    )
+
+
+class EntitySchema(BaseModel):
+    """Schema definition for an entity type (Task, Project, AgentRun)."""
+
+    fields: list[SchemaField] = Field(description="Ordered list of field definitions")

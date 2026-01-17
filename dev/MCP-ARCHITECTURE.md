@@ -162,7 +162,7 @@ Claude Code                 Kanban MCP Server           Backend
 
 ## 5. Modulare Backend-Struktur
 
-### Aktueller Stand (Phase 5 ✅)
+### Aktueller Stand (Phase 7.3 ✅)
 
 ```
 backend/src/
@@ -171,21 +171,23 @@ backend/src/
 │   │   ├── tasks.py          # Task CRUD
 │   │   ├── projects.py       # Project CRUD
 │   │   ├── agent.py          # Agent runs
-│   │   └── events.py         # SSE
-│   ├── schemas.py
+│   │   ├── events.py         # SSE
+│   │   └── schema.py         # Schema-Endpoints ✅ NEU
+│   ├── schemas.py            # Pydantic (inkl. FieldType, SchemaField, EntitySchema)
 │   ├── task_service.py       # Task Business Logic
 │   └── project_service.py    # Project Business Logic
 │
-├── services/                  # Shared Business Logic ✅ NEU
+├── services/
 │   └── git.py                # Git checkpoint/commit operations
 │
 ├── agents/
-│   └── orchestrator.py       # ~200 Zeilen (refactored)
+│   └── orchestrator.py       # Claude Agent SDK (~200 Zeilen)
 │
-├── mcp/                       # MCP Integration (umbenannt von mcp_servers/)
-│   ├── registry.py           # Config für externe MCPs
-│   └── filesystem/
-│       └── server.py         # Sandboxed file operations
+├── mcp_servers/              # Kanban als MCP Server
+│   └── server.py             # FastMCP
+│
+├── mcp_client/               # MCP Client Config
+│   └── registry.py           # Config für externe MCPs
 │
 ├── models/
 │   ├── task.py
@@ -195,22 +197,32 @@ backend/src/
 └── database.py
 ```
 
-### Geplante Erweiterungen (Phase 6-7)
+### Schema-API (Phase 7.3)
+
+Die Schema-Endpoints ermöglichen dynamisches Frontend-Rendering:
+
+```
+GET /api/schema/task         → Field-Definitionen für Task-Formulare
+GET /api/schema/project      → Field-Definitionen für Project-Formulare
+GET /api/schema/agent-run    → Field-Definitionen für AgentRun-Anzeige
+GET /api/schema/enums        → Alle Enum-Werte (task_status, task_type, agent_run_status)
+```
+
+### Geplante Erweiterungen (Phase 8-9)
 
 ```
 backend/src/
 ├── api/routes/
-│   └── plugins.py            # Plugin Manager API (Phase 7)
+│   └── plugins.py            # Plugin Manager API (Phase 9)
 │
 ├── services/
-│   └── plugin_service.py     # Install/Uninstall (Phase 7)
+│   └── plugin_service.py     # Install/Uninstall (Phase 9)
 │
-├── mcp/
-│   ├── kanban_server.py      # Kanban als MCP (Phase 6)
-│   └── discovery.py          # Glama/Smithery API (Phase 7)
+├── mcp_client/
+│   └── discovery.py          # Glama/Smithery API (Phase 9)
 │
 └── models/
-    └── plugin.py             # Installierte Plugins (Phase 7)
+    └── plugin.py             # Installierte Plugins (Phase 9)
 ```
 
 ---
@@ -277,4 +289,4 @@ Plugin Manager Tab
 
 ---
 
-*Updated: 2026-01-16*
+*Updated: 2026-01-17*
