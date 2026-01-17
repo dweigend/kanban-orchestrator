@@ -147,6 +147,14 @@ kanban-orchestrator/
 
 ---
 
+## Git Config
+
+**Author:** David Weigend <david.weigend@gmail.com>
+
+Bei Commits immer prüfen, dass der richtige Author gesetzt ist.
+
+---
+
 ## NEVER
 
 - ❌ Use pip (use uv)
