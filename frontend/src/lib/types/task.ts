@@ -73,6 +73,7 @@ export interface Task {
 	id: string;
 	title: string;
 	description?: string;
+	result?: string; // Agent result (temporary until Schema-Driven UI)
 	status: TaskStatus;
 	type: TaskType;
 	project_id?: string;
@@ -88,6 +89,7 @@ export interface BackendTask {
 	id: string;
 	title: string;
 	description: string | null;
+	result: string | null; // Agent result
 	status: BackendTaskStatus;
 	type: TaskType; // Backend now stores type
 	project_id: string | null;
@@ -162,6 +164,7 @@ export function mapBackendToTask(backend: BackendTask): Task {
 		id: backend.id,
 		title: backend.title,
 		description: backend.description ?? undefined,
+		result: backend.result ?? undefined,
 		status: STATUS_FROM_BACKEND[backend.status],
 		type: backend.type, // Now persisted in backend
 		project_id: backend.project_id ?? undefined,
@@ -189,7 +192,8 @@ export function mapTaskToUpdatePayload(task: Partial<Task>): TaskUpdate {
 	const payload: TaskUpdate = {};
 	if (task.title !== undefined) payload.title = task.title;
 	if (task.description !== undefined) payload.description = task.description;
-	if (task.status !== undefined) payload.status = STATUS_TO_BACKEND[task.status];
+	if (task.status !== undefined)
+		payload.status = STATUS_TO_BACKEND[task.status];
 	if (task.type !== undefined) payload.type = task.type;
 	return payload;
 }

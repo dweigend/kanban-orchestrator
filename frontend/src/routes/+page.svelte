@@ -3,7 +3,7 @@ import Board from '$lib/components/kanban/Board.svelte';
 import Header, { type SidebarTab } from '$lib/components/layout/Header.svelte';
 import FunctionPanel from '$lib/components/panel/FunctionPanel.svelte';
 import * as agentApi from '$lib/services/agent';
-import { subscribeToEvents, type ConnectionState } from '$lib/services/events';
+import { type ConnectionState, subscribeToEvents } from '$lib/services/events';
 import * as taskApi from '$lib/services/tasks';
 import { showError, showSuccess } from '$lib/services/toast';
 import type { Agent, AgentLogEntry } from '$lib/types/agent';

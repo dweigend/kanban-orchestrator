@@ -116,6 +116,12 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 ## Backlog
 
 ### Architektur-Verbesserungen
+- [ ] **Schema-Driven UI** - Backend definiert Felder dynamisch, Frontend rendert
+  - **Priorität: HOCH** - Fundamental für Flexibilität
+  - Backend liefert Field-Definitionen: `{type: "text"|"textarea"|"result"|"checklist", name: string, ...}`
+  - Frontend hat Pool von UI-Komponenten, rendert basierend auf Schema
+  - Keine harte Kopplung mehr zwischen Backend-Model und Frontend-Types
+  - Ermöglicht: Unterschiedliche Task-Types, MCP-spezifische Felder, dynamische Erweiterungen
 - [ ] **OpenAPI Codegen** - TypeScript-Types aus Pydantic generieren
   - Löst: ARCH-001, ARCH-002, ARCH-004 (siehe DEBUG-REPORT.md)
   - `npx openapi-typescript http://localhost:8000/openapi.json -o src/lib/types/api.ts`

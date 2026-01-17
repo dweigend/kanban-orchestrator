@@ -98,6 +98,7 @@ class TaskResponse(BaseModel):
     id: str
     title: str
     description: str | None
+    result: str | None  # Agent result (temporary until Schema-Driven UI)
     status: TaskStatus
     type: TaskType
     project_id: str | None

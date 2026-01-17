@@ -42,6 +42,7 @@ class Task(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    result: Mapped[str | None] = mapped_column(Text, nullable=True)  # Agent result
     status: Mapped[str] = mapped_column(String(20), default=TaskStatus.TODO)
     type: Mapped[str] = mapped_column(String(20), default=TaskType.NEUTRAL)
     created_at: Mapped[datetime] = mapped_column(

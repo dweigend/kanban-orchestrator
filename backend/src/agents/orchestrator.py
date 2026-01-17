@@ -163,6 +163,8 @@ async def execute_agent_run(
             # Check for success result
             if msg_type == "result":
                 if getattr(message, "subtype", None) == "success":
+                    # Save agent result to task
+                    task.result = getattr(message, "result", None)
                     create_commit(workspace, f"feat: {task.title}")
                     await _finalize_run(
                         db, agent_run, task, AgentRunStatus.COMPLETED, TaskStatus.DONE

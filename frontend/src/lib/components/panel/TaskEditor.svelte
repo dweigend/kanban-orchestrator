@@ -156,6 +156,20 @@ function handleDelete() {
 			></textarea>
 		</div>
 
+		<!-- Agent Result (only shown if result exists) -->
+		{#if currentTask.result}
+			<div class="space-y-2">
+				<span class="text-xs text-uppercase-tracking text-[var(--text-muted)]">
+					Agent Result
+				</span>
+				<div
+					class="w-full px-3 py-2 text-sm border border-[var(--border-default)] rounded bg-[var(--bg-base)] whitespace-pre-wrap"
+				>
+					{currentTask.result}
+				</div>
+			</div>
+		{/if}
+
 		<Separator.Root class="h-px bg-[var(--border-muted)]" />
 
 		<!-- Type Select -->
