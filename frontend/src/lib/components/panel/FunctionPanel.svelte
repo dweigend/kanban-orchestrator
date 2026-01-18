@@ -71,6 +71,17 @@ function handleMouseMove(e: MouseEvent) {
 function handleMouseUp() {
 	isResizing = false;
 }
+
+function handleKeyDown(e: KeyboardEvent) {
+	const step = e.shiftKey ? 50 : 10;
+	if (e.key === 'ArrowLeft') {
+		sidebarWidth = Math.min(600, sidebarWidth + step);
+		e.preventDefault();
+	} else if (e.key === 'ArrowRight') {
+		sidebarWidth = Math.max(280, sidebarWidth - step);
+		e.preventDefault();
+	}
+}
 </script>
 
 <svelte:window onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
@@ -80,12 +91,19 @@ function handleMouseUp() {
 	style="width: {sidebarWidth}px"
 >
 	<!-- Resize Handle -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-[var(--accent-primary)] transition-colors z-10"
 		class:bg-[var(--accent-primary)]={isResizing}
 		onmousedown={handleMouseDown}
+		onkeydown={handleKeyDown}
 		role="separator"
 		aria-orientation="vertical"
+		aria-valuenow={sidebarWidth}
+		aria-valuemin={280}
+		aria-valuemax={600}
+		aria-label="Resize sidebar"
 		tabindex="0"
 	></div>
 

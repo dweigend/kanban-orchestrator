@@ -1,11 +1,17 @@
 <script lang="ts">
-import { Select, Separator } from 'bits-ui';
-import CaretDown from 'phosphor-svelte/lib/CaretDown';
-import Check from 'phosphor-svelte/lib/Check';
+import { Separator } from 'bits-ui';
 import FloppyDisk from 'phosphor-svelte/lib/FloppyDisk';
 import Trash from 'phosphor-svelte/lib/Trash';
+import { FieldRenderer } from '$lib/components/form';
+import { fetchTaskSchema } from '$lib/services/schema';
+import type { EntitySchema, SchemaField } from '$lib/types/schema';
 import type { Task, TaskStatus, TaskType } from '$lib/types/task';
-import { TASK_STATUS_LABELS, TASK_TYPE_LABELS } from '$lib/types/task';
+import {
+	STATUS_FROM_BACKEND,
+	STATUS_TO_BACKEND,
+	TASK_STATUS_LABELS,
+	TASK_TYPE_LABELS,
+} from '$lib/types/task';
 
 interface Props {
 	task?: Task | null;
@@ -14,6 +20,21 @@ interface Props {
 }
 
 const { task = null, onSave, onDelete }: Props = $props();
+
+// Schema state
+let schema = $state<EntitySchema | null>(null);
+let schemaLoading = $state(true);
+
+// Load schema on mount
+$effect(() => {
+	fetchTaskSchema()
+		.then((s) => {
+			schema = s;
+		})
+		.finally(() => {
+			schemaLoading = false;
+		});
+});
 
 // Default empty task for new tasks
 const defaultTask: Task = {
@@ -28,49 +49,70 @@ const defaultTask: Task = {
 // Use provided task or default
 const currentTask = $derived(task ?? defaultTask);
 
-// Form state - initialized and reset via effect when task changes
-let title = $state('');
-let description = $state('');
-let status = $state<TaskStatus>('TODO');
-let type = $state<TaskType>('neutral');
-let errors = $state<{ title?: string }>({});
+// Form state as record (schema-driven)
+let formData = $state<Record<string, string>>({});
+let errors = $state<Record<string, string>>({});
 
 // Reset form when task prop changes
 $effect(() => {
-	title = currentTask.title;
-	description = currentTask.description ?? '';
-	status = currentTask.status;
-	type = currentTask.type;
+	formData = {
+		title: currentTask.title,
+		description: currentTask.description ?? '',
+		// Convert status to lowercase for form (matches backend schema options)
+		status: STATUS_TO_BACKEND[currentTask.status],
+		type: currentTask.type,
+		result: currentTask.result ?? '',
+		created_at: currentTask.created_at,
+	};
 	errors = {};
 });
 
 const isNewTask = $derived(!currentTask.id || currentTask.id === '');
 
-const typeOptions = Object.entries(TASK_TYPE_LABELS).map(([value, label]) => ({
-	value: value as TaskType,
-	label,
-}));
+// Label mappings for select fields (lowercase keys match backend schema)
+const selectLabels: Record<string, Record<string, string>> = {
+	status: Object.fromEntries(
+		Object.entries(TASK_STATUS_LABELS).map(([k, v]) => [
+			STATUS_TO_BACKEND[k as TaskStatus],
+			v,
+		]),
+	),
+	type: TASK_TYPE_LABELS,
+};
 
-const statusOptions = Object.entries(TASK_STATUS_LABELS).map(
-	([value, label]) => ({
-		value: value as TaskStatus,
-		label,
-	}),
+// Filter fields for display based on schema
+const editableFields = $derived(
+	schema?.fields.filter(
+		(f) =>
+			// Show editable fields (text, textarea, select)
+			f.type !== 'readonly' &&
+			f.type !== 'datetime' &&
+			// Hide status for new tasks
+			(f.name !== 'status' || !isNewTask),
+	) ?? [],
 );
 
-const selectedTypeLabel = $derived(TASK_TYPE_LABELS[type]);
-const selectedStatusLabel = $derived(TASK_STATUS_LABELS[status]);
+function handleFieldChange(name: string, value: string) {
+	formData = { ...formData, [name]: value };
+	// Clear error on change
+	if (errors[name]) {
+		const { [name]: _, ...rest } = errors;
+		errors = rest;
+	}
+}
 
-/**
- * Validate form before submission
- */
 function validateForm(): boolean {
 	errors = {};
-	const trimmedTitle = title.trim();
 
-	if (!trimmedTitle) {
-		errors = { ...errors, title: 'Title is required' };
-	} else if (trimmedTitle.length > 100) {
+	// Validate required fields from schema
+	for (const field of schema?.fields ?? []) {
+		if (field.required && !formData[field.name]?.trim()) {
+			errors = { ...errors, [field.name]: `${field.name} is required` };
+		}
+	}
+
+	// Title length validation
+	if (formData.title && formData.title.length > 100) {
 		errors = { ...errors, title: 'Title must be 100 characters or less' };
 	}
 
@@ -82,11 +124,12 @@ function handleSave() {
 
 	const updatedTask: Task = {
 		...currentTask,
-		title: title.trim(),
-		description: description.trim() || undefined,
-		status,
-		type,
-		updated_at: new Date().toISOString(),
+		title: formData.title.trim(),
+		description: formData.description?.trim() || undefined,
+		// Convert status back to UPPERCASE for frontend Task type
+		status:
+			STATUS_FROM_BACKEND[formData.status as keyof typeof STATUS_FROM_BACKEND],
+		type: formData.type as TaskType,
 	};
 	onSave?.(updatedTask);
 }
@@ -95,6 +138,11 @@ function handleDelete() {
 	if (currentTask.id) {
 		onDelete?.(currentTask.id);
 	}
+}
+
+// Get field by name helper
+function getField(name: string): SchemaField | undefined {
+	return schema?.fields.find((f) => f.name === name);
 }
 </script>
 
@@ -117,142 +165,43 @@ function handleDelete() {
 	</div>
 
 	<!-- Form -->
-	<div class="flex-1 space-y-4 overflow-y-auto">
-		<!-- Title -->
-		<div class="space-y-2">
-			<label for="task-title" class="text-xs text-uppercase-tracking text-[var(--text-muted)]">
-				Title *
-			</label>
-			<input
-				id="task-title"
-				type="text"
-				bind:value={title}
-				placeholder="Enter task title..."
-				class="w-full px-3 py-2 text-sm border rounded bg-[var(--bg-surface)] transition-colors
-					{errors.title
-					? 'border-red-500 focus:border-red-500'
-					: 'border-[var(--border-default)] focus:border-[var(--border-focus)]'}
-					placeholder:text-[var(--text-muted)] focus:outline-none"
-			/>
-			{#if errors.title}
-				<p class="text-xs text-red-400">{errors.title}</p>
+	{#if schemaLoading}
+		<div class="flex-1 flex items-center justify-center text-[var(--text-muted)]">
+			Loading...
+		</div>
+	{:else if schema}
+		<div class="flex-1 space-y-4 overflow-y-auto">
+			<!-- Dynamic editable fields -->
+			{#each editableFields as field (field.name)}
+				<FieldRenderer
+					{field}
+					value={formData[field.name]}
+					error={errors[field.name]}
+					displayLabels={selectLabels[field.name]}
+					onchange={(v) => handleFieldChange(field.name, v)}
+				/>
+			{/each}
+
+			<!-- Result (readonly, only if exists) -->
+			{#if currentTask.result}
+				{@const resultField = getField('result')}
+				{#if resultField}
+					<Separator.Root class="h-px bg-[var(--border-muted)]" />
+					<FieldRenderer field={resultField} value={currentTask.result} />
+				{/if}
 			{/if}
 		</div>
-
-		<!-- Description -->
-		<div class="space-y-2">
-			<label
-				for="task-description"
-				class="text-xs text-uppercase-tracking text-[var(--text-muted)]"
-			>
-				Description
-			</label>
-			<textarea
-				id="task-description"
-				bind:value={description}
-				placeholder="Add a description..."
-				rows="4"
-				class="w-full px-3 py-2 text-sm border border-[var(--border-default)] rounded bg-[var(--bg-surface)] focus:border-[var(--border-focus)] focus:outline-none placeholder:text-[var(--text-muted)] resize-none transition-colors"
-			></textarea>
-		</div>
-
-		<!-- Agent Result (only shown if result exists) -->
-		{#if currentTask.result}
-			<div class="space-y-2">
-				<span class="text-xs text-uppercase-tracking text-[var(--text-muted)]">
-					Agent Result
-				</span>
-				<div
-					class="w-full px-3 py-2 text-sm border border-[var(--border-default)] rounded bg-[var(--bg-base)] whitespace-pre-wrap"
-				>
-					{currentTask.result}
-				</div>
-			</div>
-		{/if}
-
-		<Separator.Root class="h-px bg-[var(--border-muted)]" />
-
-		<!-- Type Select -->
-		<div class="space-y-2">
-			<span class="text-xs text-uppercase-tracking text-[var(--text-muted)]">Type</span>
-			<Select.Root type="single" bind:value={type} items={typeOptions}>
-				<Select.Trigger
-					class="flex items-center justify-between w-full px-3 py-2 border border-[var(--border-default)] rounded bg-[var(--bg-surface)] hover:border-[var(--border-focus)] transition-colors"
-				>
-					<span class="text-sm">{selectedTypeLabel}</span>
-					<CaretDown class="size-4 text-[var(--text-muted)]" />
-				</Select.Trigger>
-				<Select.Portal>
-					<Select.Content
-						class="z-[60] border border-[var(--border-default)] bg-[var(--bg-elevated)] rounded shadow-lg p-1 animate-fade-in"
-						sideOffset={4}
-					>
-						<Select.Viewport>
-							{#each typeOptions as option}
-								<Select.Item
-									value={option.value}
-									label={option.label}
-									class="flex items-center justify-between px-3 py-2 text-sm rounded cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
-								>
-									{#snippet children({ selected })}
-										{option.label}
-										{#if selected}
-											<Check class="size-4 text-[var(--accent-primary)]" />
-										{/if}
-									{/snippet}
-								</Select.Item>
-							{/each}
-						</Select.Viewport>
-					</Select.Content>
-				</Select.Portal>
-			</Select.Root>
-		</div>
-
-		<!-- Status Select (only for existing tasks) -->
-		{#if !isNewTask}
-			<div class="space-y-2">
-				<span class="text-xs text-uppercase-tracking text-[var(--text-muted)]">Status</span>
-				<Select.Root type="single" bind:value={status} items={statusOptions}>
-					<Select.Trigger
-						class="flex items-center justify-between w-full px-3 py-2 border border-[var(--border-default)] rounded bg-[var(--bg-surface)] hover:border-[var(--border-focus)] transition-colors"
-					>
-						<span class="text-sm">{selectedStatusLabel}</span>
-						<CaretDown class="size-4 text-[var(--text-muted)]" />
-					</Select.Trigger>
-					<Select.Portal>
-						<Select.Content
-							class="z-[60] border border-[var(--border-default)] bg-[var(--bg-elevated)] rounded shadow-lg p-1 animate-fade-in"
-							sideOffset={4}
-						>
-							<Select.Viewport>
-								{#each statusOptions as option}
-									<Select.Item
-										value={option.value}
-										label={option.label}
-										class="flex items-center justify-between px-3 py-2 text-sm rounded cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
-									>
-										{#snippet children({ selected })}
-											{option.label}
-											{#if selected}
-												<Check class="size-4 text-[var(--accent-primary)]" />
-											{/if}
-										{/snippet}
-									</Select.Item>
-								{/each}
-							</Select.Viewport>
-						</Select.Content>
-					</Select.Portal>
-				</Select.Root>
-			</div>
-		{/if}
-	</div>
+	{/if}
 
 	<!-- Save Button -->
 	<div class="pt-4 border-t border-[var(--border-muted)] mt-4">
 		<button
 			type="button"
 			onclick={handleSave}
-			class="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-sm font-medium bg-[var(--accent-primary)] text-[var(--text-inverse)] rounded hover:bg-[var(--accent-hover)] transition-colors"
+			disabled={schemaLoading}
+			class="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-sm font-medium
+				bg-[var(--accent-primary)] text-[var(--text-inverse)] rounded
+				hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
 		>
 			<FloppyDisk class="size-4" />
 			{isNewTask ? 'CREATE TASK' : 'SAVE CHANGES'}

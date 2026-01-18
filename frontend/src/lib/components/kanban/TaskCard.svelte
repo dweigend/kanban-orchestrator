@@ -64,7 +64,7 @@ function getShortId(id: string): string {
 }
 </script>
 
-<article
+<div
 	class="group relative border border-[var(--border-default)] bg-[var(--bg-surface)] rounded-sm overflow-hidden hover:border-[var(--border-focus)] transition-colors cursor-pointer"
 	class:opacity-50={isDragging}
 	style="border-left: 4px solid {TASK_TYPE_COLORS[task.type]}"
@@ -153,4 +153,4 @@ function getShortId(id: string): string {
 		{/if}
 		<TypeIcon class="size-4 text-[var(--text-muted)]" />
 	</div>
-</article>
+</div>
