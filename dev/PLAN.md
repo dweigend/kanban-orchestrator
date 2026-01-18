@@ -17,47 +17,54 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - **Phase 7.1:** Tests (44 passed)
 - **Phase 7.2:** E2E Testing & Bugfixes
 - **Phase 7.3 Session A:** Backend Cleanup + Schema-Endpoints (72 Tests)
+- **Phase 7.3 Session B:** Frontend Schema-Integration + Bug Fix ✅
 
 ---
 
-## Aktuelle Phase: 7.3 - Cleanup 🧹
+## Aktuelle Phase: 8 - Frontend Improvements 🎨
 
-### Session A: Backend ✅
+### Quick Wins
 
-- [x] Pydantic Schemas vervollständigen
-- [x] Error Handling standardisieren (Logging)
-- [x] Tests ergänzen (72 total)
-- [x] Schema-Endpoints implementieren
+- [ ] Biome false-positive Warnings beheben
+- [ ] Form field id/name Attribut (A11y)
+- [ ] Loading States für API Calls
 
-### Session B: Frontend (nächste)
+### Features
 
-- [ ] Unused Imports entfernen
-- [ ] Schema-API nutzen für dynamisches Rendering
-- [ ] TypeScript Typen synchronisieren
-- [ ] A11y Warnings fixen
+- [ ] ProjectEditor mit Schema-Integration
+- [ ] Agent Log Panel - mehr Details, besseres UI
+- [ ] Board View - Drag & Drop optimieren
+- [ ] Error Handling - User-friendly Messages
+
+### Nice to Have
+
+- [ ] Dark Mode / Theme System
+- [ ] Keyboard Shortcuts
+- [ ] Mobile Responsive
 
 ---
 
 ## Nächste Phasen
-
-### Phase 8: Schema-Driven UI
-
-- Frontend nutzt `/api/schema/*` Endpoints
-- Dynamische Form-Generierung
-- OpenAPI Codegen evaluieren
 
 ### Phase 9: Plugin Manager
 
 - MCP Registry Integration (Glama API)
 - Plugin Install/Configure UI
 
+### Phase 10: Advanced Features
+
+- NEEDS_REVIEW Flow
+- Knowledge DBs Integration
+- Multi-Project Support
+
 ---
 
 ## Backlog
 
-- NEEDS_REVIEW Flow
 - Project Selector UI
-- Knowledge DBs
+- Task Dependencies
+- Bulk Operations
+- Export/Import
 
 ---
 
@@ -73,4 +80,12 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ---
 
-*Updated: 2026-01-17*
+## Dokumentation
+
+- `dev/HANDOVER.md` - Session Handover
+- `dev/TROUBLESHOOTING.md` - Bekannte Probleme & Lösungen
+- `dev/WORKFLOW.md` - Development Workflow
+
+---
+
+*Updated: 2026-01-18*
