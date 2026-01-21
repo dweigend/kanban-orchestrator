@@ -6,6 +6,8 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 **Prinzip:** Backend = Source of Truth, Frontend rendert dynamisch
 
+**Architektur:** Siehe `ARCHITECTURE.md` (Root) für Backend/Frontend Aufteilung
+
 ---
 
 ## Abgeschlossen ✅
@@ -17,30 +19,53 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - **Phase 7.1:** Tests (44 passed)
 - **Phase 7.2:** E2E Testing & Bugfixes
 - **Phase 7.3 Session A:** Backend Cleanup + Schema-Endpoints (72 Tests)
-- **Phase 7.3 Session B:** Frontend Schema-Integration + Bug Fix ✅
+- **Phase 7.3 Session B:** Frontend Schema-Integration (TaskEditor) ✅
 
 ---
 
-## Aktuelle Phase: 8 - Frontend Improvements 🎨
+## Aktuelle Phase: 8 - Schema-Driven UI 🏗️
 
-### Quick Wins
+**Ziel:** Frontend bezieht alle MCP-relevanten Daten vom Backend. UI-Präferenzen bleiben lokal.
 
-- [ ] Biome false-positive Warnings beheben
-- [ ] Form field id/name Attribut (A11y)
-- [ ] Loading States für API Calls
+### 8.1 Backend - Enum-Erweiterung
 
-### Features
+- [ ] `/api/schema/enums` erweitern mit Metadaten
+  - Labels: `"To Do"` statt nur `"todo"`
+  - Icons: `"MagnifyingGlass"` für Research
+  - Descriptions: Tooltips
 
-- [ ] ProjectEditor mit Schema-Integration
-- [ ] Agent Log Panel - mehr Details, besseres UI
-- [ ] Board View - Drag & Drop optimieren
-- [ ] Error Handling - User-friendly Messages
+### 8.2 Backend - Settings Endpoint
 
-### Nice to Have
+- [ ] `/api/settings/schema` - MCP-relevante Settings
+  - Git: Auto-Checkpoint, Prefix
+  - Agent: Model, Max Turns
 
-- [ ] Dark Mode / Theme System
-- [ ] Keyboard Shortcuts
-- [ ] Mobile Responsive
+### 8.3 Frontend - Schema-Service
+
+- [ ] `fetchEnums()` für erweiterte Enums
+- [ ] Caching der Schema-Responses
+- [ ] TypeScript Interfaces anpassen
+
+### 8.4 Frontend - Hardcoded Constants entfernen
+
+- [ ] `types/task.ts` - TASK_TYPE_LABELS, TASK_STATUS_LABELS → Schema
+- [ ] `types/agent.ts` - Agent-Labels → Schema
+
+### 8.5 Frontend - Komponenten umstellen
+
+| Komponente | Status | Änderung |
+|------------|--------|----------|
+| `TaskEditor.svelte` | ✅ | Bereits schema-driven |
+| `TaskCard.svelte` | ❌ | Labels + Icons aus Schema |
+| `Column.svelte` | ❌ | Header-Labels aus Schema |
+| `ProjectOverview.svelte` | ❌ | Schema nutzen |
+| `AgentList.svelte` | ❌ | Status-Labels aus Schema |
+| `SettingsPanel.svelte` | ❌ | Backend/UI Settings trennen |
+
+### 8.6 Cleanup
+
+- [ ] Biome false-positive Warnings
+- [ ] Form field id/name A11y
 
 ---
 
@@ -65,6 +90,8 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - Task Dependencies
 - Bulk Operations
 - Export/Import
+- Keyboard Shortcuts
+- Mobile Responsive
 
 ---
 
@@ -76,16 +103,18 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 | Projects | `/api/projects`, `/api/projects/{id}` |
 | Agent | `/api/agent/run`, `/api/agent/stop/{id}`, `/api/agent/runs` |
 | Schema | `/api/schema/task`, `/api/schema/project`, `/api/schema/agent-run`, `/api/schema/enums` |
+| Settings | `/api/settings/schema` (TODO) |
 | Events | `/api/events` (SSE) |
 
 ---
 
 ## Dokumentation
 
+- `ARCHITECTURE.md` - System-Architektur + Backend/Frontend Aufteilung
 - `dev/HANDOVER.md` - Session Handover
 - `dev/TROUBLESHOOTING.md` - Bekannte Probleme & Lösungen
 - `dev/WORKFLOW.md` - Development Workflow
 
 ---
 
-*Updated: 2026-01-18*
+*Updated: 2026-01-21*

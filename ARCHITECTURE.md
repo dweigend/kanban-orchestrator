@@ -539,6 +539,91 @@ This makes the bidirectional MCP architecture immediately clear from the folder 
 
 ---
 
+## Backend vs. Frontend Aufteilung
+
+### Entscheidungslogik
+
+**Faustregel:** Braucht ein Headless-MCP-Client diese Information?
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    ENTSCHEIDUNGSBAUM                            │
+└─────────────────────────────────────────────────────────────────┘
+
+Neue Funktion/Daten?
+        │
+        ▼
+┌───────────────────────────────────┐
+│ Braucht ein MCP-Client das?       │
+│ (CLI, Automation, Headless)       │
+└───────────────────────────────────┘
+        │
+   ┌────┴────┐
+   ▼         ▼
+  JA        NEIN
+   │         │
+   ▼         ▼
+BACKEND   ┌─────────────────────────┐
+          │ Ist es reine Darstellung │
+          │ (Farben, Fonts, Layout)? │
+          └─────────────────────────┘
+                    │
+               ┌────┴────┐
+               ▼         ▼
+              JA        NEIN
+               │         │
+               ▼         ▼
+           FRONTEND   BACKEND
+```
+
+### Schnell-Check
+
+| Frage | Antwort | Ort |
+|-------|---------|-----|
+| Braucht ein CLI-Tool diese Daten? | Ja | **Backend** |
+| Muss es in der DB persistiert werden? | Ja | **Backend** |
+| Ist es reine Kosmetik/Darstellung? | Ja | **Frontend** |
+| Nur localStorage/Session-relevant? | Ja | **Frontend** |
+| Hat es semantische Bedeutung? | Ja | **Backend** |
+
+### Backend (MCP-Funktionalität)
+
+| Kategorie | Was | Beispiele |
+|-----------|-----|-----------|
+| **Daten** | Entities | Tasks, Projects, Agent Runs |
+| **Schemas** | Feld-Definitionen | Welche Felder, Typen, Required |
+| **Enums + Metadaten** | Werte + Labels + Icons | `{"value": "todo", "label": "To Do", "icon": "Circle"}` |
+| **Workflow-Settings** | MCP-relevante Config | Git Auto-Checkpoint, Agent Model, Max Turns |
+
+### Frontend (UI-Präferenzen)
+
+| Kategorie | Was | Beispiele |
+|-----------|-----|-----------|
+| **Appearance** | Visuelle Präferenzen | Font Family, Font Size |
+| **Editor** | Code-Editor Settings | Line Numbers, Word Wrap |
+| **Verhalten** | UI-Verhalten | Notifications, Animations |
+| **Styling** | CSS | Farben als CSS-Variablen (`var(--task-research)`) |
+
+### Anti-Patterns
+
+```typescript
+// ❌ FALSCH - Labels im Frontend hardcoden
+const TASK_STATUS_LABELS = { 'todo': 'To Do', ... };
+
+// ✅ RICHTIG - Labels vom Backend holen
+const enums = await fetchEnums();
+const label = enums.task_status.find(s => s.value === status)?.label;
+```
+
+```python
+# ❌ FALSCH - Farben im Backend
+{"value": "research", "color": "#3b82f6"}
+
+# ✅ RICHTIG - Farben bleiben CSS-Variablen im Frontend
+```
+
+---
+
 ## Key Design Decisions
 
 ### 1. Claude Agent SDK with bypassPermissions
@@ -639,4 +724,4 @@ Das System folgt dem Prinzip: **Kanban = Orchestration (stabil), MCPs = Features
 
 ---
 
-*Last updated: 2026-01-16*
+*Last updated: 2026-01-21*
