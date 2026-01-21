@@ -267,3 +267,46 @@ class EntitySchema(BaseModel):
     """Schema definition for an entity type (Task, Project, AgentRun)."""
 
     fields: list[SchemaField] = Field(description="Ordered list of field definitions")
+
+
+# ─────────────────────────────────────────────────────────────
+# Enum Option Schemas (for schema-driven UI)
+# ─────────────────────────────────────────────────────────────
+
+
+class EnumOption(BaseModel):
+    """Base enum option with value and label."""
+
+    value: str = Field(description="Enum value used in API")
+    label: str = Field(description="Human-readable display label")
+
+
+class TaskStatusOption(EnumOption):
+    """Task status with description for tooltips."""
+
+    description: str = Field(description="Status description for tooltips")
+
+
+class TaskTypeOption(EnumOption):
+    """Task type with icon and prefix for UI rendering."""
+
+    icon: str = Field(description="Phosphor icon name")
+    prefix: str = Field(description="Short prefix for task IDs (e.g., RES, DEV)")
+
+
+class AgentRunStatusOption(EnumOption):
+    """Agent run status option."""
+
+    pass
+
+
+class EnumsResponse(BaseModel):
+    """Response containing all enum options with metadata."""
+
+    task_status: list[TaskStatusOption] = Field(
+        description="Task status options for Kanban columns"
+    )
+    task_type: list[TaskTypeOption] = Field(description="Task type options with icons")
+    agent_run_status: list[AgentRunStatusOption] = Field(
+        description="Agent run status options"
+    )

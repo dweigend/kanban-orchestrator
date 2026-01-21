@@ -8,6 +8,7 @@ import DotsThree from 'phosphor-svelte/lib/DotsThree';
 import MagnifyingGlass from 'phosphor-svelte/lib/MagnifyingGlass';
 import Note from 'phosphor-svelte/lib/Note';
 import Play from 'phosphor-svelte/lib/Play';
+import { getTypeIcon, getTypePrefix } from '$lib/stores/schema.svelte';
 import type { Task, TaskType } from '$lib/types/task';
 import { TASK_TYPE_COLORS } from '$lib/types/task';
 
@@ -27,14 +28,19 @@ const {
 	isAgentRunning = false,
 }: Props = $props();
 
-const typeIcons: Record<TaskType, typeof MagnifyingGlass> = {
-	research: MagnifyingGlass,
-	dev: Code,
-	notes: Note,
-	neutral: Chat,
+// Icon mapping (icon names from schema → Phosphor components)
+const iconComponents: Record<string, typeof MagnifyingGlass> = {
+	MagnifyingGlass: MagnifyingGlass,
+	Code: Code,
+	Note: Note,
+	Chat: Chat,
 };
 
-const TypeIcon = $derived(typeIcons[task.type]);
+// Get icon component from schema with fallback
+const TypeIcon = $derived.by(() => {
+	const iconName = getTypeIcon(task.type);
+	return iconName ? (iconComponents[iconName] ?? Chat) : Chat;
+});
 
 let isDragging = $state(false);
 
@@ -58,8 +64,7 @@ function handleClick(e: MouseEvent) {
 }
 
 function getShortId(id: string): string {
-	const prefix =
-		task.type === 'research' ? 'RES' : task.type === 'dev' ? 'DEV' : 'NOTE';
+	const prefix = getTypePrefix(task.type);
 	return `#${prefix}-${id.slice(0, 2).toUpperCase()}`;
 }
 </script>

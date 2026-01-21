@@ -133,6 +133,7 @@ export const TASK_TYPE_COLORS: Record<TaskType, string> = {
 
 /**
  * Labels for task types.
+ * @deprecated Use schema store: getTypeLabel() from '$lib/stores/schema.svelte'
  */
 export const TASK_TYPE_LABELS: Record<TaskType, string> = {
 	research: 'Research',
@@ -143,6 +144,7 @@ export const TASK_TYPE_LABELS: Record<TaskType, string> = {
 
 /**
  * Labels for task status columns.
+ * @deprecated Use schema store: getStatusLabel() from '$lib/stores/schema.svelte'
  */
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 	TODO: 'To Do',

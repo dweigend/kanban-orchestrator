@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.routes import agent, events, projects, schema, tasks
+from src.api.routes import agent, events, projects, schema, settings, tasks
 from src.database import init_db
 
 
@@ -38,6 +38,7 @@ app.include_router(tasks.router)
 app.include_router(agent.router)
 app.include_router(events.router)
 app.include_router(schema.router)
+app.include_router(settings.router)
 
 
 @app.get("/health")

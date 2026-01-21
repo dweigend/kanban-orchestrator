@@ -4,14 +4,10 @@ import FloppyDisk from 'phosphor-svelte/lib/FloppyDisk';
 import Trash from 'phosphor-svelte/lib/Trash';
 import { FieldRenderer } from '$lib/components/form';
 import { fetchTaskSchema } from '$lib/services/schema';
+import { getEnums } from '$lib/stores/schema.svelte';
 import type { EntitySchema, SchemaField } from '$lib/types/schema';
 import type { Task, TaskStatus, TaskType } from '$lib/types/task';
-import {
-	STATUS_FROM_BACKEND,
-	STATUS_TO_BACKEND,
-	TASK_STATUS_LABELS,
-	TASK_TYPE_LABELS,
-} from '$lib/types/task';
+import { STATUS_FROM_BACKEND, STATUS_TO_BACKEND } from '$lib/types/task';
 
 interface Props {
 	task?: Task | null;
@@ -69,16 +65,20 @@ $effect(() => {
 
 const isNewTask = $derived(!currentTask.id || currentTask.id === '');
 
-// Label mappings for select fields (lowercase keys match backend schema)
-const selectLabels: Record<string, Record<string, string>> = {
-	status: Object.fromEntries(
-		Object.entries(TASK_STATUS_LABELS).map(([k, v]) => [
-			STATUS_TO_BACKEND[k as TaskStatus],
-			v,
-		]),
-	),
-	type: TASK_TYPE_LABELS,
-};
+// Label mappings for select fields from schema store
+const selectLabels = $derived.by((): Record<string, Record<string, string>> => {
+	const enums = getEnums();
+	if (!enums) {
+		// Fallback if schema not loaded yet
+		return { status: {}, type: {} };
+	}
+	return {
+		status: Object.fromEntries(
+			enums.task_status.map((o) => [o.value, o.label]),
+		),
+		type: Object.fromEntries(enums.task_type.map((o) => [o.value, o.label])),
+	};
+});
 
 // Filter fields for display based on schema
 const editableFields = $derived(

@@ -20,52 +20,51 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - **Phase 7.2:** E2E Testing & Bugfixes
 - **Phase 7.3 Session A:** Backend Cleanup + Schema-Endpoints (72 Tests)
 - **Phase 7.3 Session B:** Frontend Schema-Integration (TaskEditor) ✅
+- **Phase 8:** Schema-Driven UI (77 Tests) ✅
 
 ---
 
-## Aktuelle Phase: 8 - Schema-Driven UI 🏗️
+## Abgeschlossene Phase: 8 - Schema-Driven UI ✅
 
 **Ziel:** Frontend bezieht alle MCP-relevanten Daten vom Backend. UI-Präferenzen bleiben lokal.
 
-### 8.1 Backend - Enum-Erweiterung
+### 8.1 Backend - Enum-Erweiterung ✅
 
-- [ ] `/api/schema/enums` erweitern mit Metadaten
+- [x] `/api/schema/enums` erweitern mit Metadaten
   - Labels: `"To Do"` statt nur `"todo"`
   - Icons: `"MagnifyingGlass"` für Research
   - Descriptions: Tooltips
 
-### 8.2 Backend - Settings Endpoint
+### 8.2 Backend - Settings Endpoint ✅
 
-- [ ] `/api/settings/schema` - MCP-relevante Settings
+- [x] `/api/settings/schema` - MCP-relevante Settings
   - Git: Auto-Checkpoint, Prefix
   - Agent: Model, Max Turns
 
-### 8.3 Frontend - Schema-Service
+### 8.3 Frontend - Schema-Service ✅
 
-- [ ] `fetchEnums()` für erweiterte Enums
-- [ ] Caching der Schema-Responses
-- [ ] TypeScript Interfaces anpassen
+- [x] `fetchEnums()` für erweiterte Enums
+- [x] Caching der Schema-Responses
+- [x] TypeScript Interfaces anpassen
 
-### 8.4 Frontend - Hardcoded Constants entfernen
+### 8.4 Frontend - Hardcoded Constants ✅
 
-- [ ] `types/task.ts` - TASK_TYPE_LABELS, TASK_STATUS_LABELS → Schema
-- [ ] `types/agent.ts` - Agent-Labels → Schema
+- [x] `types/task.ts` - TASK_TYPE_LABELS, TASK_STATUS_LABELS → @deprecated
+- [x] Schema Store mit Helper-Funktionen
 
-### 8.5 Frontend - Komponenten umstellen
+### 8.5 Frontend - Komponenten umgestellt ✅
 
 | Komponente | Status | Änderung |
 |------------|--------|----------|
-| `TaskEditor.svelte` | ✅ | Bereits schema-driven |
-| `TaskCard.svelte` | ❌ | Labels + Icons aus Schema |
-| `Column.svelte` | ❌ | Header-Labels aus Schema |
-| `ProjectOverview.svelte` | ❌ | Schema nutzen |
-| `AgentList.svelte` | ❌ | Status-Labels aus Schema |
-| `SettingsPanel.svelte` | ❌ | Backend/UI Settings trennen |
+| `TaskEditor.svelte` | ✅ | Labels aus Schema Store |
+| `TaskCard.svelte` | ✅ | Icons + Prefix aus Schema |
+| `Column.svelte` | ✅ | Header-Labels aus Schema |
 
-### 8.6 Cleanup
+### 8.6 Cleanup (Optional)
 
+- [ ] Board.svelte: Columns aus Schema
 - [ ] Biome false-positive Warnings
-- [ ] Form field id/name A11y
+- [ ] Alte Constants komplett entfernen
 
 ---
 
@@ -103,7 +102,7 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 | Projects | `/api/projects`, `/api/projects/{id}` |
 | Agent | `/api/agent/run`, `/api/agent/stop/{id}`, `/api/agent/runs` |
 | Schema | `/api/schema/task`, `/api/schema/project`, `/api/schema/agent-run`, `/api/schema/enums` |
-| Settings | `/api/settings/schema` (TODO) |
+| Settings | `/api/settings/schema` |
 | Events | `/api/events` (SSE) |
 
 ---

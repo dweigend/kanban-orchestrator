@@ -2,7 +2,15 @@
 
 from fastapi import APIRouter
 
-from src.api.schemas import EntitySchema, FieldType, SchemaField
+from src.api.schemas import (
+    AgentRunStatusOption,
+    EntitySchema,
+    EnumsResponse,
+    FieldType,
+    SchemaField,
+    TaskStatusOption,
+    TaskTypeOption,
+)
 from src.models.agent_run import AgentRunStatus
 from src.models.task import TaskStatus, TaskType
 
@@ -117,11 +125,64 @@ def get_agent_run_schema() -> EntitySchema:
     )
 
 
-@router.get("/enums")
-def get_all_enums() -> dict[str, list[str]]:
-    """Returns all enum values for dropdowns and validation."""
-    return {
-        "task_status": [s.value for s in TaskStatus],
-        "task_type": [t.value for t in TaskType],
-        "agent_run_status": [s.value for s in AgentRunStatus],
-    }
+@router.get("/enums", response_model=EnumsResponse)
+def get_all_enums() -> EnumsResponse:
+    """Returns all enum values with metadata for UI rendering."""
+    return EnumsResponse(
+        task_status=[
+            TaskStatusOption(
+                value="todo",
+                label="To Do",
+                description="Task nicht gestartet",
+            ),
+            TaskStatusOption(
+                value="in_progress",
+                label="In Progress",
+                description="Task wird bearbeitet",
+            ),
+            TaskStatusOption(
+                value="needs_review",
+                label="Needs Review",
+                description="Wartet auf Review",
+            ),
+            TaskStatusOption(
+                value="done",
+                label="Done",
+                description="Task abgeschlossen",
+            ),
+        ],
+        task_type=[
+            TaskTypeOption(
+                value="research",
+                label="Research",
+                icon="MagnifyingGlass",
+                prefix="RES",
+            ),
+            TaskTypeOption(
+                value="dev",
+                label="Development",
+                icon="Code",
+                prefix="DEV",
+            ),
+            TaskTypeOption(
+                value="notes",
+                label="Notes",
+                icon="Note",
+                prefix="NOTE",
+            ),
+            TaskTypeOption(
+                value="neutral",
+                label="General",
+                icon="Chat",
+                prefix="GEN",
+            ),
+        ],
+        agent_run_status=[
+            AgentRunStatusOption(value="pending", label="Pending"),
+            AgentRunStatusOption(value="running", label="Running"),
+            AgentRunStatusOption(value="needs_review", label="Needs Review"),
+            AgentRunStatusOption(value="completed", label="Completed"),
+            AgentRunStatusOption(value="failed", label="Failed"),
+            AgentRunStatusOption(value="cancelled", label="Cancelled"),
+        ],
+    )

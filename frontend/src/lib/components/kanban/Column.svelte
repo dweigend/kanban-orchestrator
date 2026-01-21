@@ -2,8 +2,8 @@
 import { Button } from 'bits-ui';
 import Plus from 'phosphor-svelte/lib/Plus';
 import type { Snippet } from 'svelte';
+import { getStatusLabel } from '$lib/stores/schema.svelte';
 import type { Task, TaskStatus } from '$lib/types/task';
-import { TASK_STATUS_LABELS } from '$lib/types/task';
 import TaskCard from './TaskCard.svelte';
 
 interface Props {
@@ -62,7 +62,7 @@ const taskCount = $derived(tasks.length);
 	>
 		<div class="flex items-center gap-2">
 			<span class="text-xs text-uppercase-tracking text-[var(--text-secondary)]">
-				{TASK_STATUS_LABELS[status]}
+				{getStatusLabel(status.toLowerCase())}
 			</span>
 			<span
 				class="size-5 flex items-center justify-center rounded bg-[var(--bg-surface)] text-xs text-[var(--text-muted)]"
@@ -74,7 +74,7 @@ const taskCount = $derived(tasks.length);
 		<Button.Root
 			class="size-6 flex items-center justify-center rounded hover:bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors focus-ring"
 			onclick={() => onAddTask?.()}
-			aria-label="Add task to {TASK_STATUS_LABELS[status]}"
+			aria-label="Add task to {getStatusLabel(status.toLowerCase())}"
 		>
 			<Plus class="size-4" />
 		</Button.Root>

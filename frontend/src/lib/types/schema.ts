@@ -25,7 +25,41 @@ export interface EntitySchema {
 	fields: SchemaField[];
 }
 
-/** Enum response from /api/schema/enums */
+// ─────────────────────────────────────────────────────────────
+// Enum Option Types (for schema-driven UI)
+// ─────────────────────────────────────────────────────────────
+
+/** Base enum option with value and label */
+export interface EnumOption {
+	value: string;
+	label: string;
+}
+
+/** Task status option with description for tooltips */
+export interface TaskStatusOption extends EnumOption {
+	description: string;
+}
+
+/** Task type option with icon and prefix for UI rendering */
+export interface TaskTypeOption extends EnumOption {
+	icon: string;
+	prefix: string;
+}
+
+/** Agent run status option */
+export interface AgentRunStatusOption extends EnumOption {}
+
+/** Enum response from /api/schema/enums (new format with metadata) */
+export interface EnumsResponse {
+	task_status: TaskStatusOption[];
+	task_type: TaskTypeOption[];
+	agent_run_status: AgentRunStatusOption[];
+}
+
+/**
+ * @deprecated Use EnumsResponse instead
+ * Legacy enum response (flat string arrays)
+ */
 export interface SchemaEnums {
 	task_status: string[];
 	task_type: string[];
