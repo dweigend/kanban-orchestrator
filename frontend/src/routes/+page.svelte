@@ -7,7 +7,7 @@ import { type ConnectionState, subscribeToEvents } from '$lib/services/events';
 import * as taskApi from '$lib/services/tasks';
 import { showError, showSuccess } from '$lib/services/toast';
 import { isSchemaReady } from '$lib/stores/schema.svelte';
-import type { Agent, AgentLogEntry } from '$lib/types/agent';
+import type { Agent, AgentLogEntry, AgentRun } from '$lib/types/agent';
 import type { Task, TaskStatus } from '$lib/types/task';
 
 // UI State
@@ -24,6 +24,7 @@ let loading = $state(true);
 let runningAgentTaskId = $state<string | null>(null);
 let agentLogs = $state<AgentLogEntry[]>([]);
 let currentAgentTaskTitle = $state<string>('');
+let agentRuns = $state<AgentRun[]>([]);
 
 // Connection State
 let connectionState = $state<ConnectionState>('connecting');
@@ -89,10 +90,20 @@ async function loadTasks() {
 	}
 }
 
+// Load agent runs history
+async function loadAgentRuns() {
+	try {
+		agentRuns = await agentApi.getAgentRuns();
+	} catch (e) {
+		console.error('Failed to load agent runs:', e);
+	}
+}
+
 // Initial load (wait for schema to be ready)
 $effect(() => {
 	if (isSchemaReady()) {
 		loadTasks();
+		loadAgentRuns();
 	}
 });
 
@@ -322,6 +333,8 @@ async function handleRunAgent(task: Task) {
 				onTaskSave={handleTaskSave}
 				onTaskDelete={handleTaskDelete}
 				{agentLogs}
+				{agentRuns}
+				{tasks}
 				agentTaskTitle={currentAgentTaskTitle}
 				isAgentRunning={runningAgentTaskId !== null}
 			/>

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Separator } from 'bits-ui';
-import type { Agent, AgentLogEntry } from '$lib/types/agent';
+import type { Agent, AgentLogEntry, AgentRun } from '$lib/types/agent';
 import type { Task } from '$lib/types/task';
 import AgentLog from './AgentLog.svelte';
 import ProjectOverview from './ProjectOverview.svelte';
@@ -32,6 +32,8 @@ interface Props {
 	onTaskSave?: (task: Task) => void;
 	onTaskDelete?: (taskId: string) => void;
 	agentLogs?: AgentLogEntry[];
+	agentRuns?: AgentRun[];
+	tasks?: Task[];
 	agentTaskTitle?: string;
 	isAgentRunning?: boolean;
 }
@@ -49,6 +51,8 @@ const {
 	onTaskSave,
 	onTaskDelete,
 	agentLogs = [],
+	agentRuns = [],
+	tasks = [],
 	agentTaskTitle = '',
 	isAgentRunning = false,
 }: Props = $props();
@@ -129,7 +133,13 @@ function handleKeyDown(e: KeyboardEvent) {
 		</div>
 	{:else if activeTab === 'agents'}
 		<div class="flex-1 flex flex-col min-h-0">
-			<AgentLog logs={agentLogs} taskTitle={agentTaskTitle} isRunning={isAgentRunning} />
+			<AgentLog
+				logs={agentLogs}
+				runs={agentRuns}
+				{tasks}
+				taskTitle={agentTaskTitle}
+				isRunning={isAgentRunning}
+			/>
 		</div>
 	{:else if activeTab === 'settings'}
 		<div class="flex-1 min-h-0 overflow-y-auto">

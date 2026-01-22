@@ -34,7 +34,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Feature | Status | Issue | Notes |
 |---------|--------|-------|-------|
 | Agent Runs (API) | 🟢 | | 2 completed runs in DB |
-| Agent Logs Panel | 🔴 | #8 | Zeigt "No agent activity" |
+| Agent Logs Panel | 🟢 | #8 | ✅ Fixed: Historical runs now displayed |
 | Run Agent Button | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
 | Agent Logs Streaming | ⚪ | | SSE nicht getestet |
 | Task Result Display | ⚪ | | Nicht getestet |
