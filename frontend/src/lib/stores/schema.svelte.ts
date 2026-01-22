@@ -81,3 +81,8 @@ export function getAgentStatusLabel(value: string): string {
 export function getTaskStatuses(): string[] {
 	return enums?.task_status.map((o) => o.value) ?? [];
 }
+
+/** Check if schema is ready (loaded and not loading) */
+export function isSchemaReady(): boolean {
+	return enums !== null && !loading;
+}

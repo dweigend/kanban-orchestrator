@@ -6,6 +6,7 @@ import * as agentApi from '$lib/services/agent';
 import { type ConnectionState, subscribeToEvents } from '$lib/services/events';
 import * as taskApi from '$lib/services/tasks';
 import { showError, showSuccess } from '$lib/services/toast';
+import { isSchemaReady } from '$lib/stores/schema.svelte';
 import type { Agent, AgentLogEntry } from '$lib/types/agent';
 import type { Task, TaskStatus } from '$lib/types/task';
 
@@ -88,9 +89,11 @@ async function loadTasks() {
 	}
 }
 
-// Initial load
+// Initial load (wait for schema to be ready)
 $effect(() => {
-	loadTasks();
+	if (isSchemaReady()) {
+		loadTasks();
+	}
 });
 
 // SSE subscription for real-time updates

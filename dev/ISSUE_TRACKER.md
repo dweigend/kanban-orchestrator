@@ -21,7 +21,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 |---------|--------|-------|-------|
 | Create Task (API) | 🟢 | | POST /api/tasks → 201 |
 | Create Task (UI) | 🟢 | | TaskEditor funktioniert |
-| Tasks im Board anzeigen | 🔴 | #6 | Board zeigt "No tasks" trotz 9 Tasks in DB |
+| Tasks im Board anzeigen | 🟢 | #6 | ✅ Fixed: Schema status mapping (lowercase → UPPERCASE) |
 | Edit Task | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
 | Delete Task | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
 | Drag & Drop | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
