@@ -116,4 +116,4 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ---
 
-*Updated: 2026-01-21*
+*Updated: 2026-01-22*

@@ -147,4 +147,4 @@ make dev                              # Server starten
 
 ---
 
-*Updated: 2026-01-21*
+*Updated: 2026-01-22*
