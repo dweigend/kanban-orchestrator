@@ -1,15 +1,13 @@
 <script lang="ts">
-import { DropdownMenu } from 'bits-ui';
-import ArrowSquareOut from 'phosphor-svelte/lib/ArrowSquareOut';
 import Chat from 'phosphor-svelte/lib/Chat';
 import CircleNotch from 'phosphor-svelte/lib/CircleNotch';
 import Code from 'phosphor-svelte/lib/Code';
-import DotsThree from 'phosphor-svelte/lib/DotsThree';
 import MagnifyingGlass from 'phosphor-svelte/lib/MagnifyingGlass';
 import Note from 'phosphor-svelte/lib/Note';
 import Play from 'phosphor-svelte/lib/Play';
+import Trash from 'phosphor-svelte/lib/Trash';
 import { getTypeIcon, getTypePrefix } from '$lib/stores/schema.svelte';
-import type { Task, TaskType } from '$lib/types/task';
+import type { Task } from '$lib/types/task';
 import { TASK_TYPE_COLORS } from '$lib/types/task';
 
 interface Props {
@@ -57,9 +55,9 @@ function handleDragEnd() {
 }
 
 function handleClick(e: MouseEvent) {
-	// Don't trigger edit if clicking on the dropdown trigger
+	// Don't trigger edit if clicking on action buttons
 	const target = e.target as HTMLElement;
-	if (target.closest('[data-dropdown-trigger]')) return;
+	if (target.closest('[data-action-btn]')) return;
 	onEdit?.(task);
 }
 
@@ -85,54 +83,34 @@ function getShortId(id: string): string {
 	<div class="flex items-center justify-between px-3 pt-3">
 		<span class="text-xs text-[var(--text-muted)] font-mono">{getShortId(task.id)}</span>
 
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger
-				class="size-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 hover:bg-[var(--bg-hover)] transition-all focus-ring"
-				aria-label="Task actions"
-				data-dropdown-trigger
+		<div class="flex items-center gap-1">
+			<!-- Run Agent -->
+			<button
+				type="button"
+				onclick={() => onRunAgent?.(task)}
+				disabled={isAgentRunning}
+				data-action-btn
+				class="size-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 hover:bg-[var(--bg-hover)] transition-all focus-ring disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text-muted)] hover:text-[var(--accent-primary)]"
+				title={isAgentRunning ? 'Agent running...' : 'Run Agent'}
 			>
-				<DotsThree class="size-4" weight="bold" />
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Portal>
-				<DropdownMenu.Content
-					class="z-50 min-w-[140px] rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] p-1 shadow-lg animate-fade-in"
-					sideOffset={4}
-				>
-					<DropdownMenu.Item
-						class="flex items-center gap-2 px-3 py-2 text-xs rounded cursor-pointer hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-						onclick={() => onEdit?.(task)}
-					>
-						Edit
-					</DropdownMenu.Item>
-					<DropdownMenu.Item
-						class="flex items-center gap-2 px-3 py-2 text-xs rounded cursor-pointer hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-					>
-						<ArrowSquareOut class="size-3" />
-						Open
-					</DropdownMenu.Item>
-					<DropdownMenu.Item
-						class="flex items-center gap-2 px-3 py-2 text-xs rounded cursor-pointer hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-						onclick={() => onRunAgent?.(task)}
-						disabled={isAgentRunning}
-					>
-						{#if isAgentRunning}
-							<CircleNotch class="size-3 animate-spin" />
-							Running...
-						{:else}
-							<Play class="size-3" />
-							Run Agent
-						{/if}
-					</DropdownMenu.Item>
-					<DropdownMenu.Separator class="my-1 h-px bg-[var(--border-muted)]" />
-					<DropdownMenu.Item
-						class="flex items-center gap-2 px-3 py-2 text-xs rounded cursor-pointer hover:bg-red-500/10 text-red-400 transition-colors"
-						onclick={() => onDelete?.(task)}
-					>
-						Delete
-					</DropdownMenu.Item>
-				</DropdownMenu.Content>
-			</DropdownMenu.Portal>
-		</DropdownMenu.Root>
+				{#if isAgentRunning}
+					<CircleNotch class="size-4 animate-spin text-orange-400" />
+				{:else}
+					<Play class="size-4" weight="fill" />
+				{/if}
+			</button>
+
+			<!-- Delete -->
+			<button
+				type="button"
+				onclick={() => onDelete?.(task)}
+				data-action-btn
+				class="size-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/10 transition-all focus-ring text-[var(--text-muted)] hover:text-red-400"
+				title="Delete"
+			>
+				<Trash class="size-4" weight="bold" />
+			</button>
+		</div>
 	</div>
 
 	<!-- Content -->
