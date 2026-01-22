@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Menubar, Separator, Tabs } from 'bits-ui';
+import { Menubar, Separator } from 'bits-ui';
 import Folder from 'phosphor-svelte/lib/Folder';
 import Gauge from 'phosphor-svelte/lib/Gauge';
 import Gear from 'phosphor-svelte/lib/Gear';
@@ -11,21 +11,15 @@ import SquaresFour from 'phosphor-svelte/lib/SquaresFour';
 export type SidebarTab = 'overview' | 'agents' | 'settings' | 'new-task';
 
 interface Props {
-	projectName?: string;
-	viewMode?: string;
 	activeTab?: SidebarTab;
 	sidebarVisible?: boolean;
-	onViewChange?: (mode: string) => void;
 	onTabChange?: (tab: SidebarTab) => void;
 	onSidebarToggle?: () => void;
 }
 
 const {
-	projectName = 'vibe-kanban',
-	viewMode = 'hub-view',
 	activeTab = 'overview',
 	sidebarVisible = true,
-	onViewChange,
 	onTabChange,
 	onSidebarToggle,
 }: Props = $props();
@@ -38,45 +32,11 @@ function handleTabClick(tab: SidebarTab) {
 <header
 	class="h-[var(--header-height)] border-b border-[var(--border-default)] bg-[var(--bg-elevated)] flex items-center justify-between px-4"
 >
-	<!-- Left: Logo & Breadcrumb -->
-	<div class="flex items-center gap-4">
-		<div class="flex items-center gap-2">
-			<SquaresFour class="size-5 text-[var(--accent-primary)]" weight="fill" />
-			<span class="font-semibold text-uppercase-tracking text-xs hidden md:inline">Knowledge Orchestrator</span>
-		</div>
-
-		<Separator.Root class="h-4 w-px bg-[var(--border-default)] hidden sm:block" orientation="vertical" />
-
-		<nav class="flex items-center gap-2 text-[var(--text-secondary)] text-xs hidden sm:flex">
-			<span>{projectName}</span>
-			<span class="text-[var(--text-muted)]">/</span>
-			<span class="text-[var(--text-primary)]">{viewMode}</span>
-		</nav>
+	<!-- Left: Logo -->
+	<div class="flex items-center gap-2">
+		<SquaresFour class="size-5 text-[var(--accent-primary)]" weight="fill" />
+		<span class="font-semibold text-uppercase-tracking text-xs hidden md:inline">Knowledge Orchestrator</span>
 	</div>
-
-	<!-- Center: View Toggle -->
-	<Tabs.Root
-		value={viewMode}
-		onValueChange={(v) => onViewChange?.(v)}
-		class="hidden lg:block"
-	>
-		<Tabs.List
-			class="flex items-center gap-1 rounded-md bg-[var(--bg-surface)] p-1 border border-[var(--border-muted)]"
-		>
-			<Tabs.Trigger
-				value="hub-view"
-				class="px-3 py-1.5 text-xs rounded transition-colors data-[state=active]:bg-[var(--bg-hover)] data-[state=active]:text-[var(--text-primary)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-			>
-				Hub View
-			</Tabs.Trigger>
-			<Tabs.Trigger
-				value="board-view"
-				class="px-3 py-1.5 text-xs rounded transition-colors data-[state=active]:bg-[var(--bg-hover)] data-[state=active]:text-[var(--text-primary)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-			>
-				Board View
-			</Tabs.Trigger>
-		</Tabs.List>
-	</Tabs.Root>
 
 	<!-- Right: Sidebar Controls + Actions -->
 	<div class="flex items-center gap-1">

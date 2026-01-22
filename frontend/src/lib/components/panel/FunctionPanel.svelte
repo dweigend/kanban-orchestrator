@@ -1,31 +1,15 @@
 <script lang="ts">
-import { Separator } from 'bits-ui';
 import type { Agent, AgentLogEntry, AgentRun } from '$lib/types/agent';
 import type { Task } from '$lib/types/task';
 import AgentLog from './AgentLog.svelte';
-import ProjectOverview from './ProjectOverview.svelte';
 import SearchBar from './SearchBar.svelte';
 import SettingsPanel from './SettingsPanel.svelte';
-import SystemLog from './SystemLog.svelte';
 import TaskEditor from './TaskEditor.svelte';
-
-interface LogEntry {
-	id: string;
-	timestamp: string;
-	level: 'info' | 'warn' | 'error' | 'success';
-	message: string;
-	source?: string;
-}
 
 export type SidebarTab = 'overview' | 'agents' | 'settings' | 'new-task';
 
 interface Props {
-	projectName?: string;
-	projectStatus?: string;
-	projectTarget?: string;
-	projectTags?: string[];
 	agents?: Agent[];
-	logs?: LogEntry[];
 	activeTab?: SidebarTab;
 	editingTask?: Task | null;
 	onSearch?: (query: string) => void;
@@ -39,12 +23,7 @@ interface Props {
 }
 
 const {
-	projectName = 'vibe-kanban',
-	projectStatus = 'V3 Redesign',
-	projectTarget = 'High Contrast',
-	projectTags = ['React', 'Tailwind', 'MCP'],
 	agents = [],
-	logs = [],
 	activeTab = 'overview',
 	editingTask = null,
 	onSearch,
@@ -116,19 +95,6 @@ function handleKeyDown(e: KeyboardEvent) {
 		<div class="flex-1 flex flex-col min-h-0 overflow-hidden">
 			<div class="py-3">
 				<SearchBar {onSearch} />
-			</div>
-			<Separator.Root class="h-px bg-[var(--border-muted)]" />
-			<div class="py-3">
-				<ProjectOverview
-					name={projectName}
-					status={projectStatus}
-					target={projectTarget}
-					tags={projectTags}
-				/>
-			</div>
-			<Separator.Root class="h-px bg-[var(--border-muted)]" />
-			<div class="py-3 flex-1 min-h-0">
-				<SystemLog {logs} />
 			</div>
 		</div>
 	{:else if activeTab === 'agents'}

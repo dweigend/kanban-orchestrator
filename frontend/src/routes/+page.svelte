@@ -11,7 +11,6 @@ import type { Agent, AgentLogEntry, AgentRun } from '$lib/types/agent';
 import type { Task, TaskStatus } from '$lib/types/task';
 
 // UI State
-let viewMode = $state('hub-view');
 let sidebarVisible = $state(true);
 let activeTab = $state<SidebarTab>('overview');
 let editingTask = $state<Task | null>(null);
@@ -52,29 +51,6 @@ const agents: Agent[] = $state([
 		type: 'researcher',
 		status: 'idle',
 		description: 'Research and documentation',
-	},
-]);
-
-// Mock logs (will be connected to backend later)
-const logs = $state([
-	{
-		id: '1',
-		timestamp: new Date(Date.now() - 60000).toISOString(),
-		level: 'success' as const,
-		message: 'Python Interpreter connected successfully',
-	},
-	{
-		id: '2',
-		timestamp: new Date(Date.now() - 30000).toISOString(),
-		level: 'info' as const,
-		message: 'Web Search: "Tailwind CSS high contrast"',
-		source: 'Researcher',
-	},
-	{
-		id: '3',
-		timestamp: new Date().toISOString(),
-		level: 'error' as const,
-		message: 'PostgreSQL: Connection timeout (5432)',
 	},
 ]);
 
@@ -163,10 +139,6 @@ $effect(() => {
 });
 
 // Handlers
-function handleViewChange(mode: string) {
-	viewMode = mode;
-}
-
 function handleTabChange(tab: SidebarTab) {
 	activeTab = tab;
 	if (!sidebarVisible) {
@@ -291,11 +263,8 @@ async function handleRunAgent(task: Task) {
 
 <div class="h-screen flex flex-col overflow-hidden">
 	<Header
-		projectName="vibe-kanban"
-		{viewMode}
 		{activeTab}
 		{sidebarVisible}
-		onViewChange={handleViewChange}
 		onTabChange={handleTabChange}
 		onSidebarToggle={handleSidebarToggle}
 	/>
@@ -320,7 +289,6 @@ async function handleRunAgent(task: Task) {
 		{#if sidebarVisible}
 			<FunctionPanel
 				{agents}
-				{logs}
 				{activeTab}
 				{editingTask}
 				onSearch={handleSearch}
