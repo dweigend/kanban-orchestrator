@@ -1,86 +1,132 @@
 # HANDOVER
 
-## Phase: Bug Fixes 🔴
+## Phase: Bug Fixes + UI Cleanup 🔴
 
 ---
 
-## Session 2026-01-22 (Systematische Test-Session)
+## Session 2026-01-22 (Settings + Issue Sammlung)
 
 ### Was wurde gemacht
 
-1. **Systematische Browser-Tests** ✅
-   - Chrome DevTools MCP für automatisierte UI-Tests
-   - Alle Features durchgeklickt und dokumentiert
-   - Backend APIs mit curl getestet
+1. **Settings Store implementiert** ✅
+   - Neuer zentraler Store: `frontend/src/lib/stores/settings.svelte.ts`
+   - CSS Custom Properties werden live aktualisiert
+   - Alle 4 Fonts geladen (JetBrains Mono, Fira Code, Source Code Pro, Cascadia Code)
+   - localStorage Persistenz funktioniert
 
-2. **13 Issues identifiziert und dokumentiert** ✅
-   - 2 CRITICAL, 4 HIGH, 3 MEDIUM, 4 LOW
-   - Alle in `dev/ISSUE_TRACKER.md` mit Reproduktionsschritten
-   - Priority Matrix erstellt
+2. **SettingsPanel refactored** ✅
+   - Nutzt jetzt zentralen Store statt lokaler States
+   - Appearance + Line Numbers + Word Wrap Sections entfernt
+   - Live-Preview bei Font-Änderungen
 
-3. **Dokumentation aktualisiert** ✅
-   - `dev/ISSUE_TRACKER.md` - Vollständige Issue-Liste
-   - `dev/PLAN.md` - Aktuelle Phase: Bug Fixes
+3. **Issue Tracker erweitert** ✅
+   - 8 neue Issues dokumentiert (#16-#23)
+   - Total: 23 Issues
+   - Priority Matrix aktualisiert
+   - Quick Wins identifiziert
 
-### Kritische Erkenntnis
+### Bekanntes Problem
 
-**Backend funktioniert perfekt!**
-- 9 Tasks in Datenbank
-- 2 Agent Runs completed
-- Alle API Endpoints antworten korrekt
-
-**Frontend zeigt nichts davon an!**
-- Board: "No tasks" in allen Columns
-- Agents: "No agent activity"
-- Problem: Frontend fetcht/rendert Daten nicht
-
-### Test-Ergebnisse
-
-| Check | Ergebnis |
-|-------|----------|
-| Frontend Biome | 0 errors, 0 warnings ✅ |
-| Frontend Types | 0 errors, 0 warnings ✅ |
-| Backend Ty | All checks passed ✅ |
-| Backend API | Alle Endpoints funktional ✅ |
-| UI Funktionalität | 13 Issues gefunden 🔴 |
+**#15 - Editor Config Freeze**
+- Settings UI hängt sich nach erster Änderung auf
+- Vermutlich $effect Loop zwischen Store und Layout
+- **Muss in nächster Session gefixt werden**
 
 ---
 
-## Nächste Session: Sprint 1 - Make App Usable
+## Nächste Session: Quick Wins + Bug Fixes
 
-### Priorität 1: Issue #6 - Tasks im Board anzeigen
+### Empfohlene Reihenfolge
 
-**Problem:** Tasks werden erstellt aber nicht angezeigt
-
-**Zu untersuchen:**
+#### 1. Quick Wins (UI verschlanken) ~30min
 ```
-frontend/src/routes/+page.svelte      # Lädt Tasks bei Init?
-frontend/src/lib/stores/taskStore.ts  # Existiert? Funktioniert?
-frontend/src/lib/components/kanban/Board.svelte  # Bekommt Tasks?
+#18 - Hub/Board View Toggle entfernen
+#19 - Breadcrumb "vibe-kanban/hub-view" entfernen
+#20 - Project Overview Section entfernen
+#21 - System Logs Section entfernen
 ```
 
-**Vermutliche Ursache:**
-- Tasks werden bei Page Load nicht gefetcht
-- Oder: Tasks werden gefetcht aber nicht an Board übergeben
-- Oder: Board rendert Tasks nicht
+**Dateien:**
+- `frontend/src/lib/components/layout/Header.svelte`
+- `frontend/src/lib/components/panel/FunctionPanel.svelte`
+
+#### 2. Bug Fix: Settings Freeze
+```
+#15 - Editor Config Freeze nach erster Änderung
+```
+
+**Vermutliche Ursache:** $effect Loop in `+layout.svelte`
 
 **Fix-Ansatz:**
-1. Console.log einbauen um Datenfluss zu tracen
-2. Fetch bei onMount hinzufügen falls fehlend
-3. Board-Props prüfen
+```typescript
+// Statt:
+$effect(() => {
+  const _font = getFontFamily();  // Triggers re-run
+  applySettings();                // Also reads values
+});
 
-### Priorität 2: Issue #7 - Plus-Buttons funktional
-
-**Problem:** Column "+" Buttons tun nichts
-
-**Zu untersuchen:**
-```
-frontend/src/lib/components/kanban/Column.svelte
+// Besser: Nur bei explizitem Save anwenden
+// Oder: untrack() verwenden
 ```
 
-**Fix-Ansatz:**
-1. onClick Handler hinzufügen
-2. TaskEditor mit vorselektiertem Status öffnen
+#### 3. UX: Card-Menü vereinfachen
+```
+#17 - Card Context Menu → Icons
+```
+
+**Von:**
+- Edit, Open, Run Agent, Delete (4 redundante Items)
+
+**Zu:**
+- ▶️ Run Agent Icon auf Card
+- 🗑️ Delete Icon auf Card
+- Click auf Card → Edit
+
+---
+
+## Issue-Übersicht (aktuell)
+
+### ✅ Erledigt
+| # | Issue |
+|---|-------|
+| 1 | Settings persistent (localStorage) |
+| 6 | Tasks im Board anzeigen |
+| 7 | Plus-Buttons funktional |
+| 8 | Agent Logs anzeigen |
+
+### 🚀 Quick Wins
+| # | Issue | Action |
+|---|-------|--------|
+| 18 | Hub/Board Toggle | Entfernen |
+| 19 | Breadcrumb | Entfernen |
+| 20 | Overview Section | Entfernen |
+| 21 | System Logs | Entfernen |
+
+### 🔧 Bugs
+| # | Issue | Severity |
+|---|-------|----------|
+| 15 | Settings Freeze | HIGH |
+| 14 | Card Reorder | MEDIUM |
+
+### 📋 Eigene Sessions (Konzeptarbeit)
+| # | Issue | Notes |
+|---|-------|-------|
+| 22 | Projekt-Management | Backend + Konzept entwickeln |
+| 23 | Knowledge Base | Konzept-Abgleich mit Original |
+
+---
+
+## Geänderte Dateien (diese Session)
+
+```
+frontend/src/lib/stores/settings.svelte.ts     # NEU - Settings Store
+frontend/src/lib/components/panel/SettingsPanel.svelte  # Refactored
+frontend/src/routes/+layout.svelte             # Settings laden + Fonts
+frontend/src/routes/+page.svelte               # Font-Import entfernt
+dev/ISSUE_TRACKER.md                           # 8 neue Issues
+dev/PLAN.md                                    # Aktualisiert
+dev/HANDOVER.md                                # Diese Datei
+```
 
 ---
 
@@ -89,10 +135,6 @@ frontend/src/lib/components/kanban/Column.svelte
 ```bash
 # Server starten
 make dev
-
-# Backend Health Check
-curl http://localhost:8000/api/tasks | python3 -m json.tool
-curl http://localhost:8000/api/agent/runs | python3 -m json.tool
 
 # Frontend Checks
 cd frontend
@@ -103,48 +145,6 @@ bunx svelte-check --threshold warning
 cd backend
 uv run ruff check --fix . && uv run ruff format .
 uvx ty check
-```
-
----
-
-## Geänderte Dateien (diese Session)
-
-```
-dev/
-├── ISSUE_TRACKER.md    # Komplett überarbeitet mit 13 Issues
-├── PLAN.md             # Neue Phase "Bug Fixes" hinzugefügt
-└── HANDOVER.md         # Diese Datei
-```
-
----
-
-## Quick Reference
-
-### Issue-Übersicht
-
-| # | Issue | Severity | Sprint |
-|---|-------|----------|--------|
-| 6 | Tasks nicht im Board | CRITICAL | 1 |
-| 7 | Plus-Buttons kaputt | CRITICAL | 1 |
-| 8 | Agent Logs leer | HIGH | 2 |
-| 1 | Settings nicht persistent | HIGH | 2 |
-| 3 | Backend Settings Gap | HIGH | 2 |
-| 9 | Project Menu kaputt | HIGH | 2 |
-| 4 | Search kaputt | MEDIUM | 3 |
-| 10 | View Toggle identisch | MEDIUM | 3 |
-| 5 | Mock Data System Log | LOW | 4 |
-| 11 | View All Button | LOW | 4 |
-| 12 | User Avatar | LOW | 4 |
-| 13 | Overview Mock | LOW | 4 |
-| 2 | Appearance Placeholder | LOW | 4 |
-
-### Dateien für Sprint 1
-
-```
-frontend/src/routes/+page.svelte
-frontend/src/lib/stores/taskStore.ts (falls existent)
-frontend/src/lib/components/kanban/Board.svelte
-frontend/src/lib/components/kanban/Column.svelte
 ```
 
 ---

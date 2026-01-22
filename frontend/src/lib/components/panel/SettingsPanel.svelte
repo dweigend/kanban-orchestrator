@@ -1,66 +1,45 @@
 <script lang="ts">
-import { Accordion, Select, Separator, Slider, Switch } from 'bits-ui';
+import { Accordion, Select, Slider, Switch } from 'bits-ui';
 import Bell from 'phosphor-svelte/lib/Bell';
 import CaretDown from 'phosphor-svelte/lib/CaretDown';
 import Check from 'phosphor-svelte/lib/Check';
 import Code from 'phosphor-svelte/lib/Code';
 import GitBranch from 'phosphor-svelte/lib/GitBranch';
-import Palette from 'phosphor-svelte/lib/Palette';
 import ShieldCheck from 'phosphor-svelte/lib/ShieldCheck';
 import { showSuccess } from '$lib/services/toast';
+import {
+	applySettings,
+	fontOptions,
+	getSettings,
+	saveSettings,
+	setAnalytics,
+	setAutoCommit,
+	setFontFamily,
+	setFontSize,
+	setNotifications,
+} from '$lib/stores/settings.svelte';
 
-const SETTINGS_KEY = 'kanban-settings';
+// Get current settings (reactive)
+const settings = $derived(getSettings());
 
-// Settings State (with defaults)
-let fontFamily = $state('jetbrains-mono');
-let fontSize = $state(14);
-let lineNumbers = $state(true);
-let wordWrap = $state(false);
-let autoCommit = $state(false);
-let notifications = $state(true);
-let analytics = $state(false);
-
-// Load settings from localStorage on mount
-$effect(() => {
-	const saved = localStorage.getItem(SETTINGS_KEY);
-	if (saved) {
-		try {
-			const settings = JSON.parse(saved);
-			fontFamily = settings.fontFamily ?? fontFamily;
-			fontSize = settings.fontSize ?? fontSize;
-			lineNumbers = settings.lineNumbers ?? lineNumbers;
-			wordWrap = settings.wordWrap ?? wordWrap;
-			autoCommit = settings.autoCommit ?? autoCommit;
-			notifications = settings.notifications ?? notifications;
-			analytics = settings.analytics ?? analytics;
-		} catch (e) {
-			console.error('Failed to parse settings:', e);
-		}
-	}
-});
-
-const fontOptions = [
-	{ value: 'jetbrains-mono', label: 'JetBrains Mono' },
-	{ value: 'fira-code', label: 'Fira Code' },
-	{ value: 'source-code-pro', label: 'Source Code Pro' },
-	{ value: 'cascadia-code', label: 'Cascadia Code' },
-];
-
+// Derived labels
 const selectedFontLabel = $derived(
-	fontOptions.find((f) => f.value === fontFamily)?.label ?? 'Select font',
+	fontOptions.find((f) => f.value === settings.fontFamily)?.label ??
+		'Select font',
 );
 
+function handleFontFamilyChange(value: string) {
+	setFontFamily(value);
+	applySettings();
+}
+
+function handleFontSizeChange(value: number) {
+	setFontSize(value);
+	applySettings();
+}
+
 function handleSave() {
-	const settings = {
-		fontFamily,
-		fontSize,
-		lineNumbers,
-		wordWrap,
-		autoCommit,
-		notifications,
-		analytics,
-	};
-	localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+	saveSettings();
 	showSuccess('Settings saved');
 }
 </script>
@@ -79,28 +58,6 @@ function handleSave() {
 	</div>
 
 	<Accordion.Root type="multiple" value={['editor']}>
-		<!-- Appearance -->
-		<Accordion.Item value="appearance" class="border border-[var(--border-muted)] rounded mb-2">
-			<Accordion.Header>
-				<Accordion.Trigger
-					class="flex items-center justify-between w-full px-4 py-3 hover:bg-[var(--bg-hover)] transition-colors group"
-				>
-					<div class="flex items-center gap-3">
-						<Palette class="size-5 text-[var(--text-muted)]" />
-						<span class="text-sm font-medium text-uppercase-tracking">Appearance</span>
-					</div>
-					<CaretDown
-						class="size-4 text-[var(--text-muted)] transition-transform group-data-[state=open]:rotate-180"
-					/>
-				</Accordion.Trigger>
-			</Accordion.Header>
-			<Accordion.Content class="border-t border-[var(--border-muted)] bg-[var(--bg-surface)]">
-				<div class="p-4 text-sm text-[var(--text-muted)]">
-					Theme and visual settings coming soon...
-				</div>
-			</Accordion.Content>
-		</Accordion.Item>
-
 		<!-- Editor Config -->
 		<Accordion.Item value="editor" class="border border-[var(--border-muted)] rounded mb-2">
 			<Accordion.Header>
@@ -123,7 +80,12 @@ function handleSave() {
 						<span class="text-xs text-uppercase-tracking text-[var(--text-muted)]">
 							Font Family
 						</span>
-						<Select.Root type="single" bind:value={fontFamily} items={fontOptions}>
+						<Select.Root
+							type="single"
+							value={settings.fontFamily}
+							onValueChange={handleFontFamilyChange}
+							items={fontOptions}
+						>
 							<Select.Trigger
 								class="flex items-center justify-between w-full px-3 py-2 border border-[var(--border-default)] rounded bg-[var(--bg-elevated)] hover:border-[var(--border-focus)] transition-colors"
 							>
@@ -165,12 +127,13 @@ function handleSave() {
 							<span
 								class="px-2 py-1 text-xs border border-[var(--border-default)] rounded bg-[var(--bg-elevated)]"
 							>
-								{fontSize}px
+								{settings.fontSize}px
 							</span>
 						</div>
 						<Slider.Root
 							type="single"
-							bind:value={fontSize}
+							value={settings.fontSize}
+							onValueChange={handleFontSizeChange}
 							min={10}
 							max={24}
 							step={1}
@@ -182,40 +145,6 @@ function handleSave() {
 								class="block size-4 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-elevated)] shadow-md focus-ring cursor-pointer"
 							/>
 						</Slider.Root>
-					</div>
-
-					<Separator.Root class="h-px bg-[var(--border-muted)]" />
-
-					<!-- Line Numbers -->
-					<div class="flex items-center justify-between">
-						<div>
-							<p class="text-sm font-medium">Line Numbers</p>
-							<p class="text-xs text-[var(--text-muted)]">Show gutter</p>
-						</div>
-						<Switch.Root
-							bind:checked={lineNumbers}
-							class="w-11 h-6 rounded-full bg-[var(--bg-surface)] border border-[var(--border-default)] data-[state=checked]:bg-[var(--accent-primary)] transition-colors"
-						>
-							<Switch.Thumb
-								class="block size-5 rounded-full bg-white shadow-md transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0.5"
-							/>
-						</Switch.Root>
-					</div>
-
-					<!-- Word Wrap -->
-					<div class="flex items-center justify-between">
-						<div>
-							<p class="text-sm font-medium">Word Wrap</p>
-							<p class="text-xs text-[var(--text-muted)]">Soft wrap lines</p>
-						</div>
-						<Switch.Root
-							bind:checked={wordWrap}
-							class="w-11 h-6 rounded-full bg-[var(--bg-surface)] border border-[var(--border-default)] data-[state=checked]:bg-[var(--accent-primary)] transition-colors"
-						>
-							<Switch.Thumb
-								class="block size-5 rounded-full bg-white shadow-md transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0.5"
-							/>
-						</Switch.Root>
 					</div>
 				</div>
 			</Accordion.Content>
@@ -244,7 +173,8 @@ function handleSave() {
 							<p class="text-xs text-[var(--text-muted)]">Commit changes automatically</p>
 						</div>
 						<Switch.Root
-							bind:checked={autoCommit}
+							checked={settings.autoCommit}
+							onCheckedChange={setAutoCommit}
 							class="w-11 h-6 rounded-full bg-[var(--bg-surface)] border border-[var(--border-default)] data-[state=checked]:bg-[var(--accent-primary)] transition-colors"
 						>
 							<Switch.Thumb
@@ -279,7 +209,8 @@ function handleSave() {
 							<p class="text-xs text-[var(--text-muted)]">Receive task updates</p>
 						</div>
 						<Switch.Root
-							bind:checked={notifications}
+							checked={settings.notifications}
+							onCheckedChange={setNotifications}
 							class="w-11 h-6 rounded-full bg-[var(--bg-surface)] border border-[var(--border-default)] data-[state=checked]:bg-[var(--accent-primary)] transition-colors"
 						>
 							<Switch.Thumb
@@ -314,7 +245,8 @@ function handleSave() {
 							<p class="text-xs text-[var(--text-muted)]">Help improve the app</p>
 						</div>
 						<Switch.Root
-							bind:checked={analytics}
+							checked={settings.analytics}
+							onCheckedChange={setAnalytics}
 							class="w-11 h-6 rounded-full bg-[var(--bg-surface)] border border-[var(--border-default)] data-[state=checked]:bg-[var(--accent-primary)] transition-colors"
 						>
 							<Switch.Thumb

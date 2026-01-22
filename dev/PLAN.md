@@ -24,43 +24,63 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ---
 
-## Aktuelle Phase: Bug Fixes 🔴
+## Aktuelle Phase: Bug Fixes + UI Cleanup 🔴
 
-**Status:** 13 Issues identifiziert in systematischer Test-Session (2026-01-22)
-
-**Kritisches Problem:** Backend funktioniert (9 Tasks, 2 Agent Runs in DB), Frontend zeigt nichts an!
+**Status:** 23 Issues dokumentiert (Stand 2026-01-22)
 
 Siehe `dev/ISSUE_TRACKER.md` für vollständige Liste.
 
-### Sprint 1: Make App Usable (CRITICAL)
+### ✅ Erledigt
 
-| Issue | Beschreibung | Status |
+| Issue | Beschreibung |
+|-------|--------------|
+| #1 | Settings persistent (localStorage) |
+| #6 | Tasks im Board anzeigen |
+| #7 | Plus-Buttons funktional |
+| #8 | Agent Logs anzeigen |
+
+### 🚀 Quick Wins (UI verschlanken)
+
+| Issue | Beschreibung | Action |
 |-------|--------------|--------|
-| #6 | Tasks im Board anzeigen | ⬜ TODO |
-| #7 | Plus-Buttons funktional | ⬜ TODO |
+| #18 | Hub/Board View Toggle | Entfernen |
+| #19 | Breadcrumb "vibe-kanban/hub-view" | Entfernen |
+| #20 | Project Overview Section | Entfernen |
+| #21 | System Logs Section | Entfernen |
 
-### Sprint 2: Core Features (HIGH)
+### 🔧 Bugs
 
-| Issue | Beschreibung | Status |
-|-------|--------------|--------|
-| #8 | Agent Logs anzeigen | ⬜ TODO |
-| #1 | Settings persistent (localStorage) | ⬜ TODO |
-| #3 | Backend Settings in UI | ⬜ TODO |
-| #9 | Project Menu funktional | ⬜ TODO |
+| Issue | Beschreibung | Severity |
+|-------|--------------|----------|
+| #15 | Editor Config Freeze | HIGH |
+| #14 | Card Reorder in Columns | MEDIUM |
 
-### Sprint 3: UX Polish (MEDIUM)
+### 🎨 UX Verbesserungen
 
-| Issue | Beschreibung | Status |
-|-------|--------------|--------|
-| #4 | Search implementieren | ⬜ TODO |
-| #10 | Hub/Board View unterscheiden | ⬜ TODO |
+| Issue | Beschreibung |
+|-------|--------------|
+| #17 | Card-Menü → Icons (Run Agent, Delete) |
+| #16 | Agent-Autostart bei Task-Erstellung |
 
-### Sprint 4: Cleanup (LOW)
+### 📋 Eigene Sessions (Konzeptarbeit)
 
-| Issue | Beschreibung | Status |
-|-------|--------------|--------|
-| #5, #11, #12, #13 | Mock Data entfernen | ⬜ TODO |
-| #2 | Appearance Section | ⬜ TODO |
+| Issue | Beschreibung | Notes |
+|-------|--------------|-------|
+| #22 | Projekt-Management | Backend-Recherche + Konzept mit User |
+| #23 | Search / Knowledge Base | Konzept-Abgleich mit Original |
+| #9 | Projekt-Menü | Abhängig von #22 |
+| #4 | Search | Abhängig von #23 |
+
+### 🧹 Cleanup (niedrige Prio)
+
+| Issue | Beschreibung |
+|-------|--------------|
+| #3 | Backend Settings in UI |
+| #5 | Mock Data System Log |
+| #10 | View Toggle (entfernt durch #18) |
+| #11 | "View All" Button |
+| #12 | User Avatar |
+| #13 | Overview Mock Data |
 
 ---
 
@@ -81,7 +101,6 @@ Siehe `dev/ISSUE_TRACKER.md` für vollständige Liste.
 
 ## Backlog
 
-- Project Selector UI
 - Task Dependencies
 - Bulk Operations
 - Export/Import
@@ -107,7 +126,7 @@ Siehe `dev/ISSUE_TRACKER.md` für vollständige Liste.
 
 - `ARCHITECTURE.md` - System-Architektur + Backend/Frontend Aufteilung
 - `dev/HANDOVER.md` - Session Handover
-- `dev/ISSUE_TRACKER.md` - Bug Tracking + Feature Status
+- `dev/ISSUE_TRACKER.md` - Bug Tracking + Feature Status (23 Issues)
 - `dev/TROUBLESHOOTING.md` - Bekannte Probleme & Lösungen
 - `dev/WORKFLOW.md` - Development Workflow
 

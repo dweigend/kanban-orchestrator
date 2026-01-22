@@ -24,7 +24,8 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Tasks im Board anzeigen | 🟢 | #6 | ✅ Fixed: Schema status mapping (lowercase → UPPERCASE) |
 | Edit Task | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
 | Delete Task | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
-| Drag & Drop | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
+| Drag & Drop (Column) | 🟢 | | Tasks zwischen Spalten verschieben funktioniert |
+| Drag & Drop (Reorder) | 🔴 | #14 | Cards können nicht innerhalb einer Spalte sortiert werden |
 | Plus-Buttons (Column) | 🟢 | #7 | ✅ Fixed: handleAddTask() + onAddTask prop |
 | Task Types Visual | ⚪ | | research/dev/notes/neutral |
 | Status Labels | 🟢 | | Schema-driven, funktioniert |
@@ -35,7 +36,8 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 |---------|--------|-------|-------|
 | Agent Runs (API) | 🟢 | | 2 completed runs in DB |
 | Agent Logs Panel | 🟢 | #8 | ✅ Fixed: Historical runs now displayed |
-| Run Agent Button | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
+| Run Agent Button | 🟢 | | Funktioniert |
+| Agent Autostart | 🟡 | #16 | Kein Autostart bei Task-Erstellung (UX-Frage) |
 | Agent Logs Streaming | ⚪ | | SSE nicht getestet |
 | Task Result Display | ⚪ | | Nicht getestet |
 
@@ -43,14 +45,12 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 
 | Feature | Status | Issue | Notes |
 |---------|--------|-------|-------|
-| Settings UI | 🟢 | | Dropdowns, Sliders, Switches funktionieren |
-| Font Family | 🟢 | #1 | ✅ localStorage persistence |
-| Font Size | 🟢 | #1 | ✅ localStorage persistence |
-| Line Numbers | 🟢 | #1 | ✅ localStorage persistence |
-| Word Wrap | 🟢 | #1 | ✅ localStorage persistence |
+| Settings UI | 🔴 | #15 | Hängt sich nach erster Änderung auf |
+| Font Family | 🟢 | #1 | ✅ localStorage + CSS Custom Properties |
+| Font Size | 🟢 | #1 | ✅ localStorage + CSS Custom Properties |
+| Editor Config Live | 🔴 | #15 | Erste Änderung funktioniert, danach freeze |
 | Save Button | 🟢 | #1 | ✅ Saves to localStorage + toast |
-| Persistence | 🟢 | #1 | ✅ Fixed with localStorage |
-| Appearance/Theme | 🟡 | #2 | "Coming soon" placeholder |
+| Persistence | 🟢 | #1 | ✅ Settings bleiben nach Reload |
 | Backend Settings | 🔴 | #3 | Not connected to UI |
 
 ### UI Components
@@ -59,9 +59,13 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 |---------|--------|-------|-------|
 | Sidebar Tabs | 🟢 | | Overview/Agents/Settings wechseln |
 | Hide/Show Sidebar | 🟢 | | Button funktioniert |
-| Search Bar | 🔴 | #4 | Nur console.log |
-| Hub/Board View Toggle | 🔴 | #10 | Nur URL ändert sich, UI identisch |
-| Project Menu | 🔴 | #9 | Open/New/Import ohne Funktion |
+| Search Bar | 🔴 | #4, #23 | Konzeptionell unklar, nicht implementiert |
+| Hub/Board View Toggle | 🟢 | #18 | **ENTFERNEN** - nur 1 View nötig |
+| Breadcrumb "vibe-kanban/hub-view" | 🟢 | #19 | **ENTFERNEN** - unnütz |
+| Project Menu | 🔴 | #9, #22 | Konzeptionell überarbeiten (eigene Session) |
+| Project Overview Section | 🟢 | #20 | **ENTFERNEN** - Mock Data, nicht MVP |
+| System Logs Section | 🟢 | #21 | **ENTFERNEN** - Mock Data, nicht MVP |
+| Card Context Menu | 🟡 | #17 | Redundant → Icons direkt auf Card |
 | "View All" Button | 🔴 | #11 | Keine Aktion |
 | User Avatar "DW" | 🟡 | #12 | Nur StaticText, kein User-System |
 
@@ -274,6 +278,171 @@ System Log shows hardcoded mock data:
 
 ---
 
+### #14 - Card Reihenfolge nicht änderbar 🔴
+
+**Severity:** Medium
+**File:** `frontend/src/lib/components/kanban/Board.svelte`, `Column.svelte`
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- Cards lassen sich zwischen Spalten verschieben (Drag & Drop funktioniert)
+- Cards können NICHT innerhalb einer Spalte umsortiert werden
+- Reihenfolge bleibt immer gleich (vermutlich nach created_at)
+
+**Root Cause:** Kein `position`/`order` Feld im Task-Model, keine Reorder-Logik im Frontend
+
+**Steps to Reproduce:**
+1. Erstelle mehrere Tasks in "To Do"
+2. Versuche Task 3 über Task 1 zu ziehen
+3. Task springt zurück an ursprüngliche Position
+
+---
+
+### #15 - Editor Config Freeze nach erster Änderung 🔴
+
+**Severity:** High
+**File:** `frontend/src/lib/stores/settings.svelte.ts`, `SettingsPanel.svelte`
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- Erste Änderung an Font Family oder Font Size funktioniert
+- Danach hängt sich die Settings-UI auf
+- Weitere Slider/Dropdown-Interaktionen werden nicht mehr verarbeitet
+
+**Root Cause:** Vermutlich unendliche $effect Loop durch gegenseitige reaktive Updates
+
+**Steps to Reproduce:**
+1. Settings öffnen
+2. Font Size von 14px auf 18px ändern → funktioniert
+3. Font Size erneut ändern (z.B. 20px) → UI reagiert nicht mehr
+
+---
+
+### #16 - Kein Agent-Autostart bei Task-Erstellung 🟡
+
+**Severity:** Medium
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- Task anlegen → Agent startet nicht automatisch
+- User muss manuell "Run Agent" klicken
+
+**Frage:** Soll Agent automatisch starten bei Task-Erstellung? (UX-Entscheidung)
+
+---
+
+### #17 - Card-Menü redundant / UX-Überarbeitung 🟡
+
+**Severity:** Medium
+**File:** `frontend/src/lib/components/kanban/TaskCard.svelte`
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- Aktuelles Menü: Edit, Open, Run Agent, Delete
+- "Edit" und "Open" sind identisch (öffnen beide TaskEditor)
+- **Vorschlag:** Menü entfernen, stattdessen Icons direkt auf Card:
+  - ▶️ Run Agent
+  - 🗑️ Delete
+  - Click auf Card → Edit
+
+---
+
+### #18 - Hub View / Board View Toggle entfernen 🟢
+
+**Severity:** Low (Quick Win)
+**File:** `frontend/src/lib/components/layout/Header.svelte`
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- Toggle zwischen "Hub View" und "Board View"
+- Beide Views zeigen identische UI
+- Nur ein Kanban Board View wird benötigt
+- **Action:** Toggle komplett entfernen
+
+---
+
+### #19 - Breadcrumb "vibe-kanban / hub-view" entfernen 🟢
+
+**Severity:** Low (Quick Win)
+**File:** `frontend/src/lib/components/layout/Header.svelte`
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- Neben Logo: "vibe-kanban / hub-view" Text
+- Unnütz, kein Mehrwert
+- **Action:** Entfernen
+
+---
+
+### #20 - Projekt-Overview Section entfernen 🟢
+
+**Severity:** Low (Quick Win)
+**File:** `frontend/src/lib/components/panel/FunctionPanel.svelte`, `OverviewPanel.svelte`
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- "OVERVIEW" mit "vibe-kanban" Dropdown
+- Expandiert zu Mock-Daten (Status, Tags)
+- Nicht implementiert, für MVP nicht relevant
+- **Action:** Section entfernen, Sidebar verschlanken
+
+---
+
+### #21 - System Logs Section entfernen 🟢
+
+**Severity:** Low (Quick Win)
+**File:** `frontend/src/lib/components/panel/FunctionPanel.svelte`
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- "SYSTEM LOG" mit Mock-Daten
+- "Python Interpreter connected", "PostgreSQL timeout" etc.
+- Nicht mit Backend verbunden
+- **Action:** Section entfernen, Sidebar verschlanken
+
+---
+
+### #22 - Projekt-Management konzeptionell überarbeiten 🔴
+
+**Severity:** High (Eigene Session)
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- Projekt-Menü funktioniert nicht (Open/New/Import)
+- Unklar wie Projekte gemanagt werden sollen
+- Backend `/api/projects` existiert aber ist leer
+- **Benötigt:**
+  1. Backend-Recherche: Wie werden Projekte gespeichert?
+  2. Konzept-Entwicklung mit User
+  3. Vermutlich eigene Session
+
+**Fragen:**
+- Was ist ein "Projekt" im Kontext des Orchestrators?
+- Wie verhält sich Projekt zu Git-Repo?
+- Multi-Projekt oder Single-Projekt?
+
+---
+
+### #23 - Search / Knowledge Base konzeptionell klären 🔴
+
+**Severity:** High (Eigene Session)
+**Verified:** ✅ 2026-01-22
+
+**Description:**
+- "Search knowledge base..." Placeholder im Input
+- Keine Implementierung (nur console.log)
+- **Konzeptionelle Fragen:**
+  - Was IST die Knowledge Base?
+  - Wo wird sie eingerichtet?
+  - Ist das Teil des Kanban-Orchestrators oder separates System?
+  - Gehört Search überhaupt in dieses Tool?
+
+**Vermutung:** Knowledge Base und Kanban Board sind zwei unterschiedliche Dinge. Evtl. Überbleibsel aus erster Planung.
+
+**Benötigt:** Systematische Analyse aller offenen Features gegen Original-Konzept
+
+---
+
 ## Session Log
 
 ### 2026-01-22 - Systematic Browser Testing
@@ -304,30 +473,44 @@ Frontend lädt/zeigt die Daten nicht an.
 | Severity | Count |
 |----------|-------|
 | 🔴 CRITICAL | 2 |
-| 🔴 HIGH | 4 |
-| 🟡 MEDIUM | 3 |
-| 🟡 LOW | 4 |
-| **Total** | **13** |
+| 🔴 HIGH | 6 |
+| 🟡 MEDIUM | 4 |
+| 🟢 LOW (Quick Wins) | 4 |
+| 🟡 LOW (Cleanup) | 4 |
+| **Total** | **23** |
 
 ---
 
 ## Priority Matrix
 
-### Sprint 1: Make App Usable
-1. #6 - Tasks im Board anzeigen (CRITICAL)
-2. #7 - Plus-Buttons funktional (CRITICAL)
+### ✅ Erledigt
+- ~~#6 - Tasks im Board anzeigen~~ ✅
+- ~~#7 - Plus-Buttons funktional~~ ✅
+- ~~#8 - Agent Logs anzeigen~~ ✅
+- ~~#1 - Settings persistent~~ ✅
 
-### Sprint 2: Core Features
-3. #8 - Agent Logs anzeigen (HIGH)
-4. #1 + #3 - Settings persistent machen (HIGH)
+### 🚀 Quick Wins (sofort umsetzbar)
+- **#18** - Hub/Board View Toggle entfernen
+- **#19** - Breadcrumb "vibe-kanban / hub-view" entfernen
+- **#20** - Projekt-Overview Section entfernen
+- **#21** - System Logs Section entfernen
 
-### Sprint 3: UX Polish
-5. #9 - Project Menu (HIGH)
-6. #4 - Search (MEDIUM)
-7. #10 - View Toggle (MEDIUM)
+### 🔧 Bugs (Prio 1)
+- **#15** - Editor Config Freeze
+- **#14** - Card Reihenfolge nicht änderbar
 
-### Sprint 4: Cleanup
-8. #5, #11, #12, #13 - Mock Data entfernen/kennzeichnen (LOW)
+### 🎨 UX Verbesserungen (Prio 2)
+- **#17** - Card-Menü → Icons
+- **#16** - Agent-Autostart (UX-Entscheidung)
+
+### 📋 Eigene Sessions (Konzeptarbeit)
+- **#22** - Projekt-Management (Backend + Konzept)
+- **#23** - Search / Knowledge Base (Konzept-Abgleich)
+- **#9** - Projekt-Menü (abhängig von #22)
+- **#4** - Search (abhängig von #23)
+
+### 🧹 Cleanup (niedrige Prio)
+- #3, #5, #10, #11, #12, #13 - Mock Data / Backend Settings
 
 ---
 
