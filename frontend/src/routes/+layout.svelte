@@ -4,27 +4,14 @@ import { Toaster } from 'svelte-sonner';
 import './layout.css';
 import favicon from '$lib/assets/favicon.svg';
 import { initSchemaStore } from '$lib/stores/schema.svelte';
-import {
-	applySettings,
-	getFontFamily,
-	getFontSize,
-	loadSettings,
-} from '$lib/stores/settings.svelte';
+import { applySettings, loadSettings } from '$lib/stores/settings.svelte';
 
 const { children } = $props();
 
-// Initialize stores on app startup
+// Initialize stores on app startup (runs once)
 $effect(() => {
 	initSchemaStore();
 	loadSettings();
-	applySettings();
-});
-
-// Re-apply settings when they change
-$effect(() => {
-	// Access reactive values to trigger effect
-	const _font = getFontFamily();
-	const _size = getFontSize();
 	applySettings();
 });
 </script>
