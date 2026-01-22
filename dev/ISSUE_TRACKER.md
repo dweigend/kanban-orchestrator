@@ -44,12 +44,12 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Feature | Status | Issue | Notes |
 |---------|--------|-------|-------|
 | Settings UI | 🟢 | | Dropdowns, Sliders, Switches funktionieren |
-| Font Family | 🔴 | #1 | UI only, not persisted |
-| Font Size | 🔴 | #1 | UI only, not persisted |
-| Line Numbers | 🔴 | #1 | UI only, not persisted |
-| Word Wrap | 🔴 | #1 | UI only, not persisted |
-| Save Button | 🔴 | #1 | Only console.log |
-| Persistence | 🔴 | #1 | No localStorage/backend |
+| Font Family | 🟢 | #1 | ✅ localStorage persistence |
+| Font Size | 🟢 | #1 | ✅ localStorage persistence |
+| Line Numbers | 🟢 | #1 | ✅ localStorage persistence |
+| Word Wrap | 🟢 | #1 | ✅ localStorage persistence |
+| Save Button | 🟢 | #1 | ✅ Saves to localStorage + toast |
+| Persistence | 🟢 | #1 | ✅ Fixed with localStorage |
 | Appearance/Theme | 🟡 | #2 | "Coming soon" placeholder |
 | Backend Settings | 🔴 | #3 | Not connected to UI |
 

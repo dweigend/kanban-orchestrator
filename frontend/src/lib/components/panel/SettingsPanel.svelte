@@ -7,8 +7,11 @@ import Code from 'phosphor-svelte/lib/Code';
 import GitBranch from 'phosphor-svelte/lib/GitBranch';
 import Palette from 'phosphor-svelte/lib/Palette';
 import ShieldCheck from 'phosphor-svelte/lib/ShieldCheck';
+import { showSuccess } from '$lib/services/toast';
 
-// Settings State
+const SETTINGS_KEY = 'kanban-settings';
+
+// Settings State (with defaults)
 let fontFamily = $state('jetbrains-mono');
 let fontSize = $state(14);
 let lineNumbers = $state(true);
@@ -16,6 +19,25 @@ let wordWrap = $state(false);
 let autoCommit = $state(false);
 let notifications = $state(true);
 let analytics = $state(false);
+
+// Load settings from localStorage on mount
+$effect(() => {
+	const saved = localStorage.getItem(SETTINGS_KEY);
+	if (saved) {
+		try {
+			const settings = JSON.parse(saved);
+			fontFamily = settings.fontFamily ?? fontFamily;
+			fontSize = settings.fontSize ?? fontSize;
+			lineNumbers = settings.lineNumbers ?? lineNumbers;
+			wordWrap = settings.wordWrap ?? wordWrap;
+			autoCommit = settings.autoCommit ?? autoCommit;
+			notifications = settings.notifications ?? notifications;
+			analytics = settings.analytics ?? analytics;
+		} catch (e) {
+			console.error('Failed to parse settings:', e);
+		}
+	}
+});
 
 const fontOptions = [
 	{ value: 'jetbrains-mono', label: 'JetBrains Mono' },
@@ -29,8 +51,7 @@ const selectedFontLabel = $derived(
 );
 
 function handleSave() {
-	// TODO: Persist settings to localStorage or API
-	console.log('Settings saved:', {
+	const settings = {
 		fontFamily,
 		fontSize,
 		lineNumbers,
@@ -38,7 +59,9 @@ function handleSave() {
 		autoCommit,
 		notifications,
 		analytics,
-	});
+	};
+	localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+	showSuccess('Settings saved');
 }
 </script>
 
