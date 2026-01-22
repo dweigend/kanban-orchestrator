@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Separator } from 'bits-ui';
+import { getTaskStatuses } from '$lib/stores/schema.svelte';
 import type { Task, TaskStatus } from '$lib/types/task';
 import Column from './Column.svelte';
 
@@ -23,7 +24,13 @@ const {
 	runningAgentTaskId,
 }: Props = $props();
 
-const columns: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'NEEDS_REVIEW', 'DONE'];
+// Load column order from schema (fallback to hardcoded if schema not loaded)
+const columns = (getTaskStatuses() as TaskStatus[]) || [
+	'TODO',
+	'IN_PROGRESS',
+	'NEEDS_REVIEW',
+	'DONE',
+];
 
 function getTasksByStatus(status: TaskStatus): Task[] {
 	return tasks.filter((t) => t.status === status);

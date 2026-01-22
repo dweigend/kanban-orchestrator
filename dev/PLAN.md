@@ -24,51 +24,47 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ---
 
-## Abgeschlossene Phase: 8 - Schema-Driven UI ✅
+## Aktuelle Phase: Bug Fixes 🔴
 
-**Ziel:** Frontend bezieht alle MCP-relevanten Daten vom Backend. UI-Präferenzen bleiben lokal.
+**Status:** 13 Issues identifiziert in systematischer Test-Session (2026-01-22)
 
-### 8.1 Backend - Enum-Erweiterung ✅
+**Kritisches Problem:** Backend funktioniert (9 Tasks, 2 Agent Runs in DB), Frontend zeigt nichts an!
 
-- [x] `/api/schema/enums` erweitern mit Metadaten
-  - Labels: `"To Do"` statt nur `"todo"`
-  - Icons: `"MagnifyingGlass"` für Research
-  - Descriptions: Tooltips
+Siehe `dev/ISSUE_TRACKER.md` für vollständige Liste.
 
-### 8.2 Backend - Settings Endpoint ✅
+### Sprint 1: Make App Usable (CRITICAL)
 
-- [x] `/api/settings/schema` - MCP-relevante Settings
-  - Git: Auto-Checkpoint, Prefix
-  - Agent: Model, Max Turns
+| Issue | Beschreibung | Status |
+|-------|--------------|--------|
+| #6 | Tasks im Board anzeigen | ⬜ TODO |
+| #7 | Plus-Buttons funktional | ⬜ TODO |
 
-### 8.3 Frontend - Schema-Service ✅
+### Sprint 2: Core Features (HIGH)
 
-- [x] `fetchEnums()` für erweiterte Enums
-- [x] Caching der Schema-Responses
-- [x] TypeScript Interfaces anpassen
+| Issue | Beschreibung | Status |
+|-------|--------------|--------|
+| #8 | Agent Logs anzeigen | ⬜ TODO |
+| #1 | Settings persistent (localStorage) | ⬜ TODO |
+| #3 | Backend Settings in UI | ⬜ TODO |
+| #9 | Project Menu funktional | ⬜ TODO |
 
-### 8.4 Frontend - Hardcoded Constants ✅
+### Sprint 3: UX Polish (MEDIUM)
 
-- [x] `types/task.ts` - TASK_TYPE_LABELS, TASK_STATUS_LABELS → @deprecated
-- [x] Schema Store mit Helper-Funktionen
+| Issue | Beschreibung | Status |
+|-------|--------------|--------|
+| #4 | Search implementieren | ⬜ TODO |
+| #10 | Hub/Board View unterscheiden | ⬜ TODO |
 
-### 8.5 Frontend - Komponenten umgestellt ✅
+### Sprint 4: Cleanup (LOW)
 
-| Komponente | Status | Änderung |
-|------------|--------|----------|
-| `TaskEditor.svelte` | ✅ | Labels aus Schema Store |
-| `TaskCard.svelte` | ✅ | Icons + Prefix aus Schema |
-| `Column.svelte` | ✅ | Header-Labels aus Schema |
-
-### 8.6 Cleanup (Optional)
-
-- [ ] Board.svelte: Columns aus Schema
-- [ ] Biome false-positive Warnings
-- [ ] Alte Constants komplett entfernen
+| Issue | Beschreibung | Status |
+|-------|--------------|--------|
+| #5, #11, #12, #13 | Mock Data entfernen | ⬜ TODO |
+| #2 | Appearance Section | ⬜ TODO |
 
 ---
 
-## Nächste Phasen
+## Nächste Phasen (nach Bug Fixes)
 
 ### Phase 9: Plugin Manager
 
@@ -96,14 +92,14 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ## API-Endpoints
 
-| Gruppe | Endpoints |
-|--------|-----------|
-| Tasks | `/api/tasks`, `/api/tasks/{id}` |
-| Projects | `/api/projects`, `/api/projects/{id}` |
-| Agent | `/api/agent/run`, `/api/agent/stop/{id}`, `/api/agent/runs` |
-| Schema | `/api/schema/task`, `/api/schema/project`, `/api/schema/agent-run`, `/api/schema/enums` |
-| Settings | `/api/settings/schema` |
-| Events | `/api/events` (SSE) |
+| Gruppe | Endpoints | Status |
+|--------|-----------|--------|
+| Tasks | `/api/tasks`, `/api/tasks/{id}` | ✅ Working |
+| Projects | `/api/projects`, `/api/projects/{id}` | ✅ Working |
+| Agent | `/api/agent/run`, `/api/agent/stop/{id}`, `/api/agent/runs` | ✅ Working |
+| Schema | `/api/schema/task`, `/api/schema/project`, `/api/schema/agent-run`, `/api/schema/enums` | ✅ Working |
+| Settings | `/api/settings/schema` | ✅ Working |
+| Events | `/api/events` (SSE) | ⚪ Not Tested |
 
 ---
 
@@ -111,6 +107,7 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 - `ARCHITECTURE.md` - System-Architektur + Backend/Frontend Aufteilung
 - `dev/HANDOVER.md` - Session Handover
+- `dev/ISSUE_TRACKER.md` - Bug Tracking + Feature Status
 - `dev/TROUBLESHOOTING.md` - Bekannte Probleme & Lösungen
 - `dev/WORKFLOW.md` - Development Workflow
 

@@ -131,28 +131,6 @@ export const TASK_TYPE_COLORS: Record<TaskType, string> = {
 	neutral: 'var(--task-neutral)',
 };
 
-/**
- * Labels for task types.
- * @deprecated Use schema store: getTypeLabel() from '$lib/stores/schema.svelte'
- */
-export const TASK_TYPE_LABELS: Record<TaskType, string> = {
-	research: 'Research',
-	dev: 'Development',
-	notes: 'Notes',
-	neutral: 'General',
-};
-
-/**
- * Labels for task status columns.
- * @deprecated Use schema store: getStatusLabel() from '$lib/stores/schema.svelte'
- */
-export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-	TODO: 'To Do',
-	IN_PROGRESS: 'Running',
-	NEEDS_REVIEW: 'Review',
-	DONE: 'Done',
-};
-
 // ─────────────────────────────────────────────────────────────
 // Mapping Functions
 // ─────────────────────────────────────────────────────────────
