@@ -25,7 +25,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Edit Task | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
 | Delete Task | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
 | Drag & Drop | ⚪ | | Nicht getestet (Tasks nicht sichtbar) |
-| Plus-Buttons (Column) | 🔴 | #7 | Keine onClick Handler |
+| Plus-Buttons (Column) | 🟢 | #7 | ✅ Fixed: handleAddTask() + onAddTask prop |
 | Task Types Visual | ⚪ | | research/dev/notes/neutral |
 | Status Labels | 🟢 | | Schema-driven, funktioniert |
 

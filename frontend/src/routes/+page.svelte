@@ -200,6 +200,22 @@ async function handleTaskDelete(taskId: string) {
 	}
 }
 
+function handleAddTask(status: TaskStatus) {
+	// Create empty task with pre-selected status for the column
+	editingTask = {
+		id: '',
+		title: '',
+		description: '',
+		status: status,
+		type: 'neutral',
+		created_at: new Date().toISOString(),
+	};
+	activeTab = 'new-task';
+	if (!sidebarVisible) {
+		sidebarVisible = true;
+	}
+}
+
 function handleEditTask(task: Task) {
 	editingTask = task;
 	activeTab = 'new-task';
@@ -287,6 +303,7 @@ async function handleRunAgent(task: Task) {
 		{:else}
 			<Board
 				{tasks}
+				onAddTask={handleAddTask}
 				onEditTask={handleEditTask}
 				onDeleteTask={handleDeleteTaskFromBoard}
 				onTaskDrop={handleTaskDrop}
