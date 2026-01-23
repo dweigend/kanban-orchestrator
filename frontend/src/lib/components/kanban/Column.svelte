@@ -1,4 +1,6 @@
 <script lang="ts">
+import { Button } from 'bits-ui';
+import Plus from 'phosphor-svelte/lib/Plus';
 import type { Snippet } from 'svelte';
 import { getStatusLabel } from '$lib/stores/schema.svelte';
 import type { Task, TaskStatus } from '$lib/types/task';
@@ -7,6 +9,7 @@ import TaskCard from './TaskCard.svelte';
 interface Props {
 	status: TaskStatus;
 	tasks: Task[];
+	onAddTask?: () => void;
 	onEditTask?: (task: Task) => void;
 	onDeleteTask?: (task: Task) => void;
 	onTaskDrop?: (taskId: string, newStatus: TaskStatus) => void;
@@ -18,6 +21,7 @@ interface Props {
 const {
 	status,
 	tasks,
+	onAddTask,
 	onEditTask,
 	onDeleteTask,
 	onTaskDrop,
@@ -66,6 +70,14 @@ const taskCount = $derived(tasks.length);
 				{taskCount}
 			</span>
 		</div>
+
+		<Button.Root
+			class="size-6 flex items-center justify-center rounded hover:bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors focus-ring"
+			onclick={() => onAddTask?.()}
+			aria-label="Add task to {getStatusLabel(status.toLowerCase())}"
+		>
+			<Plus class="size-4" />
+		</Button.Root>
 	</header>
 
 	<!-- Tasks List (Drop Target) -->

@@ -83,7 +83,8 @@ function handleSave() {
 						<Select.Root
 							type="single"
 							value={settings.fontFamily}
-							onValueChange={(v) => v && handleFontFamilyChange(v)}
+							onValueChange={handleFontFamilyChange}
+							items={fontOptions}
 						>
 							<Select.Trigger
 								class="flex items-center justify-between w-full px-3 py-2 border border-[var(--border-default)] rounded bg-[var(--bg-elevated)] hover:border-[var(--border-focus)] transition-colors"

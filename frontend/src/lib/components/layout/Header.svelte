@@ -1,5 +1,6 @@
 <script lang="ts">
-import { Separator } from 'bits-ui';
+import { Menubar, Separator } from 'bits-ui';
+import Folder from 'phosphor-svelte/lib/Folder';
 import Gauge from 'phosphor-svelte/lib/Gauge';
 import Gear from 'phosphor-svelte/lib/Gear';
 import Plus from 'phosphor-svelte/lib/Plus';
@@ -99,6 +100,44 @@ function handleTabClick(tab: SidebarTab) {
 		>
 			<SidebarSimple class="size-4" weight={sidebarVisible ? 'fill' : 'regular'} />
 		</button>
+
+		<Separator.Root class="h-6 w-px bg-[var(--border-default)] ml-2" orientation="vertical" />
+
+		<!-- Project Menu -->
+		<Menubar.Root class="flex items-center gap-1 ml-2">
+			<Menubar.Menu>
+				<Menubar.Trigger
+					class="flex items-center gap-2 px-3 py-1.5 text-xs rounded border border-[var(--border-default)] hover:bg-[var(--bg-hover)] transition-colors"
+				>
+					<Folder class="size-4" />
+					<span class="hidden sm:inline">Project</span>
+				</Menubar.Trigger>
+				<Menubar.Portal>
+					<Menubar.Content
+						class="z-50 min-w-[180px] rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] p-1 shadow-lg animate-fade-in"
+						align="end"
+						sideOffset={4}
+					>
+						<Menubar.Item
+							class="flex items-center gap-2 px-3 py-2 text-xs rounded cursor-pointer hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+						>
+							Open Recent
+						</Menubar.Item>
+						<Menubar.Item
+							class="flex items-center gap-2 px-3 py-2 text-xs rounded cursor-pointer hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+						>
+							New Project
+						</Menubar.Item>
+						<Menubar.Separator class="my-1 h-px bg-[var(--border-muted)]" />
+						<Menubar.Item
+							class="flex items-center gap-2 px-3 py-2 text-xs rounded cursor-pointer hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+						>
+							Import
+						</Menubar.Item>
+					</Menubar.Content>
+				</Menubar.Portal>
+			</Menubar.Menu>
+		</Menubar.Root>
 
 		<!-- User Avatar -->
 		<div
