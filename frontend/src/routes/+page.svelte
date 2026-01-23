@@ -144,7 +144,9 @@ function handleTabChange(tab: SidebarTab) {
 	if (!sidebarVisible) {
 		sidebarVisible = true;
 	}
-	if (tab !== 'new-task') {
+	if (tab === 'new-task') {
+		handleAddTask();
+	} else {
 		editingTask = null;
 	}
 }
@@ -183,13 +185,13 @@ async function handleTaskDelete(taskId: string) {
 	}
 }
 
-function handleAddTask(status: TaskStatus) {
-	// Create empty task with pre-selected status for the column
+function handleAddTask() {
+	// Create empty task with default status TODO
 	editingTask = {
 		id: '',
 		title: '',
 		description: '',
-		status: status,
+		status: 'TODO',
 		type: 'neutral',
 		created_at: new Date().toISOString(),
 	};
@@ -277,7 +279,6 @@ async function handleRunAgent(task: Task) {
 		{:else}
 			<Board
 				{tasks}
-				onAddTask={handleAddTask}
 				onEditTask={handleEditTask}
 				onDeleteTask={handleDeleteTaskFromBoard}
 				onTaskDrop={handleTaskDrop}

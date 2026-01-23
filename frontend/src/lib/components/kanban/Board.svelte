@@ -7,7 +7,6 @@ import Column from './Column.svelte';
 
 interface Props {
 	tasks: Task[];
-	onAddTask?: (status: TaskStatus) => void;
 	onEditTask?: (task: Task) => void;
 	onDeleteTask?: (task: Task) => void;
 	onTaskDrop?: (taskId: string, newStatus: TaskStatus) => void;
@@ -17,7 +16,6 @@ interface Props {
 
 const {
 	tasks,
-	onAddTask,
 	onEditTask,
 	onDeleteTask,
 	onTaskDrop,
@@ -58,7 +56,6 @@ function getTasksByStatus(status: TaskStatus): Task[] {
 		<Column
 			{status}
 			tasks={getTasksByStatus(status)}
-			onAddTask={() => onAddTask?.(status)}
 			{onEditTask}
 			{onDeleteTask}
 			{onTaskDrop}
