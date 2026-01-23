@@ -140,13 +140,15 @@ $effect(() => {
 
 // Handlers
 function handleTabChange(tab: SidebarTab) {
+	if (tab === 'new-task') {
+		handleAddTask();
+		return;
+	}
 	activeTab = tab;
 	if (!sidebarVisible) {
 		sidebarVisible = true;
 	}
-	if (tab !== 'new-task') {
-		editingTask = null;
-	}
+	editingTask = null;
 }
 
 function handleSidebarToggle() {
@@ -183,13 +185,13 @@ async function handleTaskDelete(taskId: string) {
 	}
 }
 
-function handleAddTask(status: TaskStatus) {
-	// Create empty task with pre-selected status for the column
+function handleAddTask() {
+	// Create empty task with default TODO status
 	editingTask = {
 		id: '',
 		title: '',
 		description: '',
-		status: status,
+		status: 'TODO',
 		type: 'neutral',
 		created_at: new Date().toISOString(),
 	};
@@ -223,10 +225,6 @@ async function handleTaskDrop(taskId: string, newStatus: TaskStatus) {
 	} catch (e) {
 		showError(e instanceof Error ? e.message : 'Failed to move task');
 	}
-}
-
-function handleSearch(query: string) {
-	console.log('Search:', query);
 }
 
 async function handleRunAgent(task: Task) {
@@ -277,7 +275,6 @@ async function handleRunAgent(task: Task) {
 		{:else}
 			<Board
 				{tasks}
-				onAddTask={handleAddTask}
 				onEditTask={handleEditTask}
 				onDeleteTask={handleDeleteTaskFromBoard}
 				onTaskDrop={handleTaskDrop}
@@ -291,7 +288,6 @@ async function handleRunAgent(task: Task) {
 				{agents}
 				{activeTab}
 				{editingTask}
-				onSearch={handleSearch}
 				onTaskSave={handleTaskSave}
 				onTaskDelete={handleTaskDelete}
 				{agentLogs}

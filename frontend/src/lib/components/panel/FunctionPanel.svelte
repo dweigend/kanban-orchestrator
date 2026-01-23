@@ -2,7 +2,6 @@
 import type { Agent, AgentLogEntry, AgentRun } from '$lib/types/agent';
 import type { Task } from '$lib/types/task';
 import AgentLog from './AgentLog.svelte';
-import SearchBar from './SearchBar.svelte';
 import SettingsPanel from './SettingsPanel.svelte';
 import TaskEditor from './TaskEditor.svelte';
 
@@ -12,7 +11,6 @@ interface Props {
 	agents?: Agent[];
 	activeTab?: SidebarTab;
 	editingTask?: Task | null;
-	onSearch?: (query: string) => void;
 	onTaskSave?: (task: Task) => void;
 	onTaskDelete?: (taskId: string) => void;
 	agentLogs?: AgentLogEntry[];
@@ -26,7 +24,6 @@ const {
 	agents = [],
 	activeTab = 'overview',
 	editingTask = null,
-	onSearch,
 	onTaskSave,
 	onTaskDelete,
 	agentLogs = [],
@@ -93,9 +90,7 @@ function handleKeyDown(e: KeyboardEvent) {
 	<!-- Content based on activeTab -->
 	{#if activeTab === 'overview'}
 		<div class="flex-1 flex flex-col min-h-0 overflow-hidden">
-			<div class="py-3">
-				<SearchBar {onSearch} />
-			</div>
+			<!-- Overview content placeholder -->
 		</div>
 	{:else if activeTab === 'agents'}
 		<div class="flex-1 flex flex-col min-h-0">

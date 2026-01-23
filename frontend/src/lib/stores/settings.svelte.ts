@@ -106,6 +106,9 @@ export function saveSettings() {
 export function applySettings() {
 	if (typeof document === 'undefined') return;
 
-	document.documentElement.style.setProperty('--font-mono', getFontFamily());
+	const fontValue = getFontFamily();
+	// Set both CSS custom property and Tailwind theme variable
+	document.documentElement.style.setProperty('--font-mono', fontValue);
+	document.documentElement.style.setProperty('--font-family-mono', fontValue);
 	document.documentElement.style.setProperty('--font-size-sm', `${fontSize}px`);
 }

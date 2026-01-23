@@ -22,21 +22,27 @@ import {
 // Get current settings (reactive)
 const settings = $derived(getSettings());
 
-// Derived labels
-const selectedFontLabel = $derived(
-	fontOptions.find((f) => f.value === settings.fontFamily)?.label ??
-		'Select font',
-);
+// Local state for bits-ui components (required for bind:value)
+let localFontSize = $state(settings.fontSize);
+let localFontFamily = $state(settings.fontFamily);
+
+// Handlers for value changes
+function handleFontSizeChange(value: number) {
+	localFontSize = value;
+	setFontSize(value);
+	applySettings();
+}
 
 function handleFontFamilyChange(value: string) {
+	localFontFamily = value;
 	setFontFamily(value);
 	applySettings();
 }
 
-function handleFontSizeChange(value: number) {
-	setFontSize(value);
-	applySettings();
-}
+// Derived labels
+const selectedFontLabel = $derived(
+	fontOptions.find((f) => f.value === localFontFamily)?.label ?? 'Select font',
+);
 
 function handleSave() {
 	saveSettings();
@@ -82,7 +88,7 @@ function handleSave() {
 						</span>
 						<Select.Root
 							type="single"
-							value={settings.fontFamily}
+							value={localFontFamily}
 							onValueChange={handleFontFamilyChange}
 							items={fontOptions}
 						>
@@ -127,19 +133,23 @@ function handleSave() {
 							<span
 								class="px-2 py-1 text-xs border border-[var(--border-default)] rounded bg-[var(--bg-elevated)]"
 							>
-								{settings.fontSize}px
+								{localFontSize}px
 							</span>
 						</div>
 						<Slider.Root
 							type="single"
-							value={settings.fontSize}
+							value={localFontSize}
 							onValueChange={handleFontSizeChange}
 							min={10}
 							max={24}
 							step={1}
 							class="relative flex items-center w-full h-5 touch-none select-none"
 						>
-							<Slider.Range class="absolute h-1 rounded-full bg-[var(--accent-primary)]" />
+							<span
+								class="relative h-1 w-full grow cursor-pointer overflow-hidden rounded-full bg-[var(--bg-surface)]"
+							>
+								<Slider.Range class="absolute h-full bg-[var(--accent-primary)]" />
+							</span>
 							<Slider.Thumb
 								index={0}
 								class="block size-4 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-elevated)] shadow-md focus-ring cursor-pointer"

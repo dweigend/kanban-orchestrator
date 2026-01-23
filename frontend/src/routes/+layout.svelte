@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Tooltip } from 'bits-ui';
 import { Toaster } from 'svelte-sonner';
+import { untrack } from 'svelte';
 import './layout.css';
 import favicon from '$lib/assets/favicon.svg';
 import { initSchemaStore } from '$lib/stores/schema.svelte';
@@ -8,11 +9,13 @@ import { applySettings, loadSettings } from '$lib/stores/settings.svelte';
 
 const { children } = $props();
 
-// Initialize stores on app startup (runs once)
+// Initialize stores on app startup (runs once, untracked to prevent re-runs)
 $effect(() => {
-	initSchemaStore();
-	loadSettings();
-	applySettings();
+	untrack(() => {
+		initSchemaStore();
+		loadSettings();
+		applySettings();
+	});
 });
 </script>
 
