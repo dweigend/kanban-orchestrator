@@ -48,7 +48,7 @@ Siehe `dev/ISSUE_TRACKER.md` für vollständige Liste.
 
 | Prio | # | Issue | Severity |
 |------|---|-------|----------|
-| 1 | #14 | Card Reorder in Columns | MEDIUM |
+| 1 | #14 | Card Reorder in Columns | HIGH |
 | 2 | #22 | Projekt-Management (Konzept) | HIGH |
 | 3 | #3 | Backend Settings in UI | LOW |
 | 4 | #16 | Agent-Autostart (UX) | LOW |

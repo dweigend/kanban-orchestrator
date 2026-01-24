@@ -96,15 +96,40 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 
 ### #14 - Card Reihenfolge nicht änderbar 🔴
 
-**Severity:** Medium
+**Severity:** High
 **Status:** Offen
+**Verified:** ✅ 2026-01-23
 
 **Description:**
-- Cards lassen sich zwischen Spalten verschieben
+- Cards lassen sich zwischen Spalten verschieben (Status-Änderung funktioniert)
 - Cards können NICHT innerhalb einer Spalte umsortiert werden
-- Reihenfolge bleibt immer gleich (nach created_at)
+- Reihenfolge bleibt immer gleich (sortiert nach `created_at`)
+- User erwartet: Drag & Drop zum Priorisieren innerhalb einer Spalte
 
-**Root Cause:** Kein `position`/`order` Feld im Task-Model
+**User Story:**
+> "Ich möchte die Reihenfolge der Karten im Kanban-Board per Drag & Drop ändern können."
+
+**Root Cause:**
+- Kein `position`/`order` Feld im Task-Model (Backend)
+- Keine Reorder-Logik im Frontend (nur Status-Update bei Drop)
+
+**Required Changes:**
+
+1. **Backend:**
+   - Task-Model: `position: int` Feld hinzufügen
+   - Migration: Default position = created_at timestamp oder auto-increment
+   - PATCH `/api/tasks/{id}`: position update
+   - GET `/api/tasks`: Sortierung nach `status` dann `position`
+
+2. **Frontend:**
+   - `Column.svelte`: Reorder innerhalb Spalte erkennen
+   - `Board.svelte`: Position-Update API call
+   - Optimistic UI update für flüssiges UX
+
+**Acceptance Criteria:**
+- [ ] Cards können per Drag & Drop innerhalb einer Spalte sortiert werden
+- [ ] Neue Reihenfolge bleibt nach Page Reload erhalten
+- [ ] Drag zwischen Spalten funktioniert weiterhin (Status-Änderung)
 
 ---
 
@@ -159,7 +184,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 
 | Prio | # | Issue | Severity |
 |------|---|-------|----------|
-| 1 | #14 | Card Reorder in Columns | MEDIUM |
+| 1 | #14 | Card Reorder in Columns | HIGH |
 | 2 | #22 | Projekt-Management (Konzept) | HIGH |
 | 3 | #3 | Backend Settings in UI | LOW |
 | 4 | #16 | Agent-Autostart (UX) | LOW |
