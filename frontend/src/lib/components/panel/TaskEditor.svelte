@@ -210,9 +210,9 @@ function getField(name: string): SchemaField | undefined {
 			{#if hasSteps}
 				<Separator.Root class="h-px bg-[var(--border-muted)]" />
 				<div class="space-y-2">
-					<label class="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
+					<div class="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
 						Steps
-					</label>
+					</div>
 					<div class="space-y-1">
 						{#each currentTask.steps as step, index (index)}
 							<button
@@ -244,9 +244,9 @@ function getField(name: string): SchemaField | undefined {
 			{#if hasSubtasks}
 				<Separator.Root class="h-px bg-[var(--border-muted)]" />
 				<div class="space-y-2">
-					<label class="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
+					<div class="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
 						Subtasks ({subtasks.length})
-					</label>
+					</div>
 					<div class="space-y-1">
 						{#each subtasks as subtask (subtask.id)}
 							<div

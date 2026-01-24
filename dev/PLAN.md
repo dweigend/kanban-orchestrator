@@ -22,29 +22,13 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - **Phase 7.3 Session B:** Frontend Schema-Integration (TaskEditor)
 - **Phase 8:** Schema-Driven UI (77 Tests)
 - **Phase 9:** Bug Fixes + UI Cleanup (13 Issues closed)
+- **Phase 10:** Subtasks & Expand/Collapse Cards (#24) ✅
 
 ---
 
 ## Aktuelle Phase
 
-### Phase 10: Subtasks & Expand/Collapse Cards (#24) 🟡 IN PROGRESS
-
-**Ziel:** Komplexe Tasks in Untertasks zerlegen
-
-**Status:** Großteil implementiert, Abschluss in nächster Session
-
-**Erledigt:**
-- ✅ Task-Model mit `parent_id` + `steps` (JSON-Array)
-- ✅ `SubtaskTree.svelte` Komponente
-- ✅ Expand/Collapse Cards im Board
-- ✅ Tree-Struktur mit Status-Icons + Step-Counter
-- ✅ Agent Task-Planung (Plan Button → Subtasks erstellen)
-
-**Noch offen:**
-- ⏳ Subtask-Editing im TaskEditor verfeinern
-- ⏳ Dokumentation aktualisieren
-
-**Nächste Session:** #24 abschließen → Phase 10 als ✅ markieren
+### Phase 11: Konzept-Session - Projektstruktur & Erweiterte Tasks 🔲 NEXT
 
 ---
 
@@ -139,10 +123,9 @@ project/
 
 | Prio | # | Issue | Phase | Status |
 |------|---|-------|-------|--------|
-| 1 | #24 | Subtasks + Expand Cards | 10 | 🟡 Fast fertig |
-| 2 | #26 | Projektstruktur & Standardpfade | 11 (Konzept) | ⏳ Geplant |
-| 3 | #25 | Erweiterte Task-Definition | 11 (Konzept) | ⏳ Geplant |
-| 4 | #22 | Projekt-Management | 11 (Konzept) | ⏳ Geplant |
+| 1 | #26 | Projektstruktur & Standardpfade | 11 (Konzept) | ⏳ Geplant |
+| 2 | #25 | Erweiterte Task-Definition | 11 (Konzept) | ⏳ Geplant |
+| 3 | #22 | Projekt-Management | 11 (Konzept) | ⏳ Geplant |
 
 **Abhängigkeiten:**
 ```

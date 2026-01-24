@@ -16,7 +16,7 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 │         └───────────────┬───────────────────────┘               │
 │                         ▼                                       │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Services (API, Events, Tasks, Agent)           ││
+│  │              Services (API, Events, Tasks, Agent, Schema)   ││
 │  └─────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────┘
                               │ HTTP + SSE
@@ -26,6 +26,7 @@ AI-gestützter Workflow-Orchestrator mit Kanban-Board UI für automatisierte Rec
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │                    API Routes Layer                       │   │
 │  │  /api/projects  /api/tasks  /api/agent/*  /api/events    │   │
+│  │  /api/schema/*  /api/settings                            │   │
 │  └──────────────────────────────────────────────────────────┘   │
 │                              │                                  │
 │         ┌────────────────────┼────────────────────┐             │
@@ -79,7 +80,7 @@ backend/
     ├── database.py            # SQLAlchemy Setup
     ├── models/                # Database Models
     │   ├── __init__.py
-    │   ├── task.py            # Task Model
+    │   ├── task.py            # Task Model (with steps, parent_id)
     │   ├── project.py         # Project Model
     │   └── agent_run.py       # AgentRun Model
     ├── api/
@@ -89,13 +90,15 @@ backend/
     │   ├── project_service.py # Project Business Logic
     │   └── routes/
     │       ├── projects.py    # /api/projects
-    │       ├── tasks.py       # /api/tasks
-    │       ├── agent.py       # /api/agent/*
-    │       └── events.py      # /api/events (SSE)
+    │       ├── tasks.py       # /api/tasks + /api/tasks/{id}/subtasks
+    │       ├── agent.py       # /api/agent/* (run, stop, plan, execute)
+    │       ├── events.py      # /api/events (SSE)
+    │       ├── schema.py      # /api/schema/* (task, project, enums)
+    │       └── settings.py    # /api/settings (backend config)
     ├── services/              # Shared Business Logic
     │   └── git.py             # Git checkpoint/commit operations
     ├── agents/
-    │   └── orchestrator.py    # Claude Agent SDK Integration (~200 lines)
+    │   └── orchestrator.py    # Claude Agent SDK Integration
     ├── mcp_servers/           # MCP servers WE EXPOSE (Kanban → external clients)
     │   ├── kanban_server.py   # Tools for Claude Code (create_task, list_tasks)
     │   └── filesystem/
@@ -114,14 +117,31 @@ backend/
 │ name            │     │ id (PK)         │◄────┤ task_id (FK)    │
 │ workspace_path  │     │ title           │     │ status          │
 │ created_at      │     │ description     │     │ logs            │
-└─────────────────┘     │ status          │     │ error_message   │
-                        │ parent_id (FK)──┼──┐  │ started_at      │
-                        │ created_at      │  │  │ completed_at    │
-                        └─────────────────┘  │  └─────────────────┘
+└─────────────────┘     │ result          │     │ error_message   │
+                        │ steps (JSON)    │     │ created_at      │
+                        │ status          │     │ started_at      │
+                        │ type            │     │ completed_at    │
+                        │ parent_id (FK)──┼──┐  └─────────────────┘
+                        │ created_at      │  │
+                        └─────────────────┘  │
                                 │            │
                                 └────────────┘
                               (Self-Reference: Subtasks)
 ```
+
+**Task Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | String(36) | UUID primary key |
+| `title` | String(255) | Task title |
+| `description` | Text | Optional description |
+| `result` | Text | Agent execution result |
+| `steps` | JSON | Array of `{text: string, done: boolean}` |
+| `status` | String(20) | todo, in_progress, needs_review, done |
+| `type` | String(20) | research, dev, notes, neutral |
+| `parent_id` | String(36) | FK to parent task (subtasks) |
+| `project_id` | String(36) | FK to project |
+| `created_at` | DateTime | Creation timestamp |
 
 **Status Enums:**
 
@@ -147,7 +167,9 @@ POST   /api/tasks                 Create task
 GET    /api/tasks                 List all tasks
 GET    /api/tasks/{id}            Get task by ID
 PUT    /api/tasks/{id}            Update task
+PUT    /api/tasks/{id}/steps      Update task steps
 DELETE /api/tasks/{id}            Delete task
+GET    /api/tasks/{id}/subtasks   Get subtasks of a parent task
 ```
 
 #### Agent
@@ -156,6 +178,23 @@ POST   /api/agent/run             Start agent for task (202 Accepted)
 POST   /api/agent/stop/{id}       Stop running agent
 GET    /api/agent/runs            List agent runs (filter: task_id, status)
 GET    /api/agent/runs/{id}       Get agent run details
+POST   /api/agent/plan/{id}       Plan task decomposition (creates subtasks)
+POST   /api/agent/execute/{id}    Execute subtasks of a planned task
+```
+
+#### Schema
+```
+GET    /api/schema/task           Task field schema for dynamic forms
+GET    /api/schema/project        Project field schema
+GET    /api/schema/agent-run      AgentRun field schema
+GET    /api/schema/enums          All enum values with labels
+```
+
+#### Settings
+```
+GET    /api/settings              Read backend settings
+POST   /api/settings              Save backend settings
+GET    /api/settings/schema       Settings field schema
 ```
 
 #### Events
@@ -241,39 +280,6 @@ The system uses MCP (Model Context Protocol) bidirectionally:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Directory Structure:**
-
-```
-mcp_servers/              # Servers WE EXPOSE to external clients
-├── kanban_server.py      # Claude Code can create/query tasks
-└── filesystem/
-    └── server.py         # Sandboxed file I/O for agents
-
-mcp_client/               # Config for servers WE USE
-└── registry.py           # Registry the orchestrator spawns from
-```
-
-**Kanban MCP Tools (mcp_servers/kanban_server.py):**
-
-| Tool | Description |
-|------|-------------|
-| `create_task(title, description?)` | Create task in board |
-| `list_tasks()` | List all tasks with status |
-| `get_task_result(task_id)` | Get task details + results |
-
-**Filesystem MCP Tools (mcp_servers/filesystem/server.py):**
-
-| Tool | Description |
-|------|-------------|
-| `read_file(path)` | Read file content |
-| `write_file(path, content)` | Write to file |
-| `list_directory(path)` | List directory contents |
-| `create_directory(path)` | Create directory |
-| `delete_file(path)` | Delete file |
-| `file_exists(path)` | Check file existence |
-
-All filesystem operations are sandboxed within the project's `workspace_path`.
-
 ---
 
 ## Frontend Architecture
@@ -289,34 +295,47 @@ frontend/
     ├── app.html                # HTML Template
     ├── app.css                 # Global Styles
     ├── routes/
-    │   ├── +layout.svelte      # Root Layout
+    │   ├── +layout.svelte      # Root Layout (loads settings)
     │   └── +page.svelte        # Main Page
     └── lib/
         ├── types/
-        │   ├── task.ts         # Task interfaces + mappings
-        │   └── agent.ts        # Agent interfaces
+        │   ├── task.ts         # Task interfaces + status mappings
+        │   ├── agent.ts        # AgentRun interfaces
+        │   └── schema.ts       # Schema field definitions
+        ├── stores/
+        │   ├── schema.svelte.ts   # Schema + Enums state
+        │   └── settings.svelte.ts # Frontend + Backend settings
         ├── services/
         │   ├── api.ts          # Generic fetch wrapper
-        │   ├── tasks.ts        # Task CRUD
+        │   ├── tasks.ts        # Task CRUD + steps update
         │   ├── agent.ts        # Agent execution
         │   ├── events.ts       # SSE subscription
+        │   ├── schema.ts       # Schema fetching
+        │   ├── settings.ts     # Backend settings API
         │   └── toast.ts        # Notifications
         └── components/
+            ├── form/
+            │   ├── FieldRenderer.svelte   # Schema-driven field rendering
+            │   ├── FieldText.svelte       # Text input
+            │   ├── FieldTextarea.svelte   # Textarea input
+            │   ├── FieldSelect.svelte     # Select dropdown
+            │   ├── FieldReadonly.svelte   # Read-only display
+            │   ├── FieldDatetime.svelte   # Datetime display
+            │   └── index.ts               # Barrel export
             ├── kanban/
-            │   ├── Board.svelte    # Main board container
-            │   ├── Column.svelte   # Status column
-            │   └── TaskCard.svelte # Task card
+            │   ├── Board.svelte       # Main board container
+            │   ├── Column.svelte      # Status column
+            │   ├── TaskCard.svelte    # Task card (expandable)
+            │   └── SubtaskTree.svelte # Subtask tree display
             ├── layout/
-            │   └── Header.svelte   # App header
+            │   └── Header.svelte      # App header with tabs
             └── panel/
                 ├── FunctionPanel.svelte   # Main sidebar container
                 ├── ProjectOverview.svelte # Project info
                 ├── AgentList.svelte       # Agent status list
                 ├── AgentLog.svelte        # Agent execution logs
-                ├── SystemLog.svelte       # System logs
                 ├── TaskEditor.svelte      # Task edit form
-                ├── SearchBar.svelte       # Search input
-                └── SettingsPanel.svelte   # Settings
+                └── SettingsPanel.svelte   # Settings (Frontend + Backend)
 ```
 
 ### Component Hierarchy
@@ -327,9 +346,9 @@ frontend/
 │   └── Tabs: overview | agents | settings
 ├── Board.svelte
 │   └── Column.svelte (×4: TODO, IN_PROGRESS, NEEDS_REVIEW, DONE)
-│       └── TaskCard.svelte (for each task)
+│       └── TaskCard.svelte (expandable for subtasks)
+│           └── SubtaskTree.svelte (when expanded)
 └── FunctionPanel.svelte
-    ├── SearchBar.svelte
     └── Content (based on activeTab):
         ├── ProjectOverview.svelte
         ├── AgentList.svelte
@@ -342,7 +361,6 @@ frontend/
 
 ```typescript
 // +page.svelte
-let viewMode = $state('hub-view');
 let sidebarVisible = $state(true);
 let activeTab = $state<SidebarTab>('overview');
 let editingTask = $state<Task | null>(null);
@@ -361,30 +379,38 @@ let activeTasks = $derived(tasks.filter(t => t.status === 'IN_PROGRESS'));
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'NEEDS_REVIEW' | 'DONE';
 type TaskType = 'research' | 'dev' | 'notes' | 'neutral';
 
+interface Step {
+  text: string;
+  done: boolean;
+}
+
 interface Task {
   id: string;
   title: string;
   description?: string;
+  result?: string;
+  steps?: Step[];
   status: TaskStatus;
   type: TaskType;
-  projectId?: string;
-  parentId?: string;
-  createdAt: Date;
+  project_id?: string;
+  parent_id?: string;
+  created_at: string;
 }
 ```
 
 **Agent Types:**
 ```typescript
-type AgentStatus = 'idle' | 'running' | 'completed' | 'failed';
-type AgentType = 'orchestrator' | 'coder' | 'researcher' | 'architect';
+type AgentRunStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 interface AgentRun {
   id: string;
-  taskId: string;
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
-  errorMessage?: string;
-  startedAt: Date;
-  completedAt?: Date;
+  task_id: string;
+  status: AgentRunStatus;
+  logs: string | null;
+  error_message: string | null;
+  created_at: string;
+  started_at: string | null;
+  completed_at: string | null;
 }
 ```
 
@@ -393,9 +419,11 @@ interface AgentRun {
 | Service | Purpose | API Base |
 |---------|---------|----------|
 | `api.ts` | Generic fetch wrapper with error handling | `http://localhost:8000` |
-| `tasks.ts` | Task CRUD operations | `/api/tasks` |
+| `tasks.ts` | Task CRUD + steps update | `/api/tasks` |
 | `agent.ts` | Agent run management | `/api/agent/*` |
 | `events.ts` | SSE subscription | `/api/events` |
+| `schema.ts` | Schema + enums fetching | `/api/schema/*` |
+| `settings.ts` | Backend settings | `/api/settings` |
 | `toast.ts` | Toast notifications | svelte-sonner |
 
 ### SSE Event Handling
@@ -476,222 +504,73 @@ onMount(() => {
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Models (Task, Project, AgentRun) | ✅ Complete | Full CRUD support |
+| Models (Task, Project, AgentRun) | ✅ Complete | Full CRUD + steps/parent_id |
 | Database (SQLAlchemy async) | ✅ Complete | SQLite + aiosqlite |
-| API Routes | ✅ Complete | Projects, Tasks, Agent, Events |
+| API Routes (CRUD) | ✅ Complete | Projects, Tasks, Agent, Events |
+| API Routes (Schema) | ✅ Complete | Dynamic form schemas |
+| API Routes (Settings) | ✅ Complete | Backend config via API |
 | Services | ✅ Complete | Event publishing integrated |
 | EventBus (SSE) | ✅ Complete | All event types supported |
-| Orchestrator | ✅ MVP | Claude Agent SDK working |
+| Orchestrator | ✅ Complete | Plan + Execute support |
 | MCP Filesystem | ✅ MVP | Sandboxed file operations |
-| MCP Perplexity | 🔲 Planned | Web search integration |
-| MCP OpenAlex | 🔲 Planned | Scientific paper search |
-| MCP BibTeX | 🔲 Planned | Citation management |
 
 ### Frontend
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Types (Task, Agent) | ✅ Complete | Full type coverage |
-| Services (API, Events) | ✅ Complete | All endpoints covered |
+| Types (Task, Agent, Schema) | ✅ Complete | Full type coverage |
+| Stores (Schema, Settings) | ✅ Complete | Svelte 5 runes |
+| Services (API, Events, Schema) | ✅ Complete | All endpoints covered |
 | Board.svelte | ✅ Complete | Drag & drop working |
 | Column.svelte | ✅ Complete | Status grouping |
-| TaskCard.svelte | ✅ Complete | Draggable cards |
+| TaskCard.svelte | ✅ Complete | Expandable with subtasks |
+| SubtaskTree.svelte | ✅ Complete | Tree with status icons |
 | Header.svelte | ✅ Complete | Tabs, toggle |
 | FunctionPanel.svelte | ✅ Complete | Tab routing |
-| TaskEditor.svelte | ✅ Complete | Create/edit tasks |
-| AgentList.svelte | ✅ MVP | Mock data (needs backend) |
-| AgentLog.svelte | ✅ MVP | SSE integration |
+| TaskEditor.svelte | ✅ Complete | Schema-driven, steps toggle |
+| AgentList.svelte | ✅ Complete | Historical runs |
+| AgentLog.svelte | ✅ Complete | SSE integration |
 | ProjectOverview.svelte | ✅ MVP | Basic info |
-| Run Button on TaskCard | ✅ Complete | UI integration |
-| Project Selector | 🔲 Planned | Multi-project support |
-
----
-
-## Naming Conventions
-
-### MCP Directory Naming
-
-The MCP-related directories follow a **client/server perspective** naming convention:
-
-| Directory | Role | Meaning |
-|-----------|------|---------|
-| `mcp_servers/` | **We ARE an MCP** | Servers we expose to external clients |
-| `mcp_client/` | **We USE MCPs** | Config for servers we consume |
-
-**Why this naming?**
-
-The external Python package `mcp` would conflict with a local `mcp/` folder. Instead of generic names, we chose explicit role-based names:
-
-- `mcp_servers/` → Contains actual FastMCP server implementations
-- `mcp_client/` → Contains registry/config for spawning external MCP servers
-
-This makes the bidirectional MCP architecture immediately clear from the folder structure.
-
-### General Naming Patterns
-
-| Pattern | Convention | Example |
-|---------|------------|---------|
-| **Models** | Singular, PascalCase | `Task`, `Project`, `AgentRun` |
-| **Services** | Domain + `_service.py` | `task_service.py`, `git.py` |
-| **Routes** | Plural, resource name | `tasks.py`, `projects.py` |
-| **MCP Servers** | Feature + `_server.py` | `kanban_server.py`, `filesystem/server.py` |
-| **Schemas** | Model + `Create/Response` | `TaskCreate`, `TaskResponse` |
-
----
-
-## Backend vs. Frontend Aufteilung
-
-### Entscheidungslogik
-
-**Faustregel:** Braucht ein Headless-MCP-Client diese Information?
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    ENTSCHEIDUNGSBAUM                            │
-└─────────────────────────────────────────────────────────────────┘
-
-Neue Funktion/Daten?
-        │
-        ▼
-┌───────────────────────────────────┐
-│ Braucht ein MCP-Client das?       │
-│ (CLI, Automation, Headless)       │
-└───────────────────────────────────┘
-        │
-   ┌────┴────┐
-   ▼         ▼
-  JA        NEIN
-   │         │
-   ▼         ▼
-BACKEND   ┌─────────────────────────┐
-          │ Ist es reine Darstellung │
-          │ (Farben, Fonts, Layout)? │
-          └─────────────────────────┘
-                    │
-               ┌────┴────┐
-               ▼         ▼
-              JA        NEIN
-               │         │
-               ▼         ▼
-           FRONTEND   BACKEND
-```
-
-### Schnell-Check
-
-| Frage | Antwort | Ort |
-|-------|---------|-----|
-| Braucht ein CLI-Tool diese Daten? | Ja | **Backend** |
-| Muss es in der DB persistiert werden? | Ja | **Backend** |
-| Ist es reine Kosmetik/Darstellung? | Ja | **Frontend** |
-| Nur localStorage/Session-relevant? | Ja | **Frontend** |
-| Hat es semantische Bedeutung? | Ja | **Backend** |
-
-### Backend (MCP-Funktionalität)
-
-| Kategorie | Was | Beispiele |
-|-----------|-----|-----------|
-| **Daten** | Entities | Tasks, Projects, Agent Runs |
-| **Schemas** | Feld-Definitionen | Welche Felder, Typen, Required |
-| **Enums + Metadaten** | Werte + Labels + Icons | `{"value": "todo", "label": "To Do", "icon": "Circle"}` |
-| **Workflow-Settings** | MCP-relevante Config | Git Auto-Checkpoint, Agent Model, Max Turns |
-
-### Frontend (UI-Präferenzen)
-
-| Kategorie | Was | Beispiele |
-|-----------|-----|-----------|
-| **Appearance** | Visuelle Präferenzen | Font Family, Font Size |
-| **Editor** | Code-Editor Settings | Line Numbers, Word Wrap |
-| **Verhalten** | UI-Verhalten | Notifications, Animations |
-| **Styling** | CSS | Farben als CSS-Variablen (`var(--task-research)`) |
-
-### Anti-Patterns
-
-```typescript
-// ❌ FALSCH - Labels im Frontend hardcoden
-const TASK_STATUS_LABELS = { 'todo': 'To Do', ... };
-
-// ✅ RICHTIG - Labels vom Backend holen
-const enums = await fetchEnums();
-const label = enums.task_status.find(s => s.value === status)?.label;
-```
-
-```python
-# ❌ FALSCH - Farben im Backend
-{"value": "research", "color": "#3b82f6"}
-
-# ✅ RICHTIG - Farben bleiben CSS-Variablen im Frontend
-```
+| SettingsPanel.svelte | ✅ Complete | Frontend + Backend settings |
+| Form Components | ✅ Complete | Schema-driven rendering |
 
 ---
 
 ## Key Design Decisions
 
-### 1. Claude Agent SDK with bypassPermissions
+### 1. Schema-Driven Forms
+
+Forms are rendered dynamically based on backend schema definitions. This ensures consistency between backend validation and frontend forms.
+
+### 2. Claude Agent SDK with bypassPermissions
 
 The orchestrator runs with `bypassPermissions=true` (YOLO mode) within the sandboxed workspace. This allows automated file operations without user confirmation.
 
 **Security:** All MCP tools are restricted to the project's `workspace_path`.
 
-### 2. MCP Server Registry Pattern
+### 3. Subtask Architecture
 
-MCP servers are modular and registered in `mcp/registry.py`. New capabilities (Perplexity, OpenAlex) can be added without modifying the orchestrator.
+Tasks can have:
+- **Steps** (JSON array): Checklist items within a single task
+- **Subtasks** (parent_id FK): Child tasks created by agent planning
 
-### 3. Git Auto-Checkpoints
+The agent `plan` endpoint decomposes complex tasks into subtasks, which can then be executed individually.
+
+### 4. Git Auto-Checkpoints
 
 Before each agent run, a git checkpoint is created. On success, changes are committed. This provides rollback capability and audit trail.
 
-### 4. SSE for Real-time Updates
+### 5. SSE for Real-time Updates
 
 Instead of WebSockets, we use Server-Sent Events (SSE) for simplicity. The EventBus pattern decouples producers from consumers.
 
-### 5. Frontend/Backend Status Mapping
+### 6. Frontend/Backend Status Mapping
 
 Task statuses use different cases (Frontend: `'TODO'`, Backend: `'todo'`). Mapping functions in `types/task.ts` handle conversion.
 
----
+### 7. Backend Settings via API
 
-## Future Architecture
-
-### Planned Extensions
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      MCP Server Ecosystem                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │  Filesystem │  │  Perplexity │  │   OpenAlex  │             │
-│  │  (Current)  │  │  (Planned)  │  │  (Planned)  │             │
-│  │             │  │             │  │             │             │
-│  │ read_file   │  │ web_search  │  │ search_papers│            │
-│  │ write_file  │  │ deep_research│ │ get_citations│            │
-│  │ list_dir    │  │             │  │             │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-│                                                                 │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │   BibTeX    │  │   GitHub    │  │  Database   │             │
-│  │  (Planned)  │  │  (Future)   │  │  (Future)   │             │
-│  │             │  │             │  │             │             │
-│  │ manage_refs │  │ create_pr   │  │ sql_query   │             │
-│  │ format_cite │  │ review_code │  │ migrations  │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Workflow Templates
-
-Future: Predefined task chains with automatic agent orchestration.
-
-```
-Research Workflow:
-  1. Perplexity: Web search for topic
-  2. OpenAlex: Find academic papers
-  3. BibTeX: Generate citations
-  4. Filesystem: Write summary document
-```
-
----
+Backend configuration (agent model, max turns, git settings) is exposed via `/api/settings` and stored in `.kanban/settings.json`. This allows the frontend to configure agent behavior.
 
 ---
 
@@ -711,17 +590,6 @@ Das System folgt dem Prinzip: **Kanban = Orchestration (stabil), MCPs = Features
 **A) Kanban NUTZT MCPs** - Orchestrator ruft externe Tools
 **B) Kanban IST ein MCP** - Claude Code kann Tasks erstellen
 
-### Architekturentscheidungen
-
-| Decision | Entscheidung | Begründung |
-|----------|--------------|------------|
-| Orchestrator | Claude Agent SDK | Max-Abo, kein API-Cost |
-| Tool-Integration | Externe MCPs | Weniger Code, Community-maintained |
-| Kanban MCP | FastMCP | ~50 Zeilen, nutzt bestehende API |
-| Plugin Manager | Glama API | 15,833+ Server, Plug & Play |
-
-**Details:** → `dev/MCP-ARCHITECTURE.md`
-
 ---
 
-*Last updated: 2026-01-21*
+*Last updated: 2026-01-24*

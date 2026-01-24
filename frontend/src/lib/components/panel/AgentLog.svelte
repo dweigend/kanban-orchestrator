@@ -75,12 +75,13 @@ function getTaskTitle(taskId: string): string {
 	return task?.title ?? 'Unknown Task';
 }
 
-// Sort runs by date, newest first
+// Sort runs by date, newest first (fallback to created_at if started_at is null)
 const sortedRuns = $derived(
-	[...runs].sort(
-		(a, b) =>
-			new Date(b.started_at).getTime() - new Date(a.started_at).getTime(),
-	),
+	[...runs].sort((a, b) => {
+		const dateA = a.started_at ?? a.created_at;
+		const dateB = b.started_at ?? b.created_at;
+		return new Date(dateB).getTime() - new Date(dateA).getTime();
+	}),
 );
 </script>
 
@@ -151,7 +152,7 @@ const sortedRuns = $derived(
 									</span>
 								</div>
 								<div class="flex items-center gap-2 text-[10px] text-[var(--text-muted)]">
-									<span>{formatDate(run.started_at)}</span>
+									<span>{formatDate(run.started_at ?? run.created_at)}</span>
 									{#if run.completed_at}
 										<span>→</span>
 										<span>{formatTime(run.completed_at)}</span>

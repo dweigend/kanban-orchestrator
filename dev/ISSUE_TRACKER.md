@@ -30,7 +30,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Drag & Drop (Reorder) | 🚫 | #14 | Won't Fix - Subtasks stattdessen |
 | Task Types Visual | 🟢 | | research/dev/notes/neutral |
 | Status Labels | 🟢 | | Schema-driven |
-| **Subtasks/Checklists** | ⚪ | #24 | **NEU** - Geplant |
+| **Subtasks/Checklists** | ✅ | #24 | FIXED - Subtasks + Expand Cards |
 | **Erweiterte Task-Definition** | ⚪ | #25 | **NEU** - Geplant |
 
 ### Agent System
@@ -41,7 +41,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Agent Logs Panel | 🟢 | #8 ✅ | Historical runs displayed |
 | Run Agent Button | 🟢 | #17 ✅ | Icon direkt auf Card |
 | Agent Autostart | 🚫 | #16 | Won't Fix - Expliziter Start besser |
-| **Agent Task-Planung** | ⚪ | #24 | **NEU** - Claude SDK zerlegt Tasks |
+| **Agent Task-Planung** | ✅ | #24 | FIXED - Plan/Execute Endpoints |
 
 ### Settings
 
@@ -63,7 +63,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Search Bar | ✅ | #4, #23 | **ENTFERNT** |
 | Project Menu | 🔴 | #9, #22 | Konzeptionell überarbeiten |
 | Card Icons (Run/Delete) | 🟢 | #17 ✅ | Context Menu ersetzt |
-| **Expand/Collapse Cards** | ⚪ | #24 | **NEU** - Geplant |
+| **Expand/Collapse Cards** | ✅ | #24 | FIXED - SubtaskTree Component |
 
 ### Projektstruktur & Konfiguration
 
@@ -99,28 +99,19 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 
 ---
 
-### #24 - Subtasks/Checklists + Expand/Collapse Cards 🆕
+### #24 - Subtasks/Checklists + Expand/Collapse Cards ✅ FIXED
 
 **Severity:** High
-**Status:** Geplant (Phase 10)
-**Created:** 2026-01-24
+**Status:** Erledigt (2026-01-24)
 
-**Description:**
-Komplexe Tasks sollen in Subtasks aufgeteilt werden können. Die Aufteilung erfolgt über den Claude Code SDK im Planungsmodus.
-
-**User Story:**
-> "Komplexe Tasks werden vom Agent in Untertasks zerlegt. Die Card kann aufgeklappt werden, um Subtasks zu sehen."
-
-**Features:**
-- Expand/Collapse Cards im Board
-- Subtasks als Checklist innerhalb einer Card
-- Agent zerlegt komplexe Tasks automatisch (Planungsmodus)
-- Nur für komplexe Tasks (einfache Tasks bleiben flat)
-
-**Implementation:**
-- Task-Model: `subtasks: [{text: string, done: boolean}]` (JSON-Array)
-- Frontend: Expandable Card Component
-- Agent: Planungsmodus aktivieren für Task-Zerlegung
+**Implementiert:**
+- ✅ Task-Model mit `parent_id` + `steps` (JSON-Array)
+- ✅ `SubtaskTree.svelte` Komponente
+- ✅ Expand/Collapse Cards im Board
+- ✅ Tree-Struktur mit Status-Icons + Step-Counter
+- ✅ Agent Plan/Execute Endpoints (`POST /api/agent/plan/{id}`, `POST /api/agent/execute/{id}`)
+- ✅ Step Toggle im TaskEditor
+- ✅ NEEDS_REVIEW Status mit Execute Button
 
 ---
 
@@ -230,25 +221,26 @@ project/
 | #23 | Search/Knowledge Base | SearchBar entfernt | 2026-01-23 |
 | #16 | Agent-Autostart | **WON'T FIX** - Expliziter Start besser | 2026-01-24 |
 | #3 | Backend Settings in UI | API + SettingsPanel verbunden | 2026-01-24 |
+| #24 | Subtasks + Expand Cards | SubtaskTree + Plan/Execute | 2026-01-24 |
 
 ---
 
 ## Priority Matrix
 
-### ✅ Erledigt (15 Issues)
-#1, #3, #4, #6, #7, #8, #14, #15, #16, #17, #18, #19, #20, #21, #23
+### ✅ Erledigt (16 Issues)
+#1, #3, #4, #6, #7, #8, #14, #15, #16, #17, #18, #19, #20, #21, #23, #24
 
-### 🔧 Offen (4 Issues)
+### 🔧 Offen (3 Issues)
 
 | Prio | # | Issue | Severity | Phase |
 |------|---|-------|----------|-------|
-| 1 | #24 | Subtasks/Checklists + Expand Cards | HIGH | 10 |
-| 2 | #25, #26 | Erweiterte Task-Definition + Projektstruktur | HIGH | 11 |
+| 1 | #26 | Projektstruktur & Standardpfade | HIGH | 11 |
+| 2 | #25 | Erweiterte Task-Definition | HIGH | 11 |
 | 3 | #22 | Projekt-Management (Konzept) | HIGH | 11 |
 
 ### 📋 Abhängigkeiten
 ```
-#26 (Projektstruktur) → #25 (Erweiterte Tasks) → #24 (Subtasks)
+#26 (Projektstruktur) → #25 (Erweiterte Tasks)
 #22 (Projekt-Management) → #9 (Projekt-Menü)
 ```
 
@@ -258,8 +250,8 @@ project/
 
 | Category | Count |
 |----------|-------|
-| ✅ Fixed/Closed | 15 |
-| 🔴 Open (High) | 4 |
+| ✅ Fixed/Closed | 16 |
+| 🔴 Open (High) | 3 |
 | 🟡 Open (Low) | 0 |
 | **Total Issues** | **19** |
 
