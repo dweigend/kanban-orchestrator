@@ -2,7 +2,7 @@
  * Task API service - CRUD operations
  */
 
-import type { BackendTask, Task } from '$lib/types/task';
+import type { BackendTask, Step, Task } from '$lib/types/task';
 import {
 	mapBackendToTask,
 	mapTaskToCreatePayload,
@@ -58,4 +58,25 @@ export async function updateTask(
  */
 export async function deleteTask(id: string): Promise<void> {
 	await request<void>(`/api/tasks/${id}`, { method: 'DELETE' });
+}
+
+/**
+ * Fetch subtasks of a parent task
+ */
+export async function fetchSubtasks(parentId: string): Promise<Task[]> {
+	const backendTasks = await request<BackendTask[]>(
+		`/api/tasks/${parentId}/subtasks`,
+	);
+	return backendTasks.map(mapBackendToTask);
+}
+
+/**
+ * Update steps of a task
+ */
+export async function updateSteps(id: string, steps: Step[]): Promise<Task> {
+	const backendTask = await request<BackendTask>(`/api/tasks/${id}`, {
+		method: 'PUT',
+		body: JSON.stringify({ steps }),
+	});
+	return mapBackendToTask(backendTask);
 }

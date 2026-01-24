@@ -25,26 +25,30 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ---
 
-## Nächste Phasen
+## Aktuelle Phase
 
-### Phase 10: Subtasks & Expand/Collapse Cards (#24)
+### Phase 10: Subtasks & Expand/Collapse Cards (#24) 🟡 IN PROGRESS
 
 **Ziel:** Komplexe Tasks in Untertasks zerlegen
 
-**Features:**
-- Expand/Collapse Cards im Board
-- Subtasks als Checklist innerhalb einer Card
-- Agent zerlegt komplexe Tasks automatisch (Claude SDK Planungsmodus)
-- Nur für komplexe Tasks (einfache bleiben flat)
+**Status:** Großteil implementiert, Abschluss in nächster Session
 
-**Implementation:**
-| Komponente | Änderung |
-|------------|----------|
-| Task-Model | `subtasks: [{text: string, done: boolean}]` (JSON-Array) |
-| TaskCard.svelte | Expandable mit Chevron |
-| Agent | Planungsmodus für Task-Zerlegung |
+**Erledigt:**
+- ✅ Task-Model mit `parent_id` + `steps` (JSON-Array)
+- ✅ `SubtaskTree.svelte` Komponente
+- ✅ Expand/Collapse Cards im Board
+- ✅ Tree-Struktur mit Status-Icons + Step-Counter
+- ✅ Agent Task-Planung (Plan Button → Subtasks erstellen)
 
-**Kein Backend-Bloat:** Subtasks als JSON-Feld, keine separate Tabelle.
+**Noch offen:**
+- ⏳ Subtask-Editing im TaskEditor verfeinern
+- ⏳ Dokumentation aktualisieren
+
+**Nächste Session:** #24 abschließen → Phase 10 als ✅ markieren
+
+---
+
+## Nächste Phasen
 
 ---
 
@@ -133,13 +137,12 @@ project/
 
 ## Aktuelle Issues
 
-| Prio | # | Issue | Phase |
-|------|---|-------|-------|
-| 1 | #24 | Subtasks + Expand Cards | 10 |
-| 2 | #26 | Projektstruktur & Standardpfade | 11 (Konzept) |
-| 3 | #25 | Erweiterte Task-Definition | 11 (Konzept) |
-| 4 | #22 | Projekt-Management | 11 (Konzept) |
-| 5 | #3, #16 | Settings, Autostart | Backlog |
+| Prio | # | Issue | Phase | Status |
+|------|---|-------|-------|--------|
+| 1 | #24 | Subtasks + Expand Cards | 10 | 🟡 Fast fertig |
+| 2 | #26 | Projektstruktur & Standardpfade | 11 (Konzept) | ⏳ Geplant |
+| 3 | #25 | Erweiterte Task-Definition | 11 (Konzept) | ⏳ Geplant |
+| 4 | #22 | Projekt-Management | 11 (Konzept) | ⏳ Geplant |
 
 **Abhängigkeiten:**
 ```

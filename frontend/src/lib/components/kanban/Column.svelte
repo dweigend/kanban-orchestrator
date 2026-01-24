@@ -11,7 +11,12 @@ interface Props {
 	onDeleteTask?: (task: Task) => void;
 	onTaskDrop?: (taskId: string, newStatus: TaskStatus) => void;
 	onRunAgent?: (task: Task) => void;
+	onPlanTask?: (task: Task) => void;
+	onToggleExpand?: (taskId: string) => void;
 	runningAgentTaskId?: string | null;
+	planningTaskId?: string | null;
+	expandedTasks?: Set<string>;
+	getSubtasksFor?: (parentId: string) => Task[];
 	children?: Snippet;
 }
 
@@ -22,7 +27,12 @@ const {
 	onDeleteTask,
 	onTaskDrop,
 	onRunAgent,
+	onPlanTask,
+	onToggleExpand,
 	runningAgentTaskId,
+	planningTaskId,
+	expandedTasks = new Set(),
+	getSubtasksFor = () => [],
 }: Props = $props();
 
 let isDragOver = $state(false);
@@ -80,10 +90,15 @@ const taskCount = $derived(tasks.length);
 		{#each tasks as task (task.id)}
 			<TaskCard
 				{task}
+				subtasks={getSubtasksFor(task.id)}
+				isExpanded={expandedTasks.has(task.id)}
 				onEdit={onEditTask}
 				onDelete={onDeleteTask}
 				{onRunAgent}
+				{onPlanTask}
+				{onToggleExpand}
 				isAgentRunning={runningAgentTaskId === task.id}
+				isPlanning={planningTaskId === task.id}
 			/>
 		{/each}
 

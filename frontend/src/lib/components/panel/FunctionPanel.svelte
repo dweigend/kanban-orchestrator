@@ -11,8 +11,11 @@ interface Props {
 	agents?: Agent[];
 	activeTab?: SidebarTab;
 	editingTask?: Task | null;
+	subtasksForEditing?: Task[];
 	onTaskSave?: (task: Task) => void;
 	onTaskDelete?: (taskId: string) => void;
+	onStepToggle?: (taskId: string, stepIndex: number, done: boolean) => void;
+	onExecute?: (taskId: string) => void;
 	agentLogs?: AgentLogEntry[];
 	agentRuns?: AgentRun[];
 	tasks?: Task[];
@@ -24,8 +27,11 @@ const {
 	agents = [],
 	activeTab = 'overview',
 	editingTask = null,
+	subtasksForEditing = [],
 	onTaskSave,
 	onTaskDelete,
+	onStepToggle,
+	onExecute,
 	agentLogs = [],
 	agentRuns = [],
 	tasks = [],
@@ -108,7 +114,14 @@ function handleKeyDown(e: KeyboardEvent) {
 		</div>
 	{:else if activeTab === 'new-task'}
 		<div class="flex-1 min-h-0 overflow-y-auto">
-			<TaskEditor task={editingTask} onSave={onTaskSave} onDelete={onTaskDelete} />
+			<TaskEditor
+				task={editingTask}
+				subtasks={subtasksForEditing}
+				onSave={onTaskSave}
+				onDelete={onTaskDelete}
+				{onStepToggle}
+				{onExecute}
+			/>
 		</div>
 	{/if}
 </aside>

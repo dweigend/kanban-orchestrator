@@ -61,9 +61,11 @@ export type AgentRunStatus =
 export interface AgentRun {
 	id: string;
 	task_id: string;
+	created_at: string;
 	status: AgentRunStatus;
+	logs?: string;
 	error_message?: string;
-	started_at: string;
+	started_at: string | null;
 	completed_at?: string;
 }
 

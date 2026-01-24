@@ -8,7 +8,12 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.agents.orchestrator import execute_agent_run, stop_agent_run
+from src.agents.orchestrator import (
+    execute_agent_run,
+    execute_subtasks_sequentially,
+    plan_task_decomposition,
+    stop_agent_run,
+)
 from src.api.schemas import AgentRunCreate, AgentRunResponse
 from src.database import get_db
 from src.models.agent_run import AgentRun, AgentRunStatus
@@ -19,33 +24,42 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/agent", tags=["agent"])
 
 
+async def _load_task_and_project(
+    task_id: str,
+    db: AsyncSession,
+) -> tuple[Task, Project | None]:
+    """Load task and its project from DB."""
+    result = await db.execute(select(Task).where(Task.id == task_id))
+    task = result.scalar_one_or_none()
+    if not task:
+        raise ValueError(f"Task {task_id} not found")
+
+    project = None
+    if task.project_id:
+        result = await db.execute(select(Project).where(Project.id == task.project_id))
+        project = result.scalar_one_or_none()
+
+    return task, project
+
+
 async def _run_agent_background(
     agent_run_id: str,
     task_id: str,
-    project_id: str | None,
     mcp_tools: list[str] | None,
 ) -> None:
     """Background task runner - continues an existing AgentRun."""
     from src.database import AsyncSessionLocal
 
     async with AsyncSessionLocal() as db:
-        # Fetch the existing agent run
         result = await db.execute(select(AgentRun).where(AgentRun.id == agent_run_id))
         agent_run = result.scalar_one_or_none()
         if not agent_run:
             return
 
-        # Fetch task
-        result = await db.execute(select(Task).where(Task.id == task_id))
-        task = result.scalar_one_or_none()
-        if not task:
+        try:
+            task, project = await _load_task_and_project(task_id, db)
+        except ValueError:
             return
-
-        # Fetch project if available
-        project = None
-        if project_id:
-            result = await db.execute(select(Project).where(Project.id == project_id))
-            project = result.scalar_one_or_none()
 
         await execute_agent_run(db, agent_run, task, project, mcp_tools)
 
@@ -98,7 +112,6 @@ async def start_agent_run(
         _run_agent_background,
         agent_run.id,
         task.id,
-        task.project_id,
         ["filesystem"],  # Default MCP tools
     )
 
@@ -163,3 +176,78 @@ async def get_agent_run(
         logger.warning("Agent run not found: %s", run_id)
         raise HTTPException(status_code=404, detail="Agent run not found")
     return AgentRunResponse.model_validate(agent_run)
+
+
+# ─────────────────────────────────────────────────────────────
+# Task Planning & Execution Endpoints
+# ─────────────────────────────────────────────────────────────
+
+
+async def _plan_task_background(task_id: str) -> None:
+    """Background task for AI planning."""
+    from src.database import AsyncSessionLocal
+
+    async with AsyncSessionLocal() as db:
+        try:
+            task, project = await _load_task_and_project(task_id, db)
+        except ValueError:
+            return
+
+        await plan_task_decomposition(db, task, project)
+
+
+async def _execute_subtasks_background(task_id: str) -> None:
+    """Background task for sequential subtask execution."""
+    from src.database import AsyncSessionLocal
+
+    async with AsyncSessionLocal() as db:
+        try:
+            task, project = await _load_task_and_project(task_id, db)
+        except ValueError:
+            return
+
+        await execute_subtasks_sequentially(db, task, project)
+
+
+@router.post("/plan/{task_id}", status_code=status.HTTP_202_ACCEPTED)
+async def plan_task(
+    task_id: str,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Start AI planning for a task.
+
+    The agent will decompose the task into subtasks and set status to NEEDS_REVIEW.
+    """
+    result = await db.execute(select(Task).where(Task.id == task_id))
+    task = result.scalar_one_or_none()
+    if not task:
+        logger.warning("Task not found for planning: %s", task_id)
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Start background planning
+    background_tasks.add_task(_plan_task_background, task.id)
+
+    return {"status": "planning_started", "task_id": task_id}
+
+
+@router.post("/execute/{task_id}", status_code=status.HTTP_202_ACCEPTED)
+async def execute_task(
+    task_id: str,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Execute all subtasks of a parent task sequentially.
+
+    Called after user approves the plan (task in NEEDS_REVIEW status).
+    """
+    result = await db.execute(select(Task).where(Task.id == task_id))
+    task = result.scalar_one_or_none()
+    if not task:
+        logger.warning("Task not found for execution: %s", task_id)
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Start background execution
+    background_tasks.add_task(_execute_subtasks_background, task.id)
+
+    return {"status": "execution_started", "task_id": task_id}

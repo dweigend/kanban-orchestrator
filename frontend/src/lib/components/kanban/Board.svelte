@@ -11,7 +11,12 @@ interface Props {
 	onDeleteTask?: (task: Task) => void;
 	onTaskDrop?: (taskId: string, newStatus: TaskStatus) => void;
 	onRunAgent?: (task: Task) => void;
+	onPlanTask?: (task: Task) => void;
+	onToggleExpand?: (taskId: string) => void;
 	runningAgentTaskId?: string | null;
+	planningTaskId?: string | null;
+	expandedTasks?: Set<string>;
+	getSubtasksFor?: (parentId: string) => Task[];
 }
 
 const {
@@ -20,7 +25,12 @@ const {
 	onDeleteTask,
 	onTaskDrop,
 	onRunAgent,
+	onPlanTask,
+	onToggleExpand,
 	runningAgentTaskId,
+	planningTaskId,
+	expandedTasks = new Set(),
+	getSubtasksFor = () => [],
 }: Props = $props();
 
 // Default columns (fallback if schema not loaded)
@@ -40,8 +50,9 @@ const columns = $derived.by(() => {
 	return statuses.map((s) => STATUS_FROM_BACKEND[s as BackendTaskStatus]);
 });
 
+// Filter out subtasks from main board view (they appear under parent)
 function getTasksByStatus(status: TaskStatus): Task[] {
-	return tasks.filter((t) => t.status === status);
+	return tasks.filter((t) => t.status === status && !t.parent_id);
 }
 </script>
 
@@ -60,7 +71,12 @@ function getTasksByStatus(status: TaskStatus): Task[] {
 			{onDeleteTask}
 			{onTaskDrop}
 			{onRunAgent}
+			{onPlanTask}
+			{onToggleExpand}
 			{runningAgentTaskId}
+			{planningTaskId}
+			{expandedTasks}
+			{getSubtasksFor}
 		/>
 	{/each}
 </div>

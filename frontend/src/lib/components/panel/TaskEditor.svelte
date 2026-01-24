@@ -1,21 +1,34 @@
 <script lang="ts">
 import { Separator } from 'bits-ui';
+import CheckSquare from 'phosphor-svelte/lib/CheckSquare';
 import FloppyDisk from 'phosphor-svelte/lib/FloppyDisk';
+import Play from 'phosphor-svelte/lib/Play';
+import Square from 'phosphor-svelte/lib/Square';
 import Trash from 'phosphor-svelte/lib/Trash';
 import { FieldRenderer } from '$lib/components/form';
 import { fetchTaskSchema } from '$lib/services/schema';
 import { getEnums } from '$lib/stores/schema.svelte';
 import type { EntitySchema, SchemaField } from '$lib/types/schema';
-import type { Task, TaskStatus, TaskType } from '$lib/types/task';
+import type { Step, Task, TaskType } from '$lib/types/task';
 import { STATUS_FROM_BACKEND, STATUS_TO_BACKEND } from '$lib/types/task';
 
 interface Props {
 	task?: Task | null;
+	subtasks?: Task[];
 	onSave?: (task: Task) => void;
 	onDelete?: (taskId: string) => void;
+	onStepToggle?: (taskId: string, stepIndex: number, done: boolean) => void;
+	onExecute?: (taskId: string) => void;
 }
 
-const { task = null, onSave, onDelete }: Props = $props();
+const {
+	task = null,
+	subtasks = [],
+	onSave,
+	onDelete,
+	onStepToggle,
+	onExecute,
+}: Props = $props();
 
 // Schema state
 let schema = $state<EntitySchema | null>(null);
@@ -64,6 +77,9 @@ $effect(() => {
 });
 
 const isNewTask = $derived(!currentTask.id || currentTask.id === '');
+const isNeedsReview = $derived(currentTask.status === 'NEEDS_REVIEW');
+const hasSubtasks = $derived(subtasks.length > 0);
+const hasSteps = $derived(currentTask.steps && currentTask.steps.length > 0);
 
 // Label mappings for select fields from schema store
 const selectLabels = $derived.by((): Record<string, Record<string, string>> => {
@@ -140,6 +156,14 @@ function handleDelete() {
 	}
 }
 
+function handleStepClick(index: number, step: Step) {
+	onStepToggle?.(currentTask.id, index, !step.done);
+}
+
+function handleExecute() {
+	onExecute?.(currentTask.id);
+}
+
 // Get field by name helper
 function getField(name: string): SchemaField | undefined {
 	return schema?.fields.find((f) => f.name === name);
@@ -182,6 +206,80 @@ function getField(name: string): SchemaField | undefined {
 				/>
 			{/each}
 
+			<!-- Steps (for subtasks with steps) -->
+			{#if hasSteps}
+				<Separator.Root class="h-px bg-[var(--border-muted)]" />
+				<div class="space-y-2">
+					<label class="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
+						Steps
+					</label>
+					<div class="space-y-1">
+						{#each currentTask.steps as step, index (index)}
+							<button
+								type="button"
+								onclick={() => handleStepClick(index, step)}
+								class="flex items-center gap-2 w-full px-2 py-1.5 rounded text-left hover:bg-[var(--bg-hover)] transition-colors"
+							>
+								{#if step.done}
+									<CheckSquare
+										class="size-4 text-green-400 shrink-0"
+										weight="fill"
+									/>
+									<span class="text-sm text-[var(--text-muted)] line-through">
+										{step.text}
+									</span>
+								{:else}
+									<Square class="size-4 text-[var(--text-muted)] shrink-0" />
+									<span class="text-sm text-[var(--text-primary)]">
+										{step.text}
+									</span>
+								{/if}
+							</button>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
+			<!-- Subtasks Overview (for parent tasks) -->
+			{#if hasSubtasks}
+				<Separator.Root class="h-px bg-[var(--border-muted)]" />
+				<div class="space-y-2">
+					<label class="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
+						Subtasks ({subtasks.length})
+					</label>
+					<div class="space-y-1">
+						{#each subtasks as subtask (subtask.id)}
+							<div
+								class="flex items-center gap-2 px-2 py-1.5 rounded bg-[var(--bg-elevated)]"
+							>
+								{#if subtask.status === 'DONE'}
+									<CheckSquare
+										class="size-4 text-green-400 shrink-0"
+										weight="fill"
+									/>
+								{:else}
+									<Square class="size-4 text-[var(--text-muted)] shrink-0" />
+								{/if}
+								<span
+									class="text-sm flex-1 truncate"
+									class:text-[var(--text-muted)]={subtask.status === 'DONE'}
+									class:line-through={subtask.status === 'DONE'}
+									class:text-[var(--text-primary)]={subtask.status !== 'DONE'}
+								>
+									{subtask.title}
+								</span>
+								{#if subtask.steps && subtask.steps.length > 0}
+									{@const done = subtask.steps.filter((s) => s.done).length}
+									<span class="text-xs text-[var(--text-muted)]">
+										{done}/{subtask.steps.length}
+									</span>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
 			<!-- Result (readonly, only if exists) -->
 			{#if currentTask.result}
 				{@const resultField = getField('result')}
@@ -193,8 +291,24 @@ function getField(name: string): SchemaField | undefined {
 		</div>
 	{/if}
 
-	<!-- Save Button -->
-	<div class="pt-4 border-t border-[var(--border-muted)] mt-4">
+	<!-- Action Buttons -->
+	<div class="pt-4 border-t border-[var(--border-muted)] mt-4 space-y-2">
+		<!-- Approve & Execute (only for NEEDS_REVIEW with subtasks) -->
+		{#if isNeedsReview && hasSubtasks}
+			<button
+				type="button"
+				onclick={handleExecute}
+				disabled={schemaLoading}
+				class="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-sm font-medium
+					bg-green-600 text-white rounded
+					hover:bg-green-500 transition-colors disabled:opacity-50"
+			>
+				<Play class="size-4" weight="fill" />
+				APPROVE & EXECUTE
+			</button>
+		{/if}
+
+		<!-- Save Button -->
 		<button
 			type="button"
 			onclick={handleSave}

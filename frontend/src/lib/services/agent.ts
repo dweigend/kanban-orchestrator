@@ -43,3 +43,31 @@ export async function getAgentRuns(taskId?: string): Promise<AgentRun[]> {
 export async function getAgentRun(runId: string): Promise<AgentRun> {
 	return request<AgentRun>(`/api/agent/runs/${runId}`);
 }
+
+/**
+ * Plan a task - decompose into subtasks via AI agent
+ */
+export async function planTask(
+	taskId: string,
+): Promise<{ status: string; task_id: string }> {
+	return request<{ status: string; task_id: string }>(
+		`/api/agent/plan/${taskId}`,
+		{
+			method: 'POST',
+		},
+	);
+}
+
+/**
+ * Execute all subtasks of a parent task sequentially
+ */
+export async function executeTask(
+	taskId: string,
+): Promise<{ status: string; task_id: string }> {
+	return request<{ status: string; task_id: string }>(
+		`/api/agent/execute/${taskId}`,
+		{
+			method: 'POST',
+		},
+	);
+}

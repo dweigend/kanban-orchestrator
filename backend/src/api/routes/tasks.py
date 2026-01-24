@@ -3,11 +3,13 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api import task_service
 from src.api.schemas import TaskCreate, TaskResponse, TaskUpdate
 from src.database import get_db
+from src.models.task import Task
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
@@ -67,3 +69,23 @@ async def delete_task(
     if not deleted:
         logger.warning("Task not found for deletion: %s", task_id)
         raise HTTPException(status_code=404, detail="Task not found")
+
+
+@router.get("/{task_id}/subtasks", response_model=list[TaskResponse])
+async def get_subtasks(
+    task_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> list[TaskResponse]:
+    """Get all subtasks of a parent task."""
+    # Verify parent task exists
+    parent = await task_service.get_task(db, task_id)
+    if not parent:
+        logger.warning("Parent task not found: %s", task_id)
+        raise HTTPException(status_code=404, detail="Parent task not found")
+
+    # Query subtasks
+    result = await db.execute(
+        select(Task).where(Task.parent_id == task_id).order_by(Task.created_at.asc())
+    )
+    subtasks = result.scalars().all()
+    return [TaskResponse.model_validate(t) for t in subtasks]

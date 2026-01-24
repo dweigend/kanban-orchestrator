@@ -1,10 +1,43 @@
 # HANDOVER
 
-## Phase: Phase 10 Ready - Subtasks & Expand/Collapse (#24) 🟢
+## Phase: Phase 10 In Progress - Subtasks & Expand/Collapse (#24) 🟡
 
 ---
 
-## Session 2026-01-24 (Quick Wins: #3, #16)
+## Session 2026-01-24 B (Full-Stack Refactoring)
+
+### Was wurde gemacht
+
+**Full-Stack Code Refactoring** - Funktionen <20 Zeilen, keine Duplikation
+
+1. **Backend Refactoring**
+   - `_load_task_and_project()` Helper in `agent.py` - eliminiert 3x duplizierten DB-Fetch
+   - `_run_git_command()` Helper in `git.py` - reduziert 64→36 Zeilen
+   - `_create_placeholder_subtasks()` in `orchestrator.py` - reduziert 102→47 Zeilen
+
+2. **Frontend Refactoring**
+   - `SubtaskTree.svelte` extrahiert aus `TaskCard.svelte` (~50 Zeilen gespart)
+   - `AgentRun` Type Contract korrigiert (`created_at`, `logs`, nullable `started_at`)
+
+3. **Quality Gates**
+   - Backend: ruff ✅ + ty ✅ (78 Tests)
+   - Frontend: biome ✅ + svelte-check ✅
+   - Browser-Test: SubtaskTree funktioniert ✅
+
+### Geänderte Dateien
+
+```
+backend/src/api/routes/agent.py         # _load_task_and_project() Helper
+backend/src/services/git.py             # _run_git_command() Helper
+backend/src/agents/orchestrator.py      # _create_placeholder_subtasks() Helper
+frontend/src/lib/components/kanban/SubtaskTree.svelte  # NEU: Extrahierte Komponente
+frontend/src/lib/components/kanban/TaskCard.svelte     # Nutzt SubtaskTree
+frontend/src/lib/types/agent.ts         # AgentRun Interface korrigiert
+```
+
+---
+
+## Session 2026-01-24 A (Quick Wins: #3, #16)
 
 ### Was wurde gemacht
 
@@ -34,40 +67,30 @@ dev/ISSUE_TRACKER.md                    # #3, #16 erledigt
 
 ---
 
-## Nächste Session: #24 - Subtasks + Expand/Collapse Cards
+## Nächste Session: #24 abschließen + Phase 10 beenden ✅
 
-### User Story
-> "Komplexe Tasks werden vom Agent in Untertasks zerlegt. Die Card kann aufgeklappt werden, um Subtasks zu sehen."
+### Ziel
+**#24 komplett abschließen** und **Phase 10 zu Ende bringen**.
 
-### Features
-- Expand/Collapse Cards im Board
-- Subtasks als Checklist innerhalb einer Card
-- Agent zerlegt komplexe Tasks automatisch (Claude SDK Planungsmodus)
-- Nur für komplexe Tasks (einfache bleiben flat)
+### Was bereits erledigt ist (Session 2026-01-24 B)
+- ✅ `SubtaskTree.svelte` - Komponente extrahiert
+- ✅ Expand/Collapse Cards funktioniert
+- ✅ Tree-Struktur mit Status-Icons
+- ✅ Step-Counter (X/Y steps)
+- ✅ Click auf Subtask → Editor öffnet
 
-### Implementation Plan
+### Was noch fehlt für #24
+| Feature | Status |
+|---------|--------|
+| Subtask-Editing im TaskEditor | ⏳ TODO |
+| Subtask hinzufügen/löschen | ⏳ TODO |
+| Agent Task-Planung (Plan Button) | ⏳ Verifizieren |
+| Dokumentation aktualisieren | ⏳ TODO |
 
-| Komponente | Änderung |
-|------------|----------|
-| Backend: Task-Model | `subtasks: list[dict]` (JSON-Array) |
-| Backend: Task-Schema | Subtasks-Feld in Pydantic-Model |
-| Frontend: TaskCard | Expandable mit Chevron + Subtask-Checklist |
-| Frontend: TaskEditor | Subtasks hinzufügen/bearbeiten |
-| Agent | Planungsmodus für Task-Zerlegung |
-
-### Technisches Detail
-```python
-# Task-Model
-subtasks: list[dict] = []  # [{text: str, done: bool}]
-```
-
-```typescript
-// Frontend Interface
-interface Subtask {
-  text: string;
-  done: boolean;
-}
-```
+### Nach Abschluss
+- #24 als ✅ FIXED markieren
+- Phase 10 als ✅ Abgeschlossen markieren
+- PLAN.md + ISSUE_TRACKER.md aktualisieren
 
 ---
 

@@ -17,6 +17,15 @@
 // ─────────────────────────────────────────────────────────────
 
 /**
+ * A single step within a subtask (checkbox item).
+ * Used for granular progress tracking.
+ */
+export interface Step {
+	text: string;
+	done: boolean;
+}
+
+/**
  * Task type categories with associated colors.
  * Matches backend TaskType enum (lowercase).
  */
@@ -78,6 +87,7 @@ export interface Task {
 	type: TaskType;
 	project_id?: string;
 	parent_id?: string;
+	steps?: Step[]; // Granular steps for subtasks
 	created_at: string;
 }
 
@@ -94,6 +104,7 @@ export interface BackendTask {
 	type: TaskType; // Backend now stores type
 	project_id: string | null;
 	parent_id: string | null;
+	steps: Step[] | null; // Granular steps for subtasks
 	created_at: string;
 }
 
@@ -149,6 +160,7 @@ export function mapBackendToTask(backend: BackendTask): Task {
 		type: backend.type, // Now persisted in backend
 		project_id: backend.project_id ?? undefined,
 		parent_id: backend.parent_id ?? undefined,
+		steps: backend.steps ?? undefined,
 		created_at: backend.created_at,
 	};
 }

@@ -36,10 +36,12 @@ def _task_to_event_data(task: Task) -> dict:
         "id": task.id,
         "title": task.title,
         "description": task.description,
+        "result": task.result,
         "status": task.status,
         "type": task.type,
         "project_id": task.project_id,
         "parent_id": task.parent_id,
+        "steps": task.steps,
         "created_at": task.created_at.isoformat() if task.created_at else None,
     }
 
@@ -49,6 +51,10 @@ async def create_task(db: AsyncSession, task_data: TaskCreate) -> Task:
 
     Publishes task_created event with full task data.
     """
+    # Convert steps from Pydantic models to dicts for JSON storage
+    steps_input = task_data.steps
+    steps_data = [s.model_dump() for s in steps_input] if steps_input else None
+
     task = Task(
         id=str(uuid4()),
         title=task_data.title,
@@ -57,6 +63,7 @@ async def create_task(db: AsyncSession, task_data: TaskCreate) -> Task:
         type=task_data.type,
         project_id=task_data.project_id,
         parent_id=task_data.parent_id,
+        steps=steps_data,
     )
     db.add(task)
     await db.commit()
@@ -103,6 +110,9 @@ async def update_task(
     # Apply only provided fields
     update_data = task_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
+        # Convert steps Pydantic models to dicts for JSON storage
+        if field == "steps" and value is not None:
+            value = [step if isinstance(step, dict) else step for step in value]
         setattr(task, field, value)
 
     await db.commit()

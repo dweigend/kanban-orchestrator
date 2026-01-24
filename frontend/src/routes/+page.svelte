@@ -19,6 +19,10 @@ let editingTask = $state<Task | null>(null);
 let tasks = $state<Task[]>([]);
 let loading = $state(true);
 
+// Subtask State
+let expandedTasks = $state<Set<string>>(new Set());
+let planningTaskId = $state<string | null>(null);
+
 // Agent State
 let runningAgentTaskId = $state<string | null>(null);
 let agentLogs = $state<AgentLogEntry[]>([]);
@@ -53,6 +57,11 @@ const agents: Agent[] = $state([
 		description: 'Research and documentation',
 	},
 ]);
+
+// Helper: Get subtasks for a parent task
+function getSubtasksFor(parentId: string): Task[] {
+	return tasks.filter((t) => t.parent_id === parentId);
+}
 
 // Load tasks on mount
 async function loadTasks() {
@@ -102,6 +111,13 @@ $effect(() => {
 						tasks = tasks.map((t) =>
 							t.id === event.task!.id ? event.task! : t,
 						);
+						// Clear planning state if task moved to NEEDS_REVIEW
+						if (
+							event.task.status === 'NEEDS_REVIEW' &&
+							planningTaskId === event.task.id
+						) {
+							planningTaskId = null;
+						}
 					}
 					break;
 				case 'task_deleted':
@@ -253,6 +269,86 @@ async function handleRunAgent(task: Task) {
 		showError(e instanceof Error ? e.message : 'Failed to start agent');
 	}
 }
+
+// Subtask Handlers
+async function handlePlanTask(task: Task) {
+	if (planningTaskId) {
+		showError('Already planning a task');
+		return;
+	}
+
+	try {
+		planningTaskId = task.id;
+		await agentApi.planTask(task.id);
+		showSuccess('Planning started');
+	} catch (e) {
+		planningTaskId = null;
+		showError(e instanceof Error ? e.message : 'Failed to start planning');
+	}
+}
+
+async function handleExecuteTask(taskId: string) {
+	if (runningAgentTaskId) {
+		showError('Agent is already running');
+		return;
+	}
+
+	try {
+		const task = tasks.find((t) => t.id === taskId);
+		if (task) {
+			currentAgentTaskTitle = task.title;
+		}
+		runningAgentTaskId = taskId;
+		agentLogs = [];
+
+		// Switch to agents tab
+		activeTab = 'agents';
+		if (!sidebarVisible) {
+			sidebarVisible = true;
+		}
+
+		await agentApi.executeTask(taskId);
+		showSuccess('Execution started');
+	} catch (e) {
+		runningAgentTaskId = null;
+		showError(e instanceof Error ? e.message : 'Failed to execute');
+	}
+}
+
+async function handleStepToggle(
+	taskId: string,
+	stepIndex: number,
+	done: boolean,
+) {
+	const task = tasks.find((t) => t.id === taskId);
+	if (!task?.steps) return;
+
+	// Optimistic update
+	const newSteps = task.steps.map((s, i) =>
+		i === stepIndex ? { ...s, done } : s,
+	);
+	tasks = tasks.map((t) => (t.id === taskId ? { ...t, steps: newSteps } : t));
+
+	try {
+		await taskApi.updateSteps(taskId, newSteps);
+	} catch (e) {
+		// Revert on error
+		tasks = tasks.map((t) =>
+			t.id === taskId ? { ...t, steps: task.steps } : t,
+		);
+		showError(e instanceof Error ? e.message : 'Failed to update step');
+	}
+}
+
+function handleToggleExpand(taskId: string) {
+	const newSet = new Set(expandedTasks);
+	if (newSet.has(taskId)) {
+		newSet.delete(taskId);
+	} else {
+		newSet.add(taskId);
+	}
+	expandedTasks = newSet;
+}
 </script>
 
 <svelte:head>
@@ -279,7 +375,12 @@ async function handleRunAgent(task: Task) {
 				onDeleteTask={handleDeleteTaskFromBoard}
 				onTaskDrop={handleTaskDrop}
 				onRunAgent={handleRunAgent}
+				onPlanTask={handlePlanTask}
+				onToggleExpand={handleToggleExpand}
 				{runningAgentTaskId}
+				{planningTaskId}
+				{expandedTasks}
+				{getSubtasksFor}
 			/>
 		{/if}
 
@@ -290,6 +391,9 @@ async function handleRunAgent(task: Task) {
 				{editingTask}
 				onTaskSave={handleTaskSave}
 				onTaskDelete={handleTaskDelete}
+				onStepToggle={handleStepToggle}
+				onExecute={handleExecuteTask}
+				subtasksForEditing={editingTask ? getSubtasksFor(editingTask.id) : []}
 				{agentLogs}
 				{agentRuns}
 				{tasks}
