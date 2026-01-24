@@ -1,103 +1,97 @@
 # HANDOVER
 
-## Phase: Phase 10 Abgeschlossen ✅ - #24 Subtasks & Expand/Collapse
+## Phase: Phase 11A Abgeschlossen ✅ - Task-Delegations-System Konzept
 
 ---
 
-## Session 2026-01-24 C (Phase 10 Abschluss)
+## Session 2026-01-24 D (Phase 11A - Konzept-Session)
 
 ### Was wurde gemacht
 
-**#24 finalisiert + Dokumentation aktualisiert**
+**Brainstorming & Design für Task-Delegations-System**
 
-1. **A11y Fixes**
-   - `TaskEditor.svelte`: 2× `<label>` → `<div>` (semantisch korrekt)
-   - Steps/Subtasks sind keine Form-Inputs, brauchen keine Labels
+1. **System-Analyse**
+   - dev/ Ordner analysiert
+   - Backend-Datenmodelle verstanden
+   - MCP-Architektur dokumentiert
 
-2. **ARCHITECTURE.md komplett überarbeitet**
-   - Neue API Endpoints: Schema, Settings, Plan, Execute
-   - Task-Model Felder aktualisiert (steps, type, result)
-   - Frontend-Komponenten: SubtaskTree, Form/, stores/
-   - Services: schema.ts, settings.ts
-   - Component Status: Alle ✅ wo fertig
+2. **Design-Entscheidungen (mit User)**
+   - Multi-Project Support ✅
+   - Everything via MCP ✅
+   - Sandbox → Target Workflow ✅
+   - Schema-Driven API ✅
+   - Config-File MCP Registry ✅
+   - Templates als MD-Files ✅
 
-3. **Dokumentation Status Updates**
-   - PLAN.md: Phase 10 als ✅ abgeschlossen
-   - ISSUE_TRACKER.md: #24 als ✅ FIXED
+3. **Dokumentation erstellt/aktualisiert**
+   - `dev/DESIGN-TASK-DELEGATION.md` (NEU) - Vollständiges Design
+   - `dev/ARCHITECTURE.md` - Phase 11 Konzept hinzugefügt
+   - `dev/PLAN.md` - Phasen 11B-F definiert
+   - `dev/ISSUE_TRACKER.md` - #25, #26 als Konzept ✅
 
 ### Geänderte Dateien
 
 ```
-frontend/src/lib/components/panel/TaskEditor.svelte  # A11y fix
-dev/ARCHITECTURE.md                                   # Komplett aktualisiert
-dev/PLAN.md                                           # Phase 10 ✅
-dev/ISSUE_TRACKER.md                                  # #24 ✅
-dev/HANDOVER.md                                       # Session-Summary
+dev/DESIGN-TASK-DELEGATION.md   # NEU - Vollständiges Design
+dev/ARCHITECTURE.md              # Phase 11 Konzept + neue Task-Felder
+dev/PLAN.md                      # Phasen 11B-F definiert
+dev/ISSUE_TRACKER.md             # #25, #26 Status aktualisiert
+dev/HANDOVER.md                  # Session-Summary
 ```
 
 ---
 
-## Session 2026-01-24 B (Full-Stack Refactoring)
-
-### Was wurde gemacht
-
-**Full-Stack Code Refactoring** - Funktionen <20 Zeilen, keine Duplikation
-
-1. **Backend Refactoring**
-   - `_load_task_and_project()` Helper in `agent.py`
-   - `_run_git_command()` Helper in `git.py`
-   - `_create_placeholder_subtasks()` in `orchestrator.py`
-
-2. **Frontend Refactoring**
-   - `SubtaskTree.svelte` extrahiert aus `TaskCard.svelte`
-   - `AgentRun` Type Contract korrigiert
-
----
-
-## Session 2026-01-24 A (Quick Wins: #3, #16)
-
-### Was wurde gemacht
-
-1. **#16 - Agent-Autostart** ✅ WON'T FIX
-2. **#3 - Backend Settings in UI** ✅ FIXED
-
----
-
-## Nächste Session: Phase 11 - Konzept-Session
+## Nächste Session: Phase 11B - Backend Task-Model Erweiterung
 
 ### Ziel
-**Konzeptarbeit** für erweiterte Task-Konfiguration und Projektstruktur.
 
-### Issues für Phase 11
+Implementation der neuen Task-Felder im Backend.
 
-| # | Issue | Typ |
-|---|-------|-----|
-| #26 | Projektstruktur & Standardpfade | Konzept |
-| #25 | Erweiterte Task-Definition | Konzept |
-| #22 | Projekt-Management | Konzept |
+### Design
 
-### Fragen zu klären
+Siehe `dev/DESIGN-TASK-DELEGATION.md` für vollständiges Design.
 
-1. **Projektstruktur (#26)**
-   - Wo liegt das Projekt-Root?
-   - Welche Standardordner gibt es?
-   - Wie werden MCPs pro Projekt konfiguriert?
+### Neue Task-Felder
 
-2. **Erweiterte Tasks (#25)**
-   - Welche MCPs darf ein Task nutzen?
-   - Welche Dateien/Ordner hat der Task Zugriff?
-   - Wie funktionieren Berechtigungen?
-   - Wie wird das Output-Schema definiert?
+| Feld | Typ | Default | Beschreibung |
+|------|-----|---------|--------------|
+| `sandbox_dir` | String (auto) | `output/{task_id}/` | Isolierter Arbeitsordner |
+| `target_path` | String? | `null` | Finale Destination |
+| `read_paths` | JSON | `[]` | Erlaubte Lese-Pfade |
+| `allowed_mcps` | JSON | defaults | Erlaubte MCPs |
+| `template` | String? | default | Template-Name |
+| `source` | String | `"ui"` | Herkunft |
+
+### Tasks für Phase 11B
+
+| # | Task | Datei |
+|---|------|-------|
+| 1 | Task-Model erweitern | `backend/src/models/task.py` |
+| 2 | Pydantic Schemas aktualisieren | `backend/src/api/schemas.py` |
+| 3 | Automatische sandbox_dir Generierung | `backend/src/api/task_service.py` |
+| 4 | Copy-to-target bei Completion | `backend/src/api/task_service.py` |
+| 5 | DB Migration / Reset | DB löschen + neu erstellen |
+
+### Reihenfolge der Phasen
+
+```
+Phase 11B: Backend Task-Model ← NÄCHSTE SESSION
+Phase 11C: MCP Registry
+Phase 11D: Templates
+Phase 11E: Kanban MCP API
+Phase 11F: Frontend
+Phase 12: Trilium Integration
+```
 
 ---
 
 ## Offene Issues
 
-| Prio | # | Issue | Phase |
-|------|---|-------|-------|
-| 1 | #26 | Projektstruktur & Standardpfade | 11 (Konzept) |
-| 2 | #25 | Erweiterte Task-Definition | 11 (Konzept) |
-| 3 | #22 | Projekt-Management | 11 (Konzept) |
+| Prio | # | Issue | Status |
+|------|---|-------|--------|
+| 1 | #25 | Erweiterte Task-Definition | Konzept ✅, Implementation 11B |
+| 2 | #26 | MCP Registry & Templates | Konzept ✅, Implementation 11C-D |
+| 3 | #22 | Projekt-Management | Backlog |
 
 ---
 
@@ -117,6 +111,20 @@ uv run pytest
 cd frontend
 bunx biome check --write .
 bunx svelte-check --threshold warning
+```
+
+---
+
+## Wichtige Dateien für Phase 11B
+
+```
+# Design-Dokument (LESEN!)
+dev/DESIGN-TASK-DELEGATION.md
+
+# Zu ändernde Dateien
+backend/src/models/task.py         # Neue Felder
+backend/src/api/schemas.py         # Pydantic Schemas
+backend/src/api/task_service.py    # Logik für sandbox_dir, copy-to-target
 ```
 
 ---

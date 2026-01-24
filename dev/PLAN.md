@@ -6,7 +6,7 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 **Prinzip:** Backend = Source of Truth, Frontend rendert dynamisch
 
-**Architektur:** Siehe `ARCHITECTURE.md` (Root) für Backend/Frontend Aufteilung
+**Neues Konzept (Phase 11):** Task-Delegations-System - Asynchrone Task-Verarbeitung aus verschiedenen Quellen (MCP, UI, API) mit Everything-via-MCP Architektur.
 
 ---
 
@@ -23,99 +23,136 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - **Phase 8:** Schema-Driven UI (77 Tests)
 - **Phase 9:** Bug Fixes + UI Cleanup (13 Issues closed)
 - **Phase 10:** Subtasks & Expand/Collapse Cards (#24) ✅
+- **Phase 11A:** Task-Delegations-System Konzept ✅
 
 ---
 
 ## Aktuelle Phase
 
-### Phase 11: Konzept-Session - Projektstruktur & Erweiterte Tasks 🔲 NEXT
+### Phase 11B-F: Task-Delegations-System Implementation 🔲 NEXT
+
+**Design:** Siehe `dev/DESIGN-TASK-DELEGATION.md`
 
 ---
 
 ## Nächste Phasen
 
----
+### Phase 11B: Backend Task-Model Erweiterung
 
-### Phase 11: Konzept-Session - Projektstruktur & Erweiterte Tasks
+**Ziel:** Neue Felder im Task-Model für Sandbox/Target-Workflow
 
-**Ziel:** Grundlagen für erweiterte Task-Konfiguration schaffen
-
-⚠️ **KONZEPT-SESSION** - Nur Planung, keine Implementation
-
-#### Part A: Projektstruktur & Standardpfade (#26)
-
-**Fragen zu klären:**
-1. Wo liegt das Projekt-Root?
-2. Welche Standardordner gibt es? (src, docs, tests, etc.)
-3. Wie werden MCP-Server pro Projekt konfiguriert?
-4. Wie greift Frontend auf diese Infos zu?
-
-**Mögliche Struktur:**
-```
-project/
-├── .kanban/           # Orchestrator-Konfiguration
-│   ├── config.yaml    # Projekt-Settings
-│   ├── mcps.yaml      # Verfügbare MCPs
-│   └── paths.yaml     # Standardpfade
-├── src/
-├── docs/
-└── ...
-```
-
-#### Part B: Erweiterte Task-Definition (#25)
-
-**Neue Felder (nach Konzept):**
-| Feld | Beschreibung |
+| Task | Beschreibung |
 |------|--------------|
-| `mcps` | MCP-Server, die der Agent nutzen darf |
-| `files` | Dateien/Ordner mit Zugriff |
-| `permissions` | Berechtigungen (read/write/execute) |
-| `output_dict` | Erwartetes Output-Format |
+| 1 | Task-Model erweitern: `sandbox_dir`, `target_path`, `read_paths`, `allowed_mcps`, `template`, `source` |
+| 2 | Automatische `sandbox_dir` Generierung bei Task-Erstellung |
+| 3 | Copy-to-target Logik bei Task-Completion (wenn `target_path` gesetzt) |
+| 4 | Pydantic Schemas aktualisieren |
+| 5 | DB Migration / Reset |
 
-**Abhängigkeit:** Braucht #26 (Projektstruktur) zuerst
-
-#### Part C: Projekt-Management (#22)
-
-- Backend `/api/projects` mit echten Daten füllen
-- Projekt-Menü funktionsfähig machen
-- Multi-Projekt Support?
+**Dateien:**
+- `backend/src/models/task.py`
+- `backend/src/api/schemas.py`
+- `backend/src/api/task_service.py`
 
 ---
 
-### Phase 12: Implementation Erweiterte Tasks
+### Phase 11C: MCP Registry
 
-**Nach Konzept-Session:**
-- Backend: Task-Model erweitern
-- Frontend: TaskEditor erweitern
-- Schema-Endpoints aktualisieren
+**Ziel:** Dynamische MCP-Konfiguration aus YAML-Datei
+
+| Task | Beschreibung |
+|------|--------------|
+| 1 | `.kanban/mcps.yaml` Format definieren |
+| 2 | YAML-Parser für MCP-Registry |
+| 3 | `get_mcp_config()` liest aus YAML statt hardcoded |
+| 4 | Validierung: nur enabled MCPs erlaubt |
+| 5 | Environment-Variable Auflösung (`${SANDBOX_DIR}`) |
+
+**Dateien:**
+- `.kanban/mcps.yaml` (NEU)
+- `backend/src/mcp_client/registry.py`
 
 ---
 
-### Phase 13: Plugin Manager
+### Phase 11D: Templates
 
-- MCP Registry Integration (Glama API)
+**Ziel:** Markdown-Templates für Agent-Output-Struktur
+
+| Task | Beschreibung |
+|------|--------------|
+| 1 | `templates/` Ordner erstellen |
+| 2 | `research.md`, `dev.md`, `notes.md` Templates |
+| 3 | Template-Loader im Orchestrator |
+| 4 | Template-Injection in Agent-Prompt |
+
+**Dateien:**
+- `templates/research.md` (NEU)
+- `templates/dev.md` (NEU)
+- `templates/notes.md` (NEU)
+- `backend/src/agents/orchestrator.py`
+
+---
+
+### Phase 11E: Kanban MCP API Update
+
+**Ziel:** Erweiterte API für Task-Erstellung via MCP
+
+| Task | Beschreibung |
+|------|--------------|
+| 1 | `create_task()` mit optionalen Feldern erweitern |
+| 2 | `get_task_options()` für Schema-Discovery implementieren |
+| 3 | Validierung gegen MCP-Registry |
+| 4 | Sofortige Response mit sandbox_dir Info |
+
+**Dateien:**
+- `backend/src/mcp_servers/kanban_server.py`
+
+---
+
+### Phase 11F: Frontend Anpassungen
+
+**Ziel:** UI für neue Task-Felder
+
+| Task | Beschreibung |
+|------|--------------|
+| 1 | TaskEditor: Neue Felder (target_path, read_paths, allowed_mcps, template) |
+| 2 | Schema-Endpoint Integration für MCP-Liste |
+| 3 | Optional-Fields UI (Collapsible "Advanced Settings") |
+| 4 | Source-Badge auf TaskCard ("MCP", "UI") |
+
+**Dateien:**
+- `frontend/src/lib/components/panel/TaskEditor.svelte`
+- `frontend/src/lib/types/task.ts`
+
+---
+
+### Phase 12: Trilium Integration
+
+**Ziel:** Trilium Notes als Output-Target
+
+| Task | Beschreibung |
+|------|--------------|
+| 1 | Trilium MCP recherchieren/einbinden |
+| 2 | In MCP-Registry aktivieren |
+| 3 | Als Output-Target in UI verfügbar machen |
+
+---
+
+### Phase 13: Plugin Manager (Optional)
+
+- MCP Registry UI (statt nur YAML)
 - Plugin Install/Configure UI
-- Pro-Projekt MCP-Konfiguration
+- Glama API Integration
 
 ---
 
-### Phase 14: Advanced Features
+### Phase 14: Advanced Features (Backlog)
 
-- NEEDS_REVIEW Flow
+- NEEDS_REVIEW Flow verbessern
 - Knowledge DBs Integration
-- Multi-Project Support
-
----
-
-## Backlog
-
 - Task Dependencies
 - Bulk Operations
 - Export/Import
-- Keyboard Shortcuts
-- Mobile Responsive
-- Backend Settings in UI (#3)
-- Agent-Autostart Option (#16)
 
 ---
 
@@ -123,15 +160,9 @@ project/
 
 | Prio | # | Issue | Phase | Status |
 |------|---|-------|-------|--------|
-| 1 | #26 | Projektstruktur & Standardpfade | 11 (Konzept) | ⏳ Geplant |
-| 2 | #25 | Erweiterte Task-Definition | 11 (Konzept) | ⏳ Geplant |
-| 3 | #22 | Projekt-Management | 11 (Konzept) | ⏳ Geplant |
-
-**Abhängigkeiten:**
-```
-#26 (Projektstruktur) → #25 (Erweiterte Tasks)
-#22 (Projekt-Management) → #9 (Projekt-Menü)
-```
+| - | #26 | Projektstruktur & Standardpfade | 11A | ✅ Konzept: Sandbox → Target |
+| - | #25 | Erweiterte Task-Definition | 11B | 🔲 Implementation steht aus |
+| - | #22 | Projekt-Management | Backlog | 🔲 Nach Phase 11 |
 
 ---
 
@@ -146,11 +177,15 @@ project/
 | Settings | `/api/settings/schema` | ✅ Working |
 | Events | `/api/events` (SSE) | ⚪ Not Tested |
 
+**Geplante Endpoints (Phase 11E):**
+- `GET /api/schema/task-create` - Optionen für Task-Erstellung (MCPs, Templates)
+
 ---
 
 ## Dokumentation
 
-- `ARCHITECTURE.md` - System-Architektur + Backend/Frontend Aufteilung
+- `dev/ARCHITECTURE.md` - System-Architektur + Phase 11 Konzept
+- `dev/DESIGN-TASK-DELEGATION.md` - Vollständiges Design Phase 11
 - `dev/HANDOVER.md` - Session Handover
 - `dev/ISSUE_TRACKER.md` - Bug Tracking + Feature Status
 - `dev/TROUBLESHOOTING.md` - Bekannte Probleme & Lösungen

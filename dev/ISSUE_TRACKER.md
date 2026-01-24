@@ -115,63 +115,75 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 
 ---
 
-### #25 - Erweiterte Task-Definition 🆕
+### #25 - Erweiterte Task-Definition ✅ KONZEPT
 
 **Severity:** High
-**Status:** Konzeptarbeit nötig (Phase 11)
+**Status:** Konzept abgeschlossen (2026-01-24)
 **Created:** 2026-01-24
-**Depends On:** #26 (Standardpfade)
+**Design:** `dev/DESIGN-TASK-DELEGATION.md`
 
-**Description:**
-Tasks sollen mehr Konfiguration ermöglichen als nur Name + Beschreibung.
+**Lösung (Phase 11A - Konzept):**
 
-**Neue Felder:**
-| Feld | Beschreibung |
-|------|--------------|
-| `mcps` | Liste von MCP-Servern, die der Agent nutzen darf |
-| `files` | Dateien/Ordner, auf die der Task Zugriff hat |
-| `permissions` | Berechtigungen (read/write/execute) |
-| `output_dict` | Erwartetes Output-Format/Schema |
+Tasks bekommen neue optionale Felder für erweiterte Konfiguration:
 
-**Voraussetzungen:**
-- Projektstruktur muss definiert sein (#22)
-- Standardpfade müssen im Backend hinterlegt sein (#26)
-- Frontend braucht Zugriff auf verfügbare MCPs/Dateien
+| Feld | Typ | Beschreibung |
+|------|-----|--------------|
+| `sandbox_dir` | String (auto) | Isolierter Arbeitsordner: `output/{task_id}/` |
+| `target_path` | String? | Finale Destination nach Completion |
+| `read_paths` | JSON | Erlaubte Lese-Pfade für Agent |
+| `allowed_mcps` | JSON | Erlaubte MCPs (Default aus Registry) |
+| `template` | String? | Template-Name oder Inline-MD |
+| `source` | String | Herkunft: `ui`, `mcp`, `api` |
 
-**Benötigt Konzept-Session:**
-- Wie werden MCPs registriert?
-- Wie werden Dateipfade relativ zum Projekt aufgelöst?
-- Wie funktioniert das Berechtigungssystem?
+**Workflow:**
+1. Agent arbeitet immer in `sandbox_dir` (isoliert)
+2. Bei Task-Completion: wenn `target_path` gesetzt → Dateien werden kopiert
+3. Kein `target_path` → Ergebnis bleibt in `output/{task_id}/`
+
+**Nächster Schritt:** Phase 11B - Backend Implementation
 
 ---
 
-### #26 - Projektstruktur & Standardpfade 🆕
+### #26 - Projektstruktur & Standardpfade ✅ KONZEPT
 
 **Severity:** High
-**Status:** Konzeptarbeit nötig (Phase 11)
+**Status:** Konzept abgeschlossen (2026-01-24)
 **Created:** 2026-01-24
-**Blocks:** #25
+**Design:** `dev/DESIGN-TASK-DELEGATION.md`
 
-**Description:**
-Backend braucht Konfiguration für Projektstruktur und Standardpfade.
+**Lösung (Phase 11A - Konzept):**
 
-**Fragen zu klären:**
-- Wo liegt das Projekt-Root?
-- Welche Standardordner gibt es? (src, docs, tests, etc.)
-- Wie werden MCP-Server pro Projekt konfiguriert?
-- Wie greift Frontend auf diese Infos zu?
+Statt komplexer Projektstruktur → **Task-basierter Ansatz**:
+- Jeder Task definiert seinen eigenen Kontext (read_paths, MCPs)
+- Kein festes "Projekt-Root" - Tasks sind unabhängig
+- MCP Registry in `.kanban/mcps.yaml` für verfügbare MCPs
 
-**Mögliche Struktur:**
+**MCP Registry:**
+```yaml
+mcps:
+  filesystem:
+    enabled: true
+    command: "python"
+    args: ["-m", "src.mcp_servers.filesystem.server"]
+  perplexity:
+    enabled: true
+    command: "npx"
+    args: ["-y", "@anthropic/perplexity-mcp"]
+
+defaults:
+  allowed_mcps: ["filesystem", "perplexity"]
+  template: "research"
 ```
-project/
-├── .kanban/           # Orchestrator-Konfiguration
-│   ├── config.yaml    # Projekt-Settings
-│   ├── mcps.yaml      # Verfügbare MCPs
-│   └── paths.yaml     # Standardpfade
-├── src/
-├── docs/
-└── ...
+
+**Templates:**
 ```
+templates/
+├── research.md   # Standard-Recherche
+├── dev.md        # Development-Tasks
+└── notes.md      # Einfache Notizen
+```
+
+**Nächster Schritt:** Phase 11C - MCP Registry Implementation
 
 ---
 
@@ -227,21 +239,30 @@ project/
 
 ## Priority Matrix
 
-### ✅ Erledigt (16 Issues)
-#1, #3, #4, #6, #7, #8, #14, #15, #16, #17, #18, #19, #20, #21, #23, #24
+### ✅ Erledigt (18 Issues)
+#1, #3, #4, #6, #7, #8, #14, #15, #16, #17, #18, #19, #20, #21, #23, #24, #25 (Konzept), #26 (Konzept)
 
-### 🔧 Offen (3 Issues)
+### 🔧 Implementation ausstehend (2 Issues)
+
+| Prio | # | Issue | Status | Phase |
+|------|---|-------|--------|-------|
+| 1 | #25 | Erweiterte Task-Definition | Konzept ✅, Implementation ausstehend | 11B |
+| 2 | #26 | MCP Registry & Templates | Konzept ✅, Implementation ausstehend | 11C-D |
+
+### 🔴 Offen (1 Issue)
 
 | Prio | # | Issue | Severity | Phase |
 |------|---|-------|----------|-------|
-| 1 | #26 | Projektstruktur & Standardpfade | HIGH | 11 |
-| 2 | #25 | Erweiterte Task-Definition | HIGH | 11 |
-| 3 | #22 | Projekt-Management (Konzept) | HIGH | 11 |
+| 3 | #22 | Projekt-Management | HIGH | Backlog |
 
-### 📋 Abhängigkeiten
+### 📋 Nächste Schritte
 ```
-#26 (Projektstruktur) → #25 (Erweiterte Tasks)
-#22 (Projekt-Management) → #9 (Projekt-Menü)
+Phase 11B: Backend Task-Model Erweiterung (#25)
+Phase 11C: MCP Registry (.kanban/mcps.yaml)
+Phase 11D: Templates (templates/)
+Phase 11E: Kanban MCP API Update
+Phase 11F: Frontend Anpassungen
+Phase 12: Trilium Integration
 ```
 
 ---
@@ -251,8 +272,9 @@ project/
 | Category | Count |
 |----------|-------|
 | ✅ Fixed/Closed | 16 |
-| 🔴 Open (High) | 3 |
-| 🟡 Open (Low) | 0 |
+| ✅ Konzept abgeschlossen | 2 |
+| 🔧 Implementation ausstehend | 2 |
+| 🔴 Open (High) | 1 |
 | **Total Issues** | **19** |
 
 ---

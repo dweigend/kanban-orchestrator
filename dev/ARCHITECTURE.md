@@ -143,6 +143,16 @@ backend/
 | `project_id` | String(36) | FK to project |
 | `created_at` | DateTime | Creation timestamp |
 
+**Neue Task-Felder (Phase 11):**
+| Field | Type | Description |
+|-------|------|-------------|
+| `sandbox_dir` | String (auto) | Isolierter Arbeitsordner: `output/{task_id}/` |
+| `target_path` | String? | Finale Destination nach Completion |
+| `read_paths` | JSON | Erlaubte Lese-Pfade für Agent |
+| `allowed_mcps` | JSON | Erlaubte MCPs (Default aus Registry) |
+| `template` | String? | Template-Name oder Inline-MD |
+| `source` | String | Herkunft: `ui`, `mcp`, `api` |
+
 **Status Enums:**
 
 | Model | Status Values |
@@ -589,6 +599,80 @@ Das System folgt dem Prinzip: **Kanban = Orchestration (stabil), MCPs = Features
 
 **A) Kanban NUTZT MCPs** - Orchestrator ruft externe Tools
 **B) Kanban IST ein MCP** - Claude Code kann Tasks erstellen
+
+---
+
+## Phase 11: Task-Delegations-System (Design)
+
+### Kern-Konzept
+
+Der Kanban Orchestrator wird zum **asynchronen Task-Delegations-System**:
+- Tasks kommen aus verschiedenen Quellen (MCP, UI, API)
+- Alle I/O-Operationen laufen über MCPs
+- Agent arbeitet in isolierter Sandbox
+- Ergebnis wird bei Completion zum Ziel kopiert
+
+### Task-Lifecycle
+
+```
+1. CREATED     → sandbox_dir erstellt (output/{task_id}/)
+2. IN_PROGRESS → Agent arbeitet nur in sandbox_dir
+3. NEEDS_REVIEW → Optional: User reviewed Ergebnis
+4. DONE        → IF target_path: kopiere sandbox_dir/* → target_path
+```
+
+### MCP Registry (Geplant)
+
+Datei: `.kanban/mcps.yaml`
+
+```yaml
+mcps:
+  filesystem:
+    enabled: true
+    command: "python"
+    args: ["-m", "src.mcp_servers.filesystem.server"]
+    env:
+      WORKSPACE_PATH: "${SANDBOX_DIR}"
+  perplexity:
+    enabled: true
+    command: "npx"
+    args: ["-y", "@anthropic/perplexity-mcp"]
+  trilium:
+    enabled: false  # Phase 12
+
+defaults:
+  allowed_mcps: ["filesystem", "perplexity"]
+  template: "research"
+```
+
+### Templates (Geplant)
+
+```
+templates/
+├── research.md   # Standard-Recherche
+├── dev.md        # Development-Tasks
+└── notes.md      # Einfache Notizen
+```
+
+Templates werden dem Agent als Kontext mitgegeben für konsistente Output-Struktur.
+
+### Erweiterte Kanban MCP API (Geplant)
+
+```python
+create_task(
+    title: str,                    # Required
+    description: str,              # Required
+    type: TaskType = "research",   # Enum
+    target_path: str | None,
+    read_paths: list[str] = [],
+    allowed_mcps: list[str] | None,
+    template: str | None,
+) -> TaskCreatedResponse
+
+get_task_options() -> TaskOptionsSchema  # Schema-Discovery
+```
+
+**Vollständiges Design:** Siehe `dev/DESIGN-TASK-DELEGATION.md`
 
 ---
 
