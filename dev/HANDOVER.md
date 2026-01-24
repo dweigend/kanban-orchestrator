@@ -1,86 +1,67 @@
 # HANDOVER
 
-## Phase: Bug Fixes + UI Cleanup 🟢
+## Phase: Phase 9 Complete → Phase 10 Ready 🟢
 
 ---
 
-## Session 2026-01-23 (Settings Fix + UI Cleanup)
+## Session 2026-01-24 (Planning + Issue Reorganization)
 
 ### Was wurde gemacht
 
-1. **Settings Font-Bug gefixt** ✅
-   - **Root Cause:** `$effect` in `+layout.svelte` wurde bei jeder State-Änderung re-triggered
-   - `loadSettings()` überschrieb den neuen Wert mit dem alten aus localStorage
-   - **Fix:** `untrack()` um die Initialisierung, damit sie nur einmal läuft
-   - Beide CSS-Variablen werden jetzt gesetzt: `--font-mono` und `--font-family-mono`
+1. **Issue-Reorganisation** ✅
+   - #14 (Card Reorder) → **WON'T FIX** - Backend-Bloat vermeiden
+   - Stattdessen: #24 (Subtasks/Checklists) als bessere Lösung
 
-2. **SettingsPanel bits-ui Komponenten gefixt** ✅
-   - Slider und Select funktionierten nicht korrekt
-   - **Fix:** Lokaler State + `onValueChange` Handler Pattern
-   - Slider mit korrekter Track-Struktur
+2. **Neue Issues erstellt** ✅
+   - **#24** - Subtasks/Checklists + Expand/Collapse Cards
+   - **#25** - Erweiterte Task-Definition (mcps, files, permissions, output_dict)
+   - **#26** - Projektstruktur & Standardpfade
 
-3. **UI Cleanup** ✅
-   - Plus-Buttons aus Spalten-Headern entfernt
-   - SearchBar-Komponente komplett entfernt
-   - `handleAddTask()` vereinfacht (default TODO)
+3. **Plan aktualisiert** ✅
+   - Phase 10: Subtasks + Expand/Collapse
+   - Phase 11: Konzept-Session (nur Planung!)
+   - Phase 12-14: Zukünftige Implementation
 
-### Commits
+### Erkenntnisse
 
-```
-fd1e7b4 fix: ✅ Settings font change applies to UI + cleanup
-a3a3a88 Revert "fix: ✅ Settings controls + UI cleanup"
-```
+**Card Reorder (#14):** Backend-Storage für Reihenfolge ist Overkill. Subtasks sind sinnvoller für komplexe Tasks.
 
----
-
-## Erledigte Issues (diese Session)
-
-| # | Issue | Fix |
-|---|-------|-----|
-| #15 | Settings Freeze | `untrack()` in +layout.svelte |
-| #4 | Search Not Implemented | SearchBar entfernt |
+**Subtasks-Ansatz:**
+- JSON-Feld im Task-Model: `subtasks: [{text: string, done: boolean}]`
+- Keine separate Tabelle → kein Backend-Bloat
+- Agent zerlegt komplexe Tasks via Claude SDK Planungsmodus
 
 ---
 
 ## Issue-Übersicht (aktuell)
 
-### ✅ Erledigt
+### ✅ Erledigt (13 Issues)
 | # | Issue |
 |---|-------|
 | 1 | Settings persistent (localStorage) |
+| 4, 23 | Search entfernt |
 | 6 | Tasks im Board anzeigen |
 | 7 | Plus-Buttons funktional |
 | 8 | Agent Logs anzeigen |
+| 14 | Card Reorder → **WON'T FIX** |
 | 15 | Settings Freeze |
 | 17 | Card-Menü → Icons |
-| 4, 23 | Search entfernt |
-| 18-21 | UI Cleanup (Quick Wins) |
+| 18-21 | UI Cleanup |
 
-### 🔧 Noch offen
-| # | Issue | Severity |
-|---|-------|----------|
-| 14 | Card Reorder in Columns | MEDIUM |
-| 3 | Backend Settings in UI | LOW |
+### 🔧 Noch offen (6 Issues)
+| # | Issue | Phase | Severity |
+|---|-------|-------|----------|
+| 24 | Subtasks + Expand Cards | 10 | HIGH |
+| 25 | Erweiterte Task-Definition | 11 (Konzept) | HIGH |
+| 26 | Projektstruktur & Standardpfade | 11 (Konzept) | HIGH |
+| 22 | Projekt-Management | 11 (Konzept) | HIGH |
+| 3 | Backend Settings in UI | Backlog | LOW |
+| 16 | Agent-Autostart | Backlog | LOW |
 
-### 📋 Eigene Sessions (Konzeptarbeit)
-| # | Issue | Notes |
-|---|-------|-------|
-| 22 | Projekt-Management | Backend + Konzept entwickeln |
-| 9 | Projekt-Menü | Abhängig von #22 |
-
----
-
-## Geänderte Dateien (diese Session)
-
+### 📋 Abhängigkeiten
 ```
-frontend/src/lib/components/kanban/Board.svelte     # onAddTask entfernt
-frontend/src/lib/components/kanban/Column.svelte    # Plus-Button entfernt
-frontend/src/lib/components/panel/FunctionPanel.svelte  # SearchBar entfernt
-frontend/src/lib/components/panel/SearchBar.svelte  # GELÖSCHT
-frontend/src/lib/components/panel/SettingsPanel.svelte  # bits-ui Fix
-frontend/src/lib/stores/settings.svelte.ts          # CSS Variablen Fix
-frontend/src/routes/+layout.svelte                  # untrack() Fix
-frontend/src/routes/+page.svelte                    # handleAddTask vereinfacht
+#26 (Projektstruktur) → #25 (Erweiterte Tasks)
+#22 (Projekt-Management) → #9 (Projekt-Menü)
 ```
 
 ---
@@ -89,16 +70,16 @@ frontend/src/routes/+page.svelte                    # handleAddTask vereinfacht
 
 ### Empfohlene Priorität
 
-1. **#14 - Card Reorder** (MEDIUM)
-   - Cards können nicht innerhalb einer Spalte sortiert werden
-   - Benötigt: `position`/`order` Feld im Task-Model
+1. **Phase 10: #24 - Subtasks + Expand/Collapse** (HIGH)
+   - Task-Model: `subtasks` Feld hinzufügen (JSON-Array)
+   - TaskCard: Expandable Component
+   - Agent: Planungsmodus für Task-Zerlegung
 
-2. **#22 - Projekt-Management** (Konzeptarbeit)
-   - Backend-Recherche: Wie werden Projekte gespeichert?
-   - Konzept-Entwicklung mit User
-
-3. **#3 - Backend Settings in UI** (LOW)
-   - Agent config (max_turns, model) im UI konfigurierbar machen
+2. **Phase 11: Konzept-Session** (nach Phase 10)
+   - ⚠️ Nur Planung, keine Implementation!
+   - #26 Projektstruktur klären
+   - #25 Erweiterte Task-Felder konzipieren
+   - #22 Projekt-Management Konzept
 
 ---
 
@@ -121,4 +102,4 @@ uvx ty check
 
 ---
 
-*Updated: 2026-01-23*
+*Updated: 2026-01-24*

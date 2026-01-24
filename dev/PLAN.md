@@ -21,60 +21,97 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - **Phase 7.3 Session A:** Backend Cleanup + Schema-Endpoints (72 Tests)
 - **Phase 7.3 Session B:** Frontend Schema-Integration (TaskEditor)
 - **Phase 8:** Schema-Driven UI (77 Tests)
-- **Phase 9:** Bug Fixes + UI Cleanup (12 Issues fixed)
-
----
-
-## Aktuelle Phase: Stabilisierung 🟢
-
-**Status:** 12 von 16 Issues erledigt (Stand 2026-01-23)
-
-Siehe `dev/ISSUE_TRACKER.md` für vollständige Liste.
-
-### ✅ Erledigt (12 Issues)
-
-| Issue | Beschreibung |
-|-------|--------------|
-| #1 | Settings persistent (localStorage) |
-| #4, #23 | Search entfernt (Konzept unklar) |
-| #6 | Tasks im Board anzeigen |
-| #7 | Plus-Buttons funktional |
-| #8 | Agent Logs anzeigen |
-| #15 | Settings Freeze (untrack() fix) |
-| #17 | Card-Menü → Icons |
-| #18-21 | UI Cleanup (Quick Wins) |
-
-### 🔧 Offen (4 Issues)
-
-| Prio | # | Issue | Severity |
-|------|---|-------|----------|
-| 1 | #14 | Card Reorder in Columns | HIGH |
-| 2 | #22 | Projekt-Management (Konzept) | HIGH |
-| 3 | #3 | Backend Settings in UI | LOW |
-| 4 | #16 | Agent-Autostart (UX) | LOW |
+- **Phase 9:** Bug Fixes + UI Cleanup (13 Issues closed)
 
 ---
 
 ## Nächste Phasen
 
-### Phase 10: Card Reorder (#14)
+### Phase 10: Subtasks & Expand/Collapse Cards (#24)
 
-- `position`/`order` Feld im Task-Model
-- Drag & Drop innerhalb Spalte
-- Backend: PATCH für position update
+**Ziel:** Komplexe Tasks in Untertasks zerlegen
 
-### Phase 11: Projekt-Management (#22)
+**Features:**
+- Expand/Collapse Cards im Board
+- Subtasks als Checklist innerhalb einer Card
+- Agent zerlegt komplexe Tasks automatisch (Claude SDK Planungsmodus)
+- Nur für komplexe Tasks (einfache bleiben flat)
 
-- Backend-Recherche: Wie werden Projekte gespeichert?
-- Konzept-Entwicklung mit User
+**Implementation:**
+| Komponente | Änderung |
+|------------|----------|
+| Task-Model | `subtasks: [{text: string, done: boolean}]` (JSON-Array) |
+| TaskCard.svelte | Expandable mit Chevron |
+| Agent | Planungsmodus für Task-Zerlegung |
+
+**Kein Backend-Bloat:** Subtasks als JSON-Feld, keine separate Tabelle.
+
+---
+
+### Phase 11: Konzept-Session - Projektstruktur & Erweiterte Tasks
+
+**Ziel:** Grundlagen für erweiterte Task-Konfiguration schaffen
+
+⚠️ **KONZEPT-SESSION** - Nur Planung, keine Implementation
+
+#### Part A: Projektstruktur & Standardpfade (#26)
+
+**Fragen zu klären:**
+1. Wo liegt das Projekt-Root?
+2. Welche Standardordner gibt es? (src, docs, tests, etc.)
+3. Wie werden MCP-Server pro Projekt konfiguriert?
+4. Wie greift Frontend auf diese Infos zu?
+
+**Mögliche Struktur:**
+```
+project/
+├── .kanban/           # Orchestrator-Konfiguration
+│   ├── config.yaml    # Projekt-Settings
+│   ├── mcps.yaml      # Verfügbare MCPs
+│   └── paths.yaml     # Standardpfade
+├── src/
+├── docs/
+└── ...
+```
+
+#### Part B: Erweiterte Task-Definition (#25)
+
+**Neue Felder (nach Konzept):**
+| Feld | Beschreibung |
+|------|--------------|
+| `mcps` | MCP-Server, die der Agent nutzen darf |
+| `files` | Dateien/Ordner mit Zugriff |
+| `permissions` | Berechtigungen (read/write/execute) |
+| `output_dict` | Erwartetes Output-Format |
+
+**Abhängigkeit:** Braucht #26 (Projektstruktur) zuerst
+
+#### Part C: Projekt-Management (#22)
+
+- Backend `/api/projects` mit echten Daten füllen
 - Projekt-Menü funktionsfähig machen
+- Multi-Projekt Support?
 
-### Phase 12: Plugin Manager
+---
+
+### Phase 12: Implementation Erweiterte Tasks
+
+**Nach Konzept-Session:**
+- Backend: Task-Model erweitern
+- Frontend: TaskEditor erweitern
+- Schema-Endpoints aktualisieren
+
+---
+
+### Phase 13: Plugin Manager
 
 - MCP Registry Integration (Glama API)
 - Plugin Install/Configure UI
+- Pro-Projekt MCP-Konfiguration
 
-### Phase 13: Advanced Features
+---
+
+### Phase 14: Advanced Features
 
 - NEEDS_REVIEW Flow
 - Knowledge DBs Integration
@@ -94,12 +131,30 @@ Siehe `dev/ISSUE_TRACKER.md` für vollständige Liste.
 
 ---
 
+## Aktuelle Issues
+
+| Prio | # | Issue | Phase |
+|------|---|-------|-------|
+| 1 | #24 | Subtasks + Expand Cards | 10 |
+| 2 | #26 | Projektstruktur & Standardpfade | 11 (Konzept) |
+| 3 | #25 | Erweiterte Task-Definition | 11 (Konzept) |
+| 4 | #22 | Projekt-Management | 11 (Konzept) |
+| 5 | #3, #16 | Settings, Autostart | Backlog |
+
+**Abhängigkeiten:**
+```
+#26 (Projektstruktur) → #25 (Erweiterte Tasks)
+#22 (Projekt-Management) → #9 (Projekt-Menü)
+```
+
+---
+
 ## API-Endpoints
 
 | Gruppe | Endpoints | Status |
 |--------|-----------|--------|
 | Tasks | `/api/tasks`, `/api/tasks/{id}` | ✅ Working |
-| Projects | `/api/projects`, `/api/projects/{id}` | ✅ Working |
+| Projects | `/api/projects`, `/api/projects/{id}` | ✅ Working (leer) |
 | Agent | `/api/agent/run`, `/api/agent/stop/{id}`, `/api/agent/runs` | ✅ Working |
 | Schema | `/api/schema/task`, `/api/schema/project`, `/api/schema/agent-run`, `/api/schema/enums` | ✅ Working |
 | Settings | `/api/settings/schema` | ✅ Working |
@@ -117,4 +172,4 @@ Siehe `dev/ISSUE_TRACKER.md` für vollständige Liste.
 
 ---
 
-*Updated: 2026-01-23*
+*Updated: 2026-01-24*
