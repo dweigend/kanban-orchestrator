@@ -1,0 +1,10 @@
+{
+  "git": {
+    "auto_checkpoint": false,
+    "checkpoint_prefix": "test:"
+  },
+  "agent": {
+    "max_turns": 25,
+    "model": "claude-opus-4-20250514"
+  }
+}

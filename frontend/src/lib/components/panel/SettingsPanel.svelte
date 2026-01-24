@@ -5,17 +5,22 @@ import CaretDown from 'phosphor-svelte/lib/CaretDown';
 import Check from 'phosphor-svelte/lib/Check';
 import Code from 'phosphor-svelte/lib/Code';
 import GitBranch from 'phosphor-svelte/lib/GitBranch';
+import Robot from 'phosphor-svelte/lib/Robot';
 import ShieldCheck from 'phosphor-svelte/lib/ShieldCheck';
-import { showSuccess } from '$lib/services/toast';
+import { showError, showSuccess } from '$lib/services/toast';
 import {
+	agentModelOptions,
 	applySettings,
 	fontOptions,
 	getSettings,
+	saveBackendSettings,
 	saveSettings,
+	setAgentMaxTurns,
+	setAgentModel,
 	setAnalytics,
-	setAutoCommit,
 	setFontFamily,
 	setFontSize,
+	setGitAutoCheckpoint,
 	setNotifications,
 } from '$lib/stores/settings.svelte';
 
@@ -25,6 +30,8 @@ const settings = $derived(getSettings());
 // Local state for bits-ui components (required for bind:value)
 let localFontSize = $state(settings.fontSize);
 let localFontFamily = $state(settings.fontFamily);
+let localAgentMaxTurns = $state(settings.agentMaxTurns);
+let localAgentModel = $state(settings.agentModel);
 
 // Handlers for value changes
 function handleFontSizeChange(value: number) {
@@ -39,14 +46,37 @@ function handleFontFamilyChange(value: string) {
 	applySettings();
 }
 
+// Handlers for agent settings
+function handleAgentMaxTurnsChange(value: number) {
+	localAgentMaxTurns = value;
+	setAgentMaxTurns(value);
+}
+
+function handleAgentModelChange(value: string) {
+	localAgentModel = value;
+	setAgentModel(value);
+}
+
 // Derived labels
 const selectedFontLabel = $derived(
 	fontOptions.find((f) => f.value === localFontFamily)?.label ?? 'Select font',
 );
 
-function handleSave() {
-	saveSettings();
-	showSuccess('Settings saved');
+const selectedModelLabel = $derived(
+	agentModelOptions.find((m) => m.value === localAgentModel)?.label ??
+		'Select model',
+);
+
+async function handleSave() {
+	try {
+		// Save UI settings to localStorage
+		saveSettings();
+		// Save backend settings to API
+		await saveBackendSettings();
+		showSuccess('Settings saved');
+	} catch (e) {
+		showError('Failed to save backend settings');
+	}
 }
 </script>
 
@@ -179,18 +209,114 @@ function handleSave() {
 				<div class="p-4">
 					<div class="flex items-center justify-between">
 						<div>
-							<p class="text-sm font-medium">Auto Commit</p>
-							<p class="text-xs text-[var(--text-muted)]">Commit changes automatically</p>
+							<p class="text-sm font-medium">Auto Checkpoint</p>
+							<p class="text-xs text-[var(--text-muted)]">Create git commits before agent runs</p>
 						</div>
 						<Switch.Root
-							checked={settings.autoCommit}
-							onCheckedChange={setAutoCommit}
+							checked={settings.gitAutoCheckpoint}
+							onCheckedChange={setGitAutoCheckpoint}
 							class="w-11 h-6 rounded-full bg-[var(--bg-surface)] border border-[var(--border-default)] data-[state=checked]:bg-[var(--accent-primary)] transition-colors"
 						>
 							<Switch.Thumb
 								class="block size-5 rounded-full bg-white shadow-md transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0.5"
 							/>
 						</Switch.Root>
+					</div>
+				</div>
+			</Accordion.Content>
+		</Accordion.Item>
+
+		<!-- Agent Config -->
+		<Accordion.Item value="agent" class="border border-[var(--border-muted)] rounded mb-2">
+			<Accordion.Header>
+				<Accordion.Trigger
+					class="flex items-center justify-between w-full px-4 py-3 hover:bg-[var(--bg-hover)] transition-colors group"
+				>
+					<div class="flex items-center gap-3">
+						<Robot class="size-5 text-[var(--text-muted)]" />
+						<span class="text-sm font-medium text-uppercase-tracking">Agent Config</span>
+					</div>
+					<CaretDown
+						class="size-4 text-[var(--text-muted)] transition-transform group-data-[state=open]:rotate-180"
+					/>
+				</Accordion.Trigger>
+			</Accordion.Header>
+			<Accordion.Content class="border-t border-[var(--border-muted)] bg-[var(--bg-surface)]">
+				<div class="p-4 space-y-5">
+					<!-- Agent Model -->
+					<div class="space-y-2">
+						<span class="text-xs text-uppercase-tracking text-[var(--text-muted)]">
+							Agent Model
+						</span>
+						<Select.Root
+							type="single"
+							value={localAgentModel}
+							onValueChange={handleAgentModelChange}
+							items={agentModelOptions}
+						>
+							<Select.Trigger
+								class="flex items-center justify-between w-full px-3 py-2 border border-[var(--border-default)] rounded bg-[var(--bg-elevated)] hover:border-[var(--border-focus)] transition-colors"
+							>
+								<span class="text-sm">{selectedModelLabel}</span>
+								<CaretDown class="size-4 text-[var(--text-muted)]" />
+							</Select.Trigger>
+							<Select.Portal>
+								<Select.Content
+									class="z-[60] border border-[var(--border-default)] bg-[var(--bg-elevated)] rounded shadow-lg p-1 animate-fade-in"
+									sideOffset={4}
+								>
+									<Select.Viewport>
+										{#each agentModelOptions as model}
+											<Select.Item
+												value={model.value}
+												label={model.label}
+												class="flex items-center justify-between px-3 py-2 text-sm rounded cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
+											>
+												{#snippet children({ selected })}
+													{model.label}
+													{#if selected}
+														<Check class="size-4 text-[var(--accent-primary)]" />
+													{/if}
+												{/snippet}
+											</Select.Item>
+										{/each}
+									</Select.Viewport>
+								</Select.Content>
+							</Select.Portal>
+						</Select.Root>
+					</div>
+
+					<!-- Max Turns -->
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<span class="text-xs text-uppercase-tracking text-[var(--text-muted)]">
+								Max Agent Turns
+							</span>
+							<span
+								class="px-2 py-1 text-xs border border-[var(--border-default)] rounded bg-[var(--bg-elevated)]"
+							>
+								{localAgentMaxTurns}
+							</span>
+						</div>
+						<Slider.Root
+							type="single"
+							value={localAgentMaxTurns}
+							onValueChange={handleAgentMaxTurnsChange}
+							min={1}
+							max={50}
+							step={1}
+							class="relative flex items-center w-full h-5 touch-none select-none"
+						>
+							<span
+								class="relative h-1 w-full grow cursor-pointer overflow-hidden rounded-full bg-[var(--bg-surface)]"
+							>
+								<Slider.Range class="absolute h-full bg-[var(--accent-primary)]" />
+							</span>
+							<Slider.Thumb
+								index={0}
+								class="block size-4 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-elevated)] shadow-md focus-ring cursor-pointer"
+							/>
+						</Slider.Root>
 					</div>
 				</div>
 			</Accordion.Content>

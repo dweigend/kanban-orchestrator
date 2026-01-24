@@ -1,7 +1,15 @@
 /**
  * Settings Store
- * Zentrale Verwaltung aller App-Settings mit localStorage-Persistenz
+ * Zentrale Verwaltung aller App-Settings
+ * - UI Settings: localStorage (fontFamily, fontSize, notifications, analytics)
+ * - Backend Settings: API (git, agent config)
  */
+
+import {
+	type BackendSettings,
+	fetchBackendSettings,
+	saveBackendSettings as saveBackendSettingsApi,
+} from '$lib/services/settings';
 
 const SETTINGS_KEY = 'kanban-settings';
 
@@ -20,12 +28,23 @@ export const fontOptions = [
 	{ value: 'cascadia-code', label: 'Cascadia Code' },
 ];
 
-// Settings State
+// UI Settings State (localStorage)
 let fontFamily = $state('jetbrains-mono');
 let fontSize = $state(14);
-let autoCommit = $state(false);
 let notifications = $state(true);
 let analytics = $state(false);
+
+// Backend Settings State (API)
+let gitAutoCheckpoint = $state(true);
+let gitCheckpointPrefix = $state('checkpoint:');
+let agentMaxTurns = $state(10);
+let agentModel = $state('claude-sonnet-4-20250514');
+
+// Agent model options
+export const agentModelOptions = [
+	{ value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4' },
+	{ value: 'claude-opus-4-20250514', label: 'Claude Opus 4' },
+];
 
 // Derived: CSS-ready font family string
 export function getFontFamily(): string {
@@ -40,11 +59,16 @@ export function getFontSize(): number {
 // Getters for reactive access
 export function getSettings() {
 	return {
+		// UI Settings
 		fontFamily,
 		fontSize,
-		autoCommit,
 		notifications,
 		analytics,
+		// Backend Settings
+		gitAutoCheckpoint,
+		gitCheckpointPrefix,
+		agentMaxTurns,
+		agentModel,
 	};
 }
 
@@ -57,8 +81,20 @@ export function setFontSize(value: number) {
 	fontSize = value;
 }
 
-export function setAutoCommit(value: boolean) {
-	autoCommit = value;
+export function setGitAutoCheckpoint(value: boolean) {
+	gitAutoCheckpoint = value;
+}
+
+export function setGitCheckpointPrefix(value: string) {
+	gitCheckpointPrefix = value;
+}
+
+export function setAgentMaxTurns(value: number) {
+	agentMaxTurns = value;
+}
+
+export function setAgentModel(value: string) {
+	agentModel = value;
 }
 
 export function setNotifications(value: boolean) {
@@ -69,7 +105,7 @@ export function setAnalytics(value: boolean) {
 	analytics = value;
 }
 
-// Load from localStorage
+// Load UI settings from localStorage
 export function loadSettings() {
 	if (typeof window === 'undefined') return;
 
@@ -80,7 +116,6 @@ export function loadSettings() {
 		const settings = JSON.parse(saved);
 		fontFamily = settings.fontFamily ?? fontFamily;
 		fontSize = settings.fontSize ?? fontSize;
-		autoCommit = settings.autoCommit ?? autoCommit;
 		notifications = settings.notifications ?? notifications;
 		analytics = settings.analytics ?? analytics;
 	} catch (e) {
@@ -88,18 +123,45 @@ export function loadSettings() {
 	}
 }
 
-// Save to localStorage
+// Load backend settings from API
+export async function loadBackendSettings(): Promise<void> {
+	try {
+		const settings = await fetchBackendSettings();
+		gitAutoCheckpoint = settings.git.auto_checkpoint;
+		gitCheckpointPrefix = settings.git.checkpoint_prefix;
+		agentMaxTurns = settings.agent.max_turns;
+		agentModel = settings.agent.model;
+	} catch (e) {
+		console.error('Failed to load backend settings:', e);
+	}
+}
+
+// Save UI settings to localStorage
 export function saveSettings() {
 	if (typeof window === 'undefined') return;
 
 	const settings = {
 		fontFamily,
 		fontSize,
-		autoCommit,
 		notifications,
 		analytics,
 	};
 	localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+// Save backend settings to API
+export async function saveBackendSettings(): Promise<void> {
+	const settings: BackendSettings = {
+		git: {
+			auto_checkpoint: gitAutoCheckpoint,
+			checkpoint_prefix: gitCheckpointPrefix,
+		},
+		agent: {
+			max_turns: agentMaxTurns,
+			model: agentModel,
+		},
+	};
+	await saveBackendSettingsApi(settings);
 }
 
 // Apply settings to CSS custom properties

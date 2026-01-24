@@ -1,11 +1,15 @@
 <script lang="ts">
 import { Tooltip } from 'bits-ui';
-import { Toaster } from 'svelte-sonner';
 import { untrack } from 'svelte';
+import { Toaster } from 'svelte-sonner';
 import './layout.css';
 import favicon from '$lib/assets/favicon.svg';
 import { initSchemaStore } from '$lib/stores/schema.svelte';
-import { applySettings, loadSettings } from '$lib/stores/settings.svelte';
+import {
+	applySettings,
+	loadBackendSettings,
+	loadSettings,
+} from '$lib/stores/settings.svelte';
 
 const { children } = $props();
 
@@ -15,6 +19,8 @@ $effect(() => {
 		initSchemaStore();
 		loadSettings();
 		applySettings();
+		// Load backend settings (async, non-blocking)
+		loadBackendSettings();
 	});
 });
 </script>

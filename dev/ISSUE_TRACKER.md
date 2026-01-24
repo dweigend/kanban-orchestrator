@@ -40,7 +40,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Agent Runs (API) | 🟢 | | Completed runs in DB |
 | Agent Logs Panel | 🟢 | #8 ✅ | Historical runs displayed |
 | Run Agent Button | 🟢 | #17 ✅ | Icon direkt auf Card |
-| Agent Autostart | 🟡 | #16 | Kein Autostart (UX-Frage) |
+| Agent Autostart | 🚫 | #16 | Won't Fix - Expliziter Start besser |
 | **Agent Task-Planung** | ⚪ | #24 | **NEU** - Claude SDK zerlegt Tasks |
 
 ### Settings
@@ -52,7 +52,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Font Size | 🟢 | #1 ✅ | Live-Änderung funktioniert |
 | Save Button | 🟢 | | Saves to localStorage + toast |
 | Persistence | 🟢 | | Settings bleiben nach Reload |
-| Backend Settings | 🔴 | #3 | Not connected to UI |
+| Backend Settings | 🟢 | #3 ✅ | Connected to UI via API |
 
 ### UI Components
 
@@ -184,22 +184,30 @@ project/
 
 ---
 
-### #3 - Frontend-Backend Settings Gap 🔴
+### #3 - Frontend-Backend Settings Gap ✅ FIXED
 
 **Severity:** Low
-**Status:** Offen
+**Status:** Erledigt (2026-01-24)
 
-**Description:**
-- Frontend: Font, Notifications, Analytics (localStorage)
-- Backend: Git config, Agent config (`/api/settings/schema`)
-- Keine Verbindung zwischen UI und Backend-Settings
+**Lösung:**
+- Backend: `GET/POST /api/settings` für Git + Agent Config
+- Frontend: Settings Store + SettingsPanel mit Agent Config Section
+- Speicherung: `.kanban/settings.json`
 
 ---
 
-### #16 - Kein Agent-Autostart bei Task-Erstellung 🟡
+### #16 - Kein Agent-Autostart bei Task-Erstellung 🚫 WON'T FIX
 
 **Severity:** Low
-**Status:** UX-Entscheidung offen
+**Status:** Geschlossen (UX-Entscheidung)
+
+**Entscheidung:** Kein Autostart implementieren.
+
+**Gründe:**
+1. Task-Erstellung ≠ Task-Ausführung (semantisch getrennt)
+2. User behält Kontrolle über Agent-Start
+3. Konsistent mit Edit → Save Workflow
+4. Bei Bedarf später als optionales Setting möglich
 
 ---
 
@@ -220,23 +228,23 @@ project/
 | #20 | Project Overview Section | Entfernt | 2026-01-23 |
 | #21 | System Logs Section | Entfernt | 2026-01-23 |
 | #23 | Search/Knowledge Base | SearchBar entfernt | 2026-01-23 |
+| #16 | Agent-Autostart | **WON'T FIX** - Expliziter Start besser | 2026-01-24 |
+| #3 | Backend Settings in UI | API + SettingsPanel verbunden | 2026-01-24 |
 
 ---
 
 ## Priority Matrix
 
-### ✅ Erledigt (13 Issues)
-#1, #4, #6, #7, #8, #14, #15, #17, #18, #19, #20, #21, #23
+### ✅ Erledigt (15 Issues)
+#1, #3, #4, #6, #7, #8, #14, #15, #16, #17, #18, #19, #20, #21, #23
 
-### 🔧 Offen (6 Issues)
+### 🔧 Offen (4 Issues)
 
 | Prio | # | Issue | Severity | Phase |
 |------|---|-------|----------|-------|
 | 1 | #24 | Subtasks/Checklists + Expand Cards | HIGH | 10 |
 | 2 | #25, #26 | Erweiterte Task-Definition + Projektstruktur | HIGH | 11 |
 | 3 | #22 | Projekt-Management (Konzept) | HIGH | 11 |
-| 4 | #3 | Backend Settings in UI | LOW | Backlog |
-| 5 | #16 | Agent-Autostart (UX) | LOW | Backlog |
 
 ### 📋 Abhängigkeiten
 ```
@@ -250,9 +258,9 @@ project/
 
 | Category | Count |
 |----------|-------|
-| ✅ Fixed/Closed | 13 |
+| ✅ Fixed/Closed | 15 |
 | 🔴 Open (High) | 4 |
-| 🟡 Open (Low) | 2 |
+| 🟡 Open (Low) | 0 |
 | **Total Issues** | **19** |
 
 ---

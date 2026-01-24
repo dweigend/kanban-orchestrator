@@ -56,3 +56,28 @@ async def test_settings_schema_agent_options(client: AsyncClient) -> None:
     assert "options" in agent["model"]
     assert len(agent["model"]["options"]) > 0
     assert "claude-sonnet-4-20250514" in agent["model"]["options"]
+
+
+async def test_save_and_get_settings(client: AsyncClient) -> None:
+    """POST /api/settings saves and returns settings."""
+    new_settings = {
+        "git": {"auto_checkpoint": False, "checkpoint_prefix": "test:"},
+        "agent": {"max_turns": 25, "model": "claude-opus-4-20250514"},
+    }
+
+    # Save settings
+    response = await client.post("/api/settings", json=new_settings)
+    assert response.status_code == 200
+
+    saved = response.json()
+    assert saved["git"]["auto_checkpoint"] is False
+    assert saved["git"]["checkpoint_prefix"] == "test:"
+    assert saved["agent"]["max_turns"] == 25
+    assert saved["agent"]["model"] == "claude-opus-4-20250514"
+
+    # Verify they persist
+    response = await client.get("/api/settings")
+    assert response.status_code == 200
+
+    loaded = response.json()
+    assert loaded == saved

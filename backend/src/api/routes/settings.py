@@ -1,8 +1,66 @@
 """Settings API endpoints for MCP-relevant configuration schema."""
 
+import json
+from pathlib import Path
+
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
+
+# Settings file location
+SETTINGS_FILE = Path(".kanban/settings.json")
+
+
+class GitSettings(BaseModel):
+    """Git-related settings."""
+
+    auto_checkpoint: bool = True
+    checkpoint_prefix: str = "checkpoint:"
+
+
+class AgentSettings(BaseModel):
+    """Agent-related settings."""
+
+    max_turns: int = 10
+    model: str = "claude-sonnet-4-20250514"
+
+
+class BackendSettings(BaseModel):
+    """All backend settings."""
+
+    git: GitSettings = GitSettings()
+    agent: AgentSettings = AgentSettings()
+
+
+def _load_settings() -> BackendSettings:
+    """Load settings from file or return defaults."""
+    if SETTINGS_FILE.exists():
+        try:
+            data = json.loads(SETTINGS_FILE.read_text())
+            return BackendSettings(**data)
+        except (json.JSONDecodeError, ValueError):
+            pass
+    return BackendSettings()
+
+
+def _save_settings(settings: BackendSettings) -> None:
+    """Save settings to file."""
+    SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    SETTINGS_FILE.write_text(settings.model_dump_json(indent=2))
+
+
+@router.get("")
+def get_settings() -> BackendSettings:
+    """Get current backend settings."""
+    return _load_settings()
+
+
+@router.post("")
+def save_settings(settings: BackendSettings) -> BackendSettings:
+    """Save backend settings."""
+    _save_settings(settings)
+    return settings
 
 
 @router.get("/schema")
