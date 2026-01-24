@@ -1,86 +1,44 @@
 # HANDOVER
 
-## Phase: Bug Fixes + UI Cleanup 🔴
+## Phase: Bug Fixes + UI Cleanup 🟢
 
 ---
 
-## Session 2026-01-22 (Settings + Issue Sammlung)
+## Session 2026-01-23 (Settings Fix + UI Cleanup)
 
 ### Was wurde gemacht
 
-1. **Settings Store implementiert** ✅
-   - Neuer zentraler Store: `frontend/src/lib/stores/settings.svelte.ts`
-   - CSS Custom Properties werden live aktualisiert
-   - Alle 4 Fonts geladen (JetBrains Mono, Fira Code, Source Code Pro, Cascadia Code)
-   - localStorage Persistenz funktioniert
+1. **Settings Font-Bug gefixt** ✅
+   - **Root Cause:** `$effect` in `+layout.svelte` wurde bei jeder State-Änderung re-triggered
+   - `loadSettings()` überschrieb den neuen Wert mit dem alten aus localStorage
+   - **Fix:** `untrack()` um die Initialisierung, damit sie nur einmal läuft
+   - Beide CSS-Variablen werden jetzt gesetzt: `--font-mono` und `--font-family-mono`
 
-2. **SettingsPanel refactored** ✅
-   - Nutzt jetzt zentralen Store statt lokaler States
-   - Appearance + Line Numbers + Word Wrap Sections entfernt
-   - Live-Preview bei Font-Änderungen
+2. **SettingsPanel bits-ui Komponenten gefixt** ✅
+   - Slider und Select funktionierten nicht korrekt
+   - **Fix:** Lokaler State + `onValueChange` Handler Pattern
+   - Slider mit korrekter Track-Struktur
 
-3. **Issue Tracker erweitert** ✅
-   - 8 neue Issues dokumentiert (#16-#23)
-   - Total: 23 Issues
-   - Priority Matrix aktualisiert
-   - Quick Wins identifiziert
+3. **UI Cleanup** ✅
+   - Plus-Buttons aus Spalten-Headern entfernt
+   - SearchBar-Komponente komplett entfernt
+   - `handleAddTask()` vereinfacht (default TODO)
 
-### Bekanntes Problem
+### Commits
 
-**#15 - Editor Config Freeze**
-- Settings UI hängt sich nach erster Änderung auf
-- Vermutlich $effect Loop zwischen Store und Layout
-- **Muss in nächster Session gefixt werden**
+```
+fd1e7b4 fix: ✅ Settings font change applies to UI + cleanup
+a3a3a88 Revert "fix: ✅ Settings controls + UI cleanup"
+```
 
 ---
 
-## Nächste Session: Quick Wins + Bug Fixes
+## Erledigte Issues (diese Session)
 
-### Empfohlene Reihenfolge
-
-#### 1. Quick Wins (UI verschlanken) ~30min
-```
-#18 - Hub/Board View Toggle entfernen
-#19 - Breadcrumb "vibe-kanban/hub-view" entfernen
-#20 - Project Overview Section entfernen
-#21 - System Logs Section entfernen
-```
-
-**Dateien:**
-- `frontend/src/lib/components/layout/Header.svelte`
-- `frontend/src/lib/components/panel/FunctionPanel.svelte`
-
-#### 2. Bug Fix: Settings Freeze
-```
-#15 - Editor Config Freeze nach erster Änderung
-```
-
-**Vermutliche Ursache:** $effect Loop in `+layout.svelte`
-
-**Fix-Ansatz:**
-```typescript
-// Statt:
-$effect(() => {
-  const _font = getFontFamily();  // Triggers re-run
-  applySettings();                // Also reads values
-});
-
-// Besser: Nur bei explizitem Save anwenden
-// Oder: untrack() verwenden
-```
-
-#### 3. UX: Card-Menü vereinfachen
-```
-#17 - Card Context Menu → Icons
-```
-
-**Von:**
-- Edit, Open, Run Agent, Delete (4 redundante Items)
-
-**Zu:**
-- ▶️ Run Agent Icon auf Card
-- 🗑️ Delete Icon auf Card
-- Click auf Card → Edit
+| # | Issue | Fix |
+|---|-------|-----|
+| #15 | Settings Freeze | `untrack()` in +layout.svelte |
+| #4 | Search Not Implemented | SearchBar entfernt |
 
 ---
 
@@ -93,40 +51,54 @@ $effect(() => {
 | 6 | Tasks im Board anzeigen |
 | 7 | Plus-Buttons funktional |
 | 8 | Agent Logs anzeigen |
+| 15 | Settings Freeze |
+| 17 | Card-Menü → Icons |
+| 4, 23 | Search entfernt |
+| 18-21 | UI Cleanup (Quick Wins) |
 
-### 🚀 Quick Wins
-| # | Issue | Action |
-|---|-------|--------|
-| 18 | Hub/Board Toggle | Entfernen |
-| 19 | Breadcrumb | Entfernen |
-| 20 | Overview Section | Entfernen |
-| 21 | System Logs | Entfernen |
-
-### 🔧 Bugs
+### 🔧 Noch offen
 | # | Issue | Severity |
 |---|-------|----------|
-| 15 | Settings Freeze | HIGH |
-| 14 | Card Reorder | MEDIUM |
+| 14 | Card Reorder in Columns | MEDIUM |
+| 3 | Backend Settings in UI | LOW |
 
 ### 📋 Eigene Sessions (Konzeptarbeit)
 | # | Issue | Notes |
 |---|-------|-------|
 | 22 | Projekt-Management | Backend + Konzept entwickeln |
-| 23 | Knowledge Base | Konzept-Abgleich mit Original |
+| 9 | Projekt-Menü | Abhängig von #22 |
 
 ---
 
 ## Geänderte Dateien (diese Session)
 
 ```
-frontend/src/lib/stores/settings.svelte.ts     # NEU - Settings Store
-frontend/src/lib/components/panel/SettingsPanel.svelte  # Refactored
-frontend/src/routes/+layout.svelte             # Settings laden + Fonts
-frontend/src/routes/+page.svelte               # Font-Import entfernt
-dev/ISSUE_TRACKER.md                           # 8 neue Issues
-dev/PLAN.md                                    # Aktualisiert
-dev/HANDOVER.md                                # Diese Datei
+frontend/src/lib/components/kanban/Board.svelte     # onAddTask entfernt
+frontend/src/lib/components/kanban/Column.svelte    # Plus-Button entfernt
+frontend/src/lib/components/panel/FunctionPanel.svelte  # SearchBar entfernt
+frontend/src/lib/components/panel/SearchBar.svelte  # GELÖSCHT
+frontend/src/lib/components/panel/SettingsPanel.svelte  # bits-ui Fix
+frontend/src/lib/stores/settings.svelte.ts          # CSS Variablen Fix
+frontend/src/routes/+layout.svelte                  # untrack() Fix
+frontend/src/routes/+page.svelte                    # handleAddTask vereinfacht
 ```
+
+---
+
+## Nächste Session
+
+### Empfohlene Priorität
+
+1. **#14 - Card Reorder** (MEDIUM)
+   - Cards können nicht innerhalb einer Spalte sortiert werden
+   - Benötigt: `position`/`order` Feld im Task-Model
+
+2. **#22 - Projekt-Management** (Konzeptarbeit)
+   - Backend-Recherche: Wie werden Projekte gespeichert?
+   - Konzept-Entwicklung mit User
+
+3. **#3 - Backend Settings in UI** (LOW)
+   - Agent config (max_turns, model) im UI konfigurierbar machen
 
 ---
 
@@ -149,4 +121,4 @@ uvx ty check
 
 ---
 
-*Updated: 2026-01-22*
+*Updated: 2026-01-23*
