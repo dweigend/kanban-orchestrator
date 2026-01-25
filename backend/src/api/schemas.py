@@ -25,7 +25,7 @@ from enum import StrEnum
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.models.agent_run import AgentRunStatus
-from src.models.task import TaskStatus, TaskType
+from src.models.task import TaskSource, TaskStatus, TaskType
 
 
 # ─────────────────────────────────────────────────────────────
@@ -206,6 +206,28 @@ class TaskCreate(BaseModel):
         None,
         description="Granular steps for this task (used in subtasks)",
     )
+    # Delegation fields (Phase 11B)
+    target_path: str | None = Field(
+        None,
+        description="Destination path for completed work (optional)",
+        examples=["/Users/david/notes/research/"],
+    )
+    read_paths: list[str] | None = Field(
+        None,
+        description="Additional paths the agent is allowed to read",
+    )
+    allowed_mcps: list[str] | None = Field(
+        None,
+        description="MCP servers this task can use (None = use defaults)",
+    )
+    template: str | None = Field(
+        None,
+        description="Template name or inline markdown for agent prompt",
+    )
+    source: TaskSource = Field(
+        TaskSource.UI,
+        description="Origin of the task: ui, mcp, or api",
+    )
 
 
 class TaskUpdate(BaseModel):
@@ -232,6 +254,23 @@ class TaskUpdate(BaseModel):
     steps: list[Step] | None = Field(
         None,
         description="Updated steps for this task",
+    )
+    # Delegation fields (updatable, except source)
+    target_path: str | None = Field(
+        None,
+        description="New destination path for completed work",
+    )
+    read_paths: list[str] | None = Field(
+        None,
+        description="Updated read paths",
+    )
+    allowed_mcps: list[str] | None = Field(
+        None,
+        description="Updated MCP allowlist",
+    )
+    template: str | None = Field(
+        None,
+        description="Updated template",
     )
 
 
@@ -265,6 +304,31 @@ class TaskResponse(BaseModel):
         description="Granular steps for this task (used in subtasks)",
     )
     created_at: datetime = Field(description="Task creation timestamp (ISO 8601)")
+    # Delegation fields (Phase 11B)
+    sandbox_dir: str | None = Field(
+        default=None,
+        description="Isolated sandbox directory for agent work",
+    )
+    target_path: str | None = Field(
+        default=None,
+        description="Destination path for completed work",
+    )
+    read_paths: list[str] | None = Field(
+        default=None,
+        description="Additional readable paths",
+    )
+    allowed_mcps: list[str] | None = Field(
+        default=None,
+        description="Allowed MCP servers",
+    )
+    template: str | None = Field(
+        default=None,
+        description="Template name or inline markdown",
+    )
+    source: TaskSource = Field(
+        default=TaskSource.UI,
+        description="Task origin: ui, mcp, or api",
+    )
 
 
 # ─────────────────────────────────────────────────────────────

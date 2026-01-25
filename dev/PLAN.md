@@ -24,37 +24,19 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - **Phase 9:** Bug Fixes + UI Cleanup (13 Issues closed)
 - **Phase 10:** Subtasks & Expand/Collapse Cards (#24) ✅
 - **Phase 11A:** Task-Delegations-System Konzept ✅
+- **Phase 11B:** Backend Task-Model Erweiterung (78 Tests) ✅
 
 ---
 
 ## Aktuelle Phase
 
-### Phase 11B-F: Task-Delegations-System Implementation 🔲 NEXT
+### Phase 11C-F: Task-Delegations-System Implementation 🔲 NEXT
 
 **Design:** Siehe `dev/DESIGN-TASK-DELEGATION.md`
 
 ---
 
 ## Nächste Phasen
-
-### Phase 11B: Backend Task-Model Erweiterung
-
-**Ziel:** Neue Felder im Task-Model für Sandbox/Target-Workflow
-
-| Task | Beschreibung |
-|------|--------------|
-| 1 | Task-Model erweitern: `sandbox_dir`, `target_path`, `read_paths`, `allowed_mcps`, `template`, `source` |
-| 2 | Automatische `sandbox_dir` Generierung bei Task-Erstellung |
-| 3 | Copy-to-target Logik bei Task-Completion (wenn `target_path` gesetzt) |
-| 4 | Pydantic Schemas aktualisieren |
-| 5 | DB Migration / Reset |
-
-**Dateien:**
-- `backend/src/models/task.py`
-- `backend/src/api/schemas.py`
-- `backend/src/api/task_service.py`
-
----
 
 ### Phase 11C: MCP Registry
 

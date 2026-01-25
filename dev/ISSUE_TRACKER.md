@@ -38,7 +38,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Feature | Status | Issue | Notes |
 |---------|--------|-------|-------|
 | Agent Runs (API) | 🟢 | | Completed runs in DB |
-| Agent Logs Panel | 🟢 | #8 ✅ | Historical runs displayed |
+| Agent Logs Panel | 🔴 | #8, #30 | Zeigt keine Runs an |
 | Run Agent Button | 🟢 | #17 ✅ | Icon direkt auf Card |
 | Agent Autostart | 🚫 | #16 | Won't Fix - Expliziter Start besser |
 | **Agent Task-Planung** | ✅ | #24 | FIXED - Plan/Execute Endpoints |
@@ -59,6 +59,7 @@ Lebendes Dokument zur Erfassung des Projektstatus. Wird in jeder Session aktuali
 | Feature | Status | Issue | Notes |
 |---------|--------|-------|-------|
 | Sidebar Tabs | 🟢 | | Overview/Agents/Settings |
+| Overview Tab | 🔴 | #29 | Keine Funktion - entfernen oder sinnvoll nutzen |
 | Hide/Show Sidebar | 🟢 | | Button funktioniert |
 | Search Bar | ✅ | #4, #23 | **ENTFERNT** |
 | Project Menu | 🔴 | #9, #22 | Konzeptionell überarbeiten |
@@ -187,6 +188,118 @@ templates/
 
 ---
 
+### #27 - Klickbare Pfade + Default Editor 🔵 NEW
+
+**Severity:** Low
+**Status:** Offen
+**Created:** 2026-01-25
+
+**Description:**
+Sandbox- und Target-Pfade im TaskEditor sollen klickbar sein, um den Ordner direkt im Editor zu öffnen.
+
+**Requirements:**
+1. Settings: Default Editor konfigurierbar (User präferiert: **Zed**)
+2. TaskEditor: Pfade als klickbare Links
+3. Backend: Endpoint zum Öffnen von Pfaden im Editor (`POST /api/open-in-editor`)
+4. Unterstützte Editoren: `zed`, `code`, `cursor`, `sublime`
+
+**Command-Patterns:**
+```bash
+zed <path>          # Zed
+code <path>         # VS Code
+cursor <path>       # Cursor
+subl <path>         # Sublime Text
+```
+
+**Phase:** 11F (Frontend Anpassungen)
+
+---
+
+### #28 - Task-Summary im Board 🟡 KONZEPT NÖTIG
+
+**Severity:** Medium
+**Status:** Offen - Konzeptarbeit nötig
+**Created:** 2026-01-25
+
+**Description:**
+Tasks sollen eine strukturierte Zusammenfassung des Agent-Ergebnisses im Kanban-Board anzeigen, ohne dass man die komplette Datei öffnen muss.
+
+**Use Case:**
+- Agent arbeitet an Task → erstellt Dateien in Sandbox
+- Zusätzlich: Agent erstellt eine **Summary** (strukturiert)
+- Summary wird im TaskEditor/Board angezeigt
+
+**Mögliche Summary-Felder:**
+- Status: Erfolgreich / Teilweise / Fehlgeschlagen
+- Erledigte Schritte (Checklist)
+- Kernerkenntnisse (Bullet Points)
+- Generierte Dateien (Liste mit Größe)
+- Nächste Schritte / Offene Punkte
+
+**Konzept-Fragen:**
+1. Format: JSON-Schema oder Markdown mit Frontmatter?
+2. Wo speichern: In DB (`task.summary`) oder als `summary.json` in Sandbox?
+3. Wie generieren: Agent-Prompt-Template oder Post-Processing?
+4. UI: Collapsible Section im TaskEditor oder eigenes Panel?
+
+**Abhängigkeiten:**
+- Phase 11D (Templates) - Summary-Template definieren
+- Agent-Prompt muss Summary-Format kennen
+
+**Phase:** Konzept → dann 11F oder eigene Phase
+
+---
+
+### #29 - Overview Tab ohne Funktion 🔴 ENTSCHEIDUNG NÖTIG
+
+**Severity:** Low
+**Status:** Offen - Entscheidung nötig
+**Created:** 2026-01-25
+
+**Description:**
+Das Overview Tab (Tachometer-Icon) in der Sidebar hat aktuell keine Funktion. Der Bereich ist komplett leer.
+
+**Optionen:**
+1. **Entfernen** - Tab komplett entfernen, vereinfacht UI
+2. **Dashboard** - Task-Statistiken, Agent-Performance, etc.
+3. **Quick Actions** - Häufig genutzte Aktionen (z.B. letzter Task, aktive Agents)
+4. **Status Overview** - Übersicht aller laufenden/geplanten Tasks
+
+**Entscheidung:** In nächster Session klären - entfernen vs. sinnvoll nutzen
+
+**Phase:** UI Cleanup oder 11F
+
+---
+
+### #30 - Agent Log Panel zeigt keine Runs an 🔴 BUG
+
+**Severity:** Medium
+**Status:** Offen - Bug
+**Created:** 2026-01-25
+
+**Description:**
+Das Agent Log Panel (Agents Tab) zeigt "No agent activity yet", obwohl Agent Runs existieren sollten.
+
+**Symptom:**
+- Panel zeigt immer "No agent activity yet"
+- Nach Agent-Run wird nichts angezeigt
+- Historische Runs fehlen
+
+**Mögliche Ursachen:**
+1. API-Endpoint `/api/agent/runs` liefert keine Daten
+2. Frontend lädt Runs nicht korrekt
+3. DB wurde zurückgesetzt (Phase 11B) - aber auch neue Runs fehlen
+4. SSE-Events für Agent-Logs nicht verbunden
+
+**Zu prüfen:**
+- `GET /api/agent/runs` Response
+- AgentLogsPanel.svelte - Datenladung
+- SSE Event-Subscription für agent_log
+
+**Phase:** Bugfix - hohe Priorität
+
+---
+
 ### #3 - Frontend-Backend Settings Gap ✅ FIXED
 
 **Severity:** Low
@@ -249,11 +362,15 @@ templates/
 | 1 | #25 | Erweiterte Task-Definition | Konzept ✅, Implementation ausstehend | 11B |
 | 2 | #26 | MCP Registry & Templates | Konzept ✅, Implementation ausstehend | 11C-D |
 
-### 🔴 Offen (1 Issue)
+### 🔴 Offen (5 Issues)
 
 | Prio | # | Issue | Severity | Phase |
 |------|---|-------|----------|-------|
 | 3 | #22 | Projekt-Management | HIGH | Backlog |
+| 4 | #27 | Klickbare Pfade + Default Editor | LOW | 11F |
+| 5 | #28 | Task-Summary im Board | MEDIUM | Konzept |
+| 6 | #29 | Overview Tab ohne Funktion | LOW | UI Cleanup |
+| 7 | #30 | Agent Log Panel Bug | MEDIUM | Bugfix |
 
 ### 📋 Nächste Schritte
 ```
@@ -275,8 +392,10 @@ Phase 12: Trilium Integration
 | ✅ Konzept abgeschlossen | 2 |
 | 🔧 Implementation ausstehend | 2 |
 | 🔴 Open (High) | 1 |
-| **Total Issues** | **19** |
+| 🟡 Open (Medium) | 2 |
+| 🔵 Open (Low) | 2 |
+| **Total Issues** | **23** |
 
 ---
 
-*Last Updated: 2026-01-24*
+*Last Updated: 2026-01-25*

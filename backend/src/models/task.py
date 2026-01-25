@@ -34,6 +34,14 @@ class TaskType(StrEnum):
     NEUTRAL = "neutral"
 
 
+class TaskSource(StrEnum):
+    """Origin of the task for tracking delegation source."""
+
+    UI = "ui"
+    MCP = "mcp"
+    API = "api"
+
+
 class Task(Base):
     """Task model with project association and agent support."""
 
@@ -50,6 +58,18 @@ class Task(Base):
         DateTime(timezone=True),
         server_default=func.now(),
     )
+
+    # Delegation fields (Phase 11B)
+    sandbox_dir: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    target_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    read_paths: Mapped[list[str] | None] = mapped_column(
+        JSON, nullable=True, default=None
+    )
+    allowed_mcps: Mapped[list[str] | None] = mapped_column(
+        JSON, nullable=True, default=None
+    )
+    template: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    source: Mapped[str] = mapped_column(String(20), default=TaskSource.UI)
 
     # Project association
     project_id: Mapped[str | None] = mapped_column(

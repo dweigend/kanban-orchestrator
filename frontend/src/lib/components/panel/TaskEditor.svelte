@@ -2,6 +2,7 @@
 import { Separator } from 'bits-ui';
 import CheckSquare from 'phosphor-svelte/lib/CheckSquare';
 import FloppyDisk from 'phosphor-svelte/lib/FloppyDisk';
+import FolderOpen from 'phosphor-svelte/lib/FolderOpen';
 import Play from 'phosphor-svelte/lib/Play';
 import Square from 'phosphor-svelte/lib/Square';
 import Trash from 'phosphor-svelte/lib/Trash';
@@ -287,6 +288,47 @@ function getField(name: string): SchemaField | undefined {
 					<Separator.Root class="h-px bg-[var(--border-muted)]" />
 					<FieldRenderer field={resultField} value={currentTask.result} />
 				{/if}
+			{/if}
+
+			<!-- Delegation Info (Phase 11B) -->
+			{#if !isNewTask && currentTask.sandbox_dir}
+				<Separator.Root class="h-px bg-[var(--border-muted)]" />
+				<div class="space-y-3">
+					<div class="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
+						Task Info
+					</div>
+
+					<!-- Source Badge -->
+					<div class="flex items-center gap-2">
+						<span class="text-xs text-[var(--text-muted)]">Source:</span>
+						<span class="px-2 py-0.5 text-xs font-medium rounded-full
+							{currentTask.source === 'mcp' ? 'bg-blue-500/20 text-blue-400' :
+							 currentTask.source === 'api' ? 'bg-green-500/20 text-green-400' :
+							 'bg-[var(--bg-elevated)] text-[var(--text-muted)]'}">
+							{currentTask.source?.toUpperCase() ?? 'UI'}
+						</span>
+					</div>
+
+					<!-- Sandbox Directory -->
+					<div class="space-y-1">
+						<span class="text-xs text-[var(--text-muted)]">Sandbox:</span>
+						<div class="flex items-center gap-2 px-2 py-1.5 rounded bg-[var(--bg-elevated)] text-xs font-mono text-[var(--text-secondary)]">
+							<FolderOpen class="size-3.5 shrink-0 text-[var(--text-muted)]" />
+							<span class="truncate">{currentTask.sandbox_dir}</span>
+						</div>
+					</div>
+
+					<!-- Target Path (if set) -->
+					{#if currentTask.target_path}
+						<div class="space-y-1">
+							<span class="text-xs text-[var(--text-muted)]">Target:</span>
+							<div class="flex items-center gap-2 px-2 py-1.5 rounded bg-[var(--bg-elevated)] text-xs font-mono text-[var(--text-secondary)]">
+								<FolderOpen class="size-3.5 shrink-0 text-green-400" />
+								<span class="truncate">{currentTask.target_path}</span>
+							</div>
+						</div>
+					{/if}
+				</div>
 			{/if}
 		</div>
 	{/if}

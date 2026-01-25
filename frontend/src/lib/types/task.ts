@@ -46,6 +46,12 @@ export type BackendTaskStatus =
 	| 'needs_review'
 	| 'done';
 
+/**
+ * Task source - origin of the task (Phase 11B).
+ * Matches backend TaskSource enum.
+ */
+export type TaskSource = 'ui' | 'mcp' | 'api';
+
 // ─────────────────────────────────────────────────────────────
 // Status Mapping
 // ─────────────────────────────────────────────────────────────
@@ -89,6 +95,13 @@ export interface Task {
 	parent_id?: string;
 	steps?: Step[]; // Granular steps for subtasks
 	created_at: string;
+	// Delegation fields (Phase 11B)
+	sandbox_dir?: string;
+	target_path?: string;
+	read_paths?: string[];
+	allowed_mcps?: string[];
+	template?: string;
+	source?: TaskSource;
 }
 
 /**
@@ -106,6 +119,13 @@ export interface BackendTask {
 	parent_id: string | null;
 	steps: Step[] | null; // Granular steps for subtasks
 	created_at: string;
+	// Delegation fields (Phase 11B)
+	sandbox_dir: string | null;
+	target_path: string | null;
+	read_paths: string[] | null;
+	allowed_mcps: string[] | null;
+	template: string | null;
+	source: TaskSource;
 }
 
 /**
@@ -116,6 +136,12 @@ export interface TaskCreate {
 	description?: string;
 	type?: TaskType;
 	status?: BackendTaskStatus;
+	// Delegation fields (Phase 11B)
+	target_path?: string;
+	read_paths?: string[];
+	allowed_mcps?: string[];
+	template?: string;
+	source?: TaskSource;
 }
 
 /**
@@ -126,6 +152,11 @@ export interface TaskUpdate {
 	description?: string;
 	status?: BackendTaskStatus;
 	type?: TaskType;
+	// Delegation fields (Phase 11B) - source is not updatable
+	target_path?: string;
+	read_paths?: string[];
+	allowed_mcps?: string[];
+	template?: string;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -162,6 +193,13 @@ export function mapBackendToTask(backend: BackendTask): Task {
 		parent_id: backend.parent_id ?? undefined,
 		steps: backend.steps ?? undefined,
 		created_at: backend.created_at,
+		// Delegation fields (Phase 11B)
+		sandbox_dir: backend.sandbox_dir ?? undefined,
+		target_path: backend.target_path ?? undefined,
+		read_paths: backend.read_paths ?? undefined,
+		allowed_mcps: backend.allowed_mcps ?? undefined,
+		template: backend.template ?? undefined,
+		source: backend.source ?? undefined,
 	};
 }
 
