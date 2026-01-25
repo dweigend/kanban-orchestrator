@@ -11,7 +11,7 @@ from claude_agent_sdk.types import ClaudeAgentOptions
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.events import EventType, TaskEvent, event_bus
-from src.mcp_client import get_mcp_config
+from src.mcp_client import get_defaults, get_mcp_config
 from src.models.agent_run import AgentRun, AgentRunStatus
 from src.models.task import Task, TaskStatus
 from src.services.git import create_checkpoint, create_commit
@@ -117,10 +117,10 @@ async def execute_agent_run(
         agent_run: The pre-created AgentRun (in PENDING status)
         task: The task to execute
         project: The project containing workspace path
-        mcp_tools: List of MCP tools to enable (default: ["filesystem"])
+        mcp_tools: List of MCP tools to enable (None = use task.allowed_mcps or defaults)
     """
-    if mcp_tools is None:
-        mcp_tools = ["filesystem"]
+    # Determine MCP tools: explicit param > task config > registry defaults
+    tools = mcp_tools or task.allowed_mcps or get_defaults()["allowed_mcps"]
 
     workspace_path = project.workspace_path if project else "."
     workspace = Path(workspace_path).resolve()
@@ -140,7 +140,7 @@ async def execute_agent_run(
         create_checkpoint(workspace, task.id)
 
     # Build agent options
-    mcp_config = get_mcp_config(mcp_tools, str(workspace))
+    mcp_config = get_mcp_config(tools, str(workspace))
     options = ClaudeAgentOptions(
         cwd=str(workspace),
         mcp_servers=mcp_config,

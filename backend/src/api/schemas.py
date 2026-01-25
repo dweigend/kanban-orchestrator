@@ -439,6 +439,14 @@ class AgentRunStatusOption(EnumOption):
     pass
 
 
+class MCPOption(BaseModel):
+    """MCP server option for dynamic UI rendering."""
+
+    value: str = Field(description="MCP server identifier")
+    label: str = Field(description="Human-readable display label")
+    description: str = Field(description="MCP server description")
+
+
 class EnumsResponse(BaseModel):
     """Response containing all enum options with metadata."""
 
@@ -448,4 +456,8 @@ class EnumsResponse(BaseModel):
     task_type: list[TaskTypeOption] = Field(description="Task type options with icons")
     agent_run_status: list[AgentRunStatusOption] = Field(
         description="Agent run status options"
+    )
+    mcp_options: list[MCPOption] = Field(
+        default_factory=list,
+        description="Available MCP servers for task configuration",
     )

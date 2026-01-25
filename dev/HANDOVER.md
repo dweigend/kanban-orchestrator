@@ -1,6 +1,36 @@
 # HANDOVER
 
-## Phase: Issue-Systematisierung ✅
+## Phase: 11C MCP Registry ✅
+
+---
+
+## Session 2026-01-25 (Phase 11C Refactoring)
+
+### Was wurde gemacht
+
+**Phase 11C: MCP Registry - Refactoring**
+
+Das `cwd`-Feld wird vom Claude Agent SDK nicht unterstützt. Stattdessen nutzt der MCP-Standard `--directory` als Argument für `uv run`.
+
+| Datei | Änderung |
+|-------|----------|
+| `backend/.kanban/mcps.yaml` | `cwd` → `--directory` in args |
+| `backend/src/mcp_client/registry.py` | `cwd` aus TypedDict + Handling entfernt |
+
+### Verification
+
+- ✅ Type Check: All checks passed
+- ✅ Tests: 78 passed
+- ✅ Frontend: 0 errors, 0 warnings
+
+### Geänderte Dateien
+
+```
+backend/.kanban/mcps.yaml
+backend/src/mcp_client/registry.py
+dev/PLAN.md
+dev/HANDOVER.md
+```
 
 ---
 
@@ -42,20 +72,22 @@ dev/HANDOVER.md         # Diese Datei
 
 ## Nächste Session
 
-### Option A: Phase 11.5 - Cleanup (Empfohlen)
+### Option A: Phase 11D - Templates
+
+| Task | Beschreibung |
+|------|--------------|
+| 1 | `templates/` Ordner erstellen |
+| 2 | `research.md`, `dev.md`, `notes.md` Templates |
+| 3 | Template-Loader im Orchestrator |
+| 4 | Template-Injection in Agent-Prompt |
+
+### Option B: Phase 11.5 - Cleanup
 
 | Prio | # | Issue |
 |------|---|-------|
 | 1 | #9 | 🔴 Agent Log Panel Bug |
 | 2 | #17 | 🔧 SettingsPanel aufteilen |
 | 3 | #13 | 🔧 orchestrator.py aufteilen |
-
-### Option B: Phase 11C - MCP Registry
-
-| Task | Datei |
-|------|-------|
-| `.kanban/mcps.yaml` Format | `.kanban/mcps.yaml` |
-| YAML-Parser | `backend/src/mcp_client/registry.py` |
 
 ---
 

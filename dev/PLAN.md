@@ -25,36 +25,19 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - **Phase 10:** Subtasks & Expand/Collapse Cards (#24) ✅
 - **Phase 11A:** Task-Delegations-System Konzept ✅
 - **Phase 11B:** Backend Task-Model Erweiterung (78 Tests) ✅
+- **Phase 11C:** MCP Registry (YAML-Config, Environment-Auflösung) ✅
 
 ---
 
 ## Aktuelle Phase
 
-### Phase 11C-F: Task-Delegations-System Implementation 🔲 NEXT
+### Phase 11D-F: Task-Delegations-System Implementation 🔲 NEXT
 
 **Design:** Siehe `dev/DESIGN-TASK-DELEGATION.md`
 
 ---
 
 ## Nächste Phasen
-
-### Phase 11C: MCP Registry
-
-**Ziel:** Dynamische MCP-Konfiguration aus YAML-Datei
-
-| Task | Beschreibung |
-|------|--------------|
-| 1 | `.kanban/mcps.yaml` Format definieren |
-| 2 | YAML-Parser für MCP-Registry |
-| 3 | `get_mcp_config()` liest aus YAML statt hardcoded |
-| 4 | Validierung: nur enabled MCPs erlaubt |
-| 5 | Environment-Variable Auflösung (`${SANDBOX_DIR}`) |
-
-**Dateien:**
-- `.kanban/mcps.yaml` (NEU)
-- `backend/src/mcp_client/registry.py`
-
----
 
 ### Phase 11D: Templates
 

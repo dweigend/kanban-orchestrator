@@ -7,10 +7,12 @@ from src.api.schemas import (
     EntitySchema,
     EnumsResponse,
     FieldType,
+    MCPOption,
     SchemaField,
     TaskStatusOption,
     TaskTypeOption,
 )
+from src.mcp_client import get_available_mcps
 from src.models.agent_run import AgentRunStatus
 from src.models.task import TaskStatus, TaskType
 
@@ -184,5 +186,11 @@ def get_all_enums() -> EnumsResponse:
             AgentRunStatusOption(value="completed", label="Completed"),
             AgentRunStatusOption(value="failed", label="Failed"),
             AgentRunStatusOption(value="cancelled", label="Cancelled"),
+        ],
+        mcp_options=[
+            MCPOption(
+                value=mcp["value"], label=mcp["label"], description=mcp["description"]
+            )
+            for mcp in get_available_mcps()
         ],
     )

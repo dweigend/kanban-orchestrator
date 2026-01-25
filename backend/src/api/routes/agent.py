@@ -112,7 +112,7 @@ async def start_agent_run(
         _run_agent_background,
         agent_run.id,
         task.id,
-        ["filesystem"],  # Default MCP tools
+        None,  # Executor decides from task config or registry defaults
     )
 
     # Return real AgentRun (not placeholder!)
