@@ -26,12 +26,30 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - **Phase 11A:** Task-Delegations-System Konzept ✅
 - **Phase 11B:** Backend Task-Model Erweiterung (78 Tests) ✅
 - **Phase 11C:** MCP Registry (YAML-Config, Environment-Auflösung) ✅
+- **Phase 11.5A:** OpenAlex MCP Integration ✅
 
 ---
 
 ## Aktuelle Phase
 
-### Phase 11D-F: Task-Delegations-System Implementation 🔲 NEXT
+### Phase 11.5B: Trilium MCP Integration 🔲 NEXT
+
+**Ziel:** Trilium Notes als Knowledge-Speicher für Orchestrator-Output
+
+| Task | Beschreibung |
+|------|--------------|
+| 1 | Trilium Server auf Server einrichten |
+| 2 | ETAPI Token generieren |
+| 3 | Trilium MCP in `mcps.yaml` hinzufügen |
+| 4 | E2E Test: Research → Trilium |
+
+**Voraussetzung:** Trilium Server läuft und ETAPI ist aktiviert.
+
+---
+
+### Phase 11.5C: Templates 🔲
+
+**Ziel:** Markdown-Templates für strukturierten Agent-Output
 
 **Design:** Siehe `dev/DESIGN-TASK-DELEGATION.md`
 
@@ -39,22 +57,26 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ## Nächste Phasen
 
-### Phase 11D: Templates
+### Phase 11D: Templates (ehemals 11.5C)
 
 **Ziel:** Markdown-Templates für Agent-Output-Struktur
 
 | Task | Beschreibung |
 |------|--------------|
-| 1 | `templates/` Ordner erstellen |
-| 2 | `research.md`, `dev.md`, `notes.md` Templates |
-| 3 | Template-Loader im Orchestrator |
+| 1 | `backend/templates/` Ordner erstellen |
+| 2 | Templates: `quick.md`, `deep.md`, `paper.md`, `idea.md` |
+| 3 | Template-Loader in `backend/src/agents/templates.py` |
 | 4 | Template-Injection in Agent-Prompt |
 
+**Templates:**
+- `quick.md` - Schnelle Recherche (TL;DR + Key Points)
+- `deep.md` - Umfassende Recherche (Summary, Findings, Sources)
+- `paper.md` - Wissenschaftliche Paper-Analyse (Abstract, Methods, Results)
+- `idea.md` - Ideen-Exploration (Problem, Related Concepts, Next Steps)
+
 **Dateien:**
-- `templates/research.md` (NEU)
-- `templates/dev.md` (NEU)
-- `templates/notes.md` (NEU)
-- `backend/src/agents/orchestrator.py`
+- `backend/templates/*.md` (NEU)
+- `backend/src/agents/templates.py` (NEU)
 
 ---
 
@@ -91,15 +113,22 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ---
 
-### Phase 12: Trilium Integration
+### Phase 12: Zotero Integration
 
-**Ziel:** Trilium Notes als Output-Target
+**Ziel:** Bibliography-Management für wissenschaftliche Recherche
 
 | Task | Beschreibung |
 |------|--------------|
-| 1 | Trilium MCP recherchieren/einbinden |
-| 2 | In MCP-Registry aktivieren |
-| 3 | Als Output-Target in UI verfügbar machen |
+| 1 | Zotero + Better BibTeX Plugin installieren |
+| 2 | Zotero MCP konfigurieren (`54yyyu/zotero-mcp`) |
+| 3 | `mcps.yaml` erweitern |
+| 4 | BibTeX-Export in Templates integrieren |
+
+**Features:**
+- Semantic Vector Search
+- BibTeX Export
+- PDF Annotations
+- Full-Text Access
 
 ---
 
@@ -111,13 +140,29 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ---
 
-### Phase 14: Advanced Features (Backlog)
+### Phase 14: Agent Skills / Workflows (Backlog)
 
-- NEEDS_REVIEW Flow verbessern
-- Knowledge DBs Integration
+**Ziel:** Vordefinierte Workflows für häufige Tasks
+
+| Workflow | MCPs | Beschreibung |
+|----------|------|--------------|
+| `topic-research` | perplexity, openalex, trilium | Web + Paper Recherche → Strukturierte Note |
+| `literature-review` | openalex, trilium | Paper-Suche → User-Auswahl → Synthese + BibTeX |
+| `prototype` | filesystem, github | Code schreiben → Git Commit → Docs |
+| `content-pipeline` | perplexity, trilium, filesystem | Research → Draft → Review → Export |
+
+**Sandbox-Konzept:** Jeder Task schreibt Zwischenergebnisse in `output/{task_id}/`
+
+---
+
+### Phase 15: Advanced Features (Backlog)
+
+- NEEDS_REVIEW Flow verbessern (2-Step Workflows)
+- Automatische Ablage (Monitoring → Trilium Inbox)
 - Task Dependencies
 - Bulk Operations
-- Export/Import
+- Chaos → Ordnung Pipeline (lokale Dateien → richtige Ablage)
+- Audio-Transkription → Reports
 
 ---
 
@@ -177,10 +222,24 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 - `dev/ARCHITECTURE.md` - System-Architektur + Phase 11 Konzept
 - `dev/DESIGN-TASK-DELEGATION.md` - Vollständiges Design Phase 11
+- `dev/DESIGN-MCP-WORKFLOWS.md` - MCP Discovery + Workflow Konzept (NEU)
 - `dev/HANDOVER.md` - Session Handover
 - `dev/TROUBLESHOOTING.md` - Bekannte Probleme & Lösungen
 - `dev/WORKFLOW.md` - Development Workflow
 - **GitHub Issues** - https://github.com/dweigend/kanban-orchestrator/issues
+
+---
+
+## MCP Inventory
+
+| MCP | Status | Use Case |
+|-----|--------|----------|
+| `filesystem` | ✅ Aktiv | Sandboxed File I/O |
+| `github_simple` | ✅ Aktiv | GitHub Read-Only |
+| `perplexity` | ✅ Aktiv | Web Search |
+| `openalex` | ✅ Aktiv | Academic Paper Search |
+| `trilium` | 🔜 Phase 11.5B | Notes speichern |
+| `zotero` | 📅 Phase 12 | Bibliography, PDFs |
 
 ---
 

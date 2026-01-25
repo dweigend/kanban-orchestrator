@@ -36,3 +36,11 @@ servers:
     env:
       PERPLEXITY_API_KEY: "${PERPLEXITY_API_KEY}"
     description: "Web search and research via Perplexity AI"
+
+  openalex:
+    enabled: true
+    command: uv
+    args: ["--directory", "/Users/davidweigend/mcp_code/openalex", "run", "python", "run_stdio.py"]
+    env:
+      OPENALEX_EMAIL: "${OPENALEX_EMAIL}"
+    description: "Academic paper search via OpenAlex (millions of papers, citations, authors)"

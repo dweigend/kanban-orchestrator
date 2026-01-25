@@ -1,6 +1,48 @@
 # HANDOVER
 
-## Phase: 11C MCP Registry ✅
+## Phase: 11.5A OpenAlex MCP ✅
+
+---
+
+## Session 2026-01-25 (Phase 11.5A OpenAlex Integration)
+
+### Was wurde gemacht
+
+**Phase 11.5A: OpenAlex MCP Integration**
+
+| Schritt | Ergebnis |
+|---------|----------|
+| MCP recherchiert | `LeoGitGuy/alex-paper-search-mcp` gewählt |
+| Installiert | `~/mcp_code/openalex/` mit uv |
+| STDIO-Wrapper | `run_stdio.py` erstellt (FastMCP default = HTTP) |
+| mcps.yaml erweitert | OpenAlex als 4. MCP hinzugefügt |
+| Schema-Endpoint | OpenAlex erscheint in `/api/schema/enums` |
+| MCP-Config Test | `get_mcp_config(['openalex'], ...)` funktioniert |
+
+**Dokumentation erstellt:**
+
+| Datei | Inhalt |
+|-------|--------|
+| `dev/DESIGN-MCP-WORKFLOWS.md` | MCP-Konzept, Templates, Workflows, Brainstorming |
+| `dev/PLAN.md` | Phase 11.5A-C, Phase 12-15 aktualisiert |
+
+### Geänderte Dateien
+
+```
+~/mcp_code/openalex/              # NEU: OpenAlex MCP
+~/mcp_code/openalex/run_stdio.py  # NEU: STDIO-Wrapper
+backend/.kanban/mcps.yaml         # OpenAlex hinzugefügt
+dev/PLAN.md                       # Phasen aktualisiert
+dev/DESIGN-MCP-WORKFLOWS.md       # NEU: Konzept-Dokument
+dev/HANDOVER.md                   # Diese Datei
+```
+
+### Verification
+
+- ✅ OpenAlex MCP startet mit STDIO
+- ✅ Schema-Endpoint zeigt alle 4 MCPs
+- ✅ MCP-Config wird korrekt geladen
+- ✅ Dokumentation aktualisiert
 
 ---
 
