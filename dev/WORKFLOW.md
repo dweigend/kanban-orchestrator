@@ -113,14 +113,42 @@ ACTIONS:
 
 ## ISSUE TRACKING
 
-**Don't fix problems immediately!**
+**GitHub = Single Source of Truth:** https://github.com/dweigend/kanban-orchestrator/issues
+
+### Grundprinzip
+
+Issues sollen Feature-Arbeit NICHT blockieren. Erfassen → Weiterarbeiten → Später fixen.
+
+### Workflow
 
 ```
-1. Discover problem
-2. Create Issue: gh issue create --title "..." OR note in PLAN.md Backlog
-3. Continue current task
-4. Fix in dedicated session
+1. Problem/Idee entdeckt
+2. SOFORT Issue anlegen: gh issue create --title "🔴/🟡/🔵 Titel" --label "bug|enhancement|refactoring"
+3. Weiter am aktuellen Task
+4. Issue in dedizierter Session fixen
 ```
+
+### Issue-Typen & Labels
+
+| Prefix | Label | Bedeutung |
+|--------|-------|-----------|
+| 🔴 | `bug` | Fehler, hohe Prio |
+| 🟡 | `enhancement` | Feature, mittlere Prio |
+| 🔵 | `enhancement` | Nice-to-have, niedrige Prio |
+| 🔧 | `refactoring` | Code Quality |
+
+### Cleanup-Sessions
+
+Regelmäßige Sessions für:
+- Bug Fixes (🔴 zuerst)
+- Refactoring (🔧)
+- Tech Debt
+
+### NEVER
+
+- ❌ Issues lokal tracken (nur GitHub)
+- ❌ Issues sofort fixen wenn anderer Task läuft
+- ❌ Issues ignorieren (immer erfassen!)
 
 ---
 
@@ -146,4 +174,4 @@ ACTIONS:
 - ALWAYS test before commit
 - ALWAYS update docs at session end
 
-*Updated: 2026-01-13*
+*Updated: 2026-01-25*

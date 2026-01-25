@@ -156,6 +156,27 @@ Bei Commits immer prüfen, dass der richtige Author gesetzt ist.
 
 ---
 
+## Workflow
+
+1. `/start` → Begin session
+2. `checkpoint` → Before risky changes
+3. `research` → Codebase > Library > Custom
+4. `implement` → Small, focused changes
+5. `verify` → Lint + Type + Test
+6. `commit` → Update HANDOVER.md
+
+Details: `dev/WORKFLOW.md`
+
+---
+
+## Issues
+
+**GitHub:** https://github.com/dweigend/kanban-orchestrator/issues
+
+Problem entdeckt → `gh issue create` → Weiter arbeiten → Später fixen
+
+---
+
 ## NEVER
 
 - ❌ Use pip (use uv)
@@ -164,13 +185,6 @@ Bei Commits immer prüfen, dass der richtige Author gesetzt ist.
 - ❌ Use `any` in TypeScript
 - ❌ Custom CSS (use Tailwind)
 - ❌ Mention AI in commits
+- ❌ Lokale Issue-Tracker (nur GitHub)
 
----
-
-## Workflow
-
-1. Use `/start` to begin sessions
-2. Follow `dev/WORKFLOW.md`
-3. Update `dev/HANDOVER.md` at end
-
-*Updated: 2026-01-17*
+*Updated: 2026-01-25*

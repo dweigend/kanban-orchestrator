@@ -138,13 +138,39 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 
 ---
 
-## Aktuelle Issues
+## Issues
 
-| Prio | # | Issue | Phase | Status |
-|------|---|-------|-------|--------|
-| - | #26 | Projektstruktur & Standardpfade | 11A | ✅ Konzept: Sandbox → Target |
-| - | #25 | Erweiterte Task-Definition | 11B | 🔲 Implementation steht aus |
-| - | #22 | Projekt-Management | Backlog | 🔲 Nach Phase 11 |
+**→ Alle Issues auf GitHub:** https://github.com/dweigend/kanban-orchestrator/issues
+
+### Phase 11.5: Cleanup & Stabilisierung (Zwischenphase)
+
+| Prio | # | Issue | Status |
+|------|---|-------|--------|
+| 1 | #9 | 🔴 Agent Log Panel Bug | 🔲 Open |
+| 2 | #17 | 🔧 SettingsPanel.svelte aufteilen | 🔲 Open |
+| 3 | #13 | 🔧 orchestrator.py aufteilen | 🔲 Open |
+| 4 | #2 | 🛡️ Error Handling kanban_server | 🔲 Open |
+
+### Offene Feature-Issues
+
+| # | Issue | Phase |
+|---|-------|-------|
+| #8 | 🔴 Projekt-Management konzeptionieren | Backlog (12+) |
+| #10 | 🟡 Task-Summary im Board | 11D |
+| #11 | 🔵 Klickbare Pfade + Default Editor | 11F |
+| #12 | 🔵 Overview Tab ohne Funktion | 11F |
+
+### Offene Refactoring-Issues
+
+| # | Issue | Phase |
+|---|-------|-------|
+| #14 | 🔧 Services Layer konsolidieren | Backlog |
+| #15 | 🔧 MCP Server HTTP-Client vereinheitlichen | Backlog |
+| #16 | 🔧 Event-Serialisierung zentralisieren | Backlog |
+| #18 | 🔧 +page.svelte State extrahieren | 11F |
+| #19 | 🔧 Header.svelte Button-Komponente | 11F |
+| #20 | 🔧 AgentLog.svelte aufteilen | 11F |
+| #21 | 🔧 TaskEditor Sections extrahieren | 11F |
 
 ---
 
@@ -169,10 +195,10 @@ AI-Workflow-Orchestrator mit Kanban-Board UI.
 - `dev/ARCHITECTURE.md` - System-Architektur + Phase 11 Konzept
 - `dev/DESIGN-TASK-DELEGATION.md` - Vollständiges Design Phase 11
 - `dev/HANDOVER.md` - Session Handover
-- `dev/ISSUE_TRACKER.md` - Bug Tracking + Feature Status
 - `dev/TROUBLESHOOTING.md` - Bekannte Probleme & Lösungen
 - `dev/WORKFLOW.md` - Development Workflow
+- **GitHub Issues** - https://github.com/dweigend/kanban-orchestrator/issues
 
 ---
 
-*Updated: 2026-01-24*
+*Updated: 2026-01-25*
