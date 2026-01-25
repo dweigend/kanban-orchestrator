@@ -128,12 +128,12 @@ $effect(() => {
 				case 'agent_log':
 					if (event.agentLog) {
 						const { task_id, log } = event.agentLog;
-						// Only collect logs for currently running task
-						if (task_id === runningAgentTaskId) {
+						// Collect logs (even after finished, to preserve history)
+						if (task_id === runningAgentTaskId || log.type === 'finished') {
 							agentLogs = [...agentLogs, log];
 						}
-						// Agent finished?
-						if (log.type === 'result' || log.type === 'error') {
+						// Only stop on explicit 'finished' event from backend
+						if (log.type === 'finished') {
 							runningAgentTaskId = null;
 						}
 					}

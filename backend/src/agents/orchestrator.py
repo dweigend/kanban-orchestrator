@@ -81,6 +81,28 @@ async def _publish_task_update(
     await event_bus.publish(TaskEvent(event_type=EventType.TASK_UPDATED, data=data))
 
 
+async def _publish_finished_log(
+    task_id: str, agent_run_id: str, error: str | None = None
+) -> None:
+    """Publish a 'finished' log entry to signal agent completion."""
+    content = error if error else "Agent execution completed"
+    log_entry = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "type": "finished",
+        "content": content,
+    }
+    await event_bus.publish(
+        TaskEvent(
+            event_type=EventType.AGENT_LOG,
+            data={
+                "task_id": task_id,
+                "agent_run_id": agent_run_id,
+                "log": log_entry,
+            },
+        )
+    )
+
+
 async def _finalize_run(
     db: AsyncSession,
     agent_run: AgentRun,
@@ -180,6 +202,7 @@ async def execute_agent_run(
                         db, agent_run, task, AgentRunStatus.COMPLETED, TaskStatus.DONE
                     )
                     await _publish_task_update(task)
+                    await _publish_finished_log(task.id, agent_run.id)
                     return AgentResult(
                         status=AgentRunStatus.COMPLETED,
                         message="Task completed successfully",
@@ -196,10 +219,12 @@ async def execute_agent_run(
             error_msg,
         )
         await _publish_task_update(task, {"error": error_msg})
+        await _publish_finished_log(task.id, agent_run.id, error_msg)
         return AgentResult(status=AgentRunStatus.FAILED, error=error_msg)
 
     # If we get here without explicit result, mark as completed
     await _finalize_run(db, agent_run, task, AgentRunStatus.COMPLETED, TaskStatus.DONE)
+    await _publish_finished_log(task.id, agent_run.id)
     return AgentResult(
         status=AgentRunStatus.COMPLETED, message="Task execution finished"
     )

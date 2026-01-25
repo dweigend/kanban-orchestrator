@@ -20,12 +20,29 @@ const {
 	isRunning = false,
 }: Props = $props();
 
+// Auto-scroll to bottom when new logs arrive
+let logContainerRef = $state<HTMLElement | null>(null);
+
+$effect(() => {
+	// Track logs.length to trigger on new logs
+	if (logs.length > 0 && logContainerRef) {
+		// Use requestAnimationFrame for smooth scroll after DOM update
+		requestAnimationFrame(() => {
+			logContainerRef?.scrollTo({
+				top: logContainerRef.scrollHeight,
+				behavior: 'smooth',
+			});
+		});
+	}
+});
+
 const typeColors: Record<string, string> = {
 	user: 'text-blue-400',
 	assistant: 'text-green-400',
 	system: 'text-yellow-400',
 	result: 'text-purple-400',
 	error: 'text-red-400',
+	finished: 'text-emerald-400',
 	unknown: 'text-[var(--text-muted)]',
 };
 
@@ -99,7 +116,7 @@ const sortedRuns = $derived(
 	</header>
 
 	<ScrollArea.Root class="flex-1">
-		<ScrollArea.Viewport class="h-full p-3">
+		<ScrollArea.Viewport class="h-full p-3" bind:ref={logContainerRef}>
 			<!-- Live Logs (when agent is running or has logs) -->
 			{#if logs.length > 0 || isRunning}
 				<div
