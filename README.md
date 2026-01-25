@@ -1,5 +1,7 @@
 # 🎯 Kanban Orchestrator
 
+> ⚠️ **Work in Progress** — This project is under active development. APIs and features may change.
+
 **AI Agent Orchestration Layer with Kanban UI**
 
 A personal project for orchestrating AI coding agents through a simple Kanban board interface. Built on the Claude Code SDK.
@@ -29,19 +31,36 @@ Inspired by [VibeKanban](https://vibekanban.com) — learned from [experimenting
 
 ---
 
+## 📋 Prerequisites
+
+- [uv](https://docs.astral.sh/uv/) (Python)
+- [Bun](https://bun.sh/) (TypeScript)
+
+---
+
 ## 🚀 Quick Start
 
-```bash
-# Backend
-cd backend
-uv run python main.py
+1. **Configure Backend**
+   ```bash
+   cd backend
+   cp .kanban/mcps.yaml.example .kanban/mcps.yaml
+   cp .kanban/settings.json.example .kanban/settings.json
+   # Edit mcps.yaml to configure MCP servers
+   ```
 
-# Frontend (separate terminal)
-cd frontend
-bun dev
-```
+2. **Start Backend**
+   ```bash
+   uv run python main.py
+   ```
 
-Open `http://localhost:5173`
+3. **Start Frontend** (separate terminal)
+   ```bash
+   cd frontend
+   bun install
+   bun dev
+   ```
+
+4. Open `http://localhost:5173`
 
 ---
 
@@ -66,6 +85,12 @@ kanban-orchestrator/
     ├── src/lib/      # Components, services, stores
     └── src/routes/   # Pages
 ```
+
+---
+
+## 🤝 Contributing
+
+Issues and PRs welcome! See [GitHub Issues](https://github.com/dweigend/kanban-orchestrator/issues).
 
 ---
 
