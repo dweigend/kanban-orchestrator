@@ -1,8 +1,8 @@
 <script lang="ts">
+import SettingsPanel from '$lib/components/settings/SettingsPanel.svelte';
 import type { Agent, AgentLogEntry, AgentRun } from '$lib/types/agent';
 import type { Task } from '$lib/types/task';
 import AgentLog from './AgentLog.svelte';
-import SettingsPanel from './SettingsPanel.svelte';
 import TaskEditor from './TaskEditor.svelte';
 
 export type SidebarTab = 'overview' | 'agents' | 'settings' | 'new-task';
