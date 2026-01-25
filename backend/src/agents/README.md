@@ -1,18 +1,18 @@
-# Agents Module
+# 🤖 Agents Module
 
-Claude Agent SDK integration für Task-Ausführung und -Planung.
+> Claude Agent SDK integration for task execution and planning
 
-## Module
+## 📋 Contents
 
-| Datei | Beschreibung | Zeilen |
-|-------|--------------|--------|
-| `orchestrator.py` | Re-Export Hub (Backward Compatibility) | ~30 |
+| File | Description | Lines |
+|------|-------------|-------|
+| `orchestrator.py` | Re-export Hub (Backward Compatibility) | ~30 |
 | `types.py` | Dataclasses: `AgentLogEntry`, `AgentResult` | ~25 |
-| `executor.py` | Agent Execution mit Claude SDK | ~200 |
-| `planner.py` | Task Decomposition & Subtask-Erstellung | ~120 |
-| `subtask_executor.py` | Sequentielle Subtask-Ausführung | ~65 |
+| `executor.py` | Agent Execution with Claude SDK | ~200 |
+| `planner.py` | Task Decomposition & Subtask Creation | ~120 |
+| `subtask_executor.py` | Sequential Subtask Execution | ~65 |
 
-## Architektur
+## 🏗️ Architecture
 
 ```
 orchestrator.py (Re-Export Hub)
@@ -30,10 +30,10 @@ orchestrator.py (Re-Export Hub)
     └── execute_subtasks_sequentially()
 ```
 
-## Verwendung
+## 🔧 Usage
 
 ```python
-# Import über orchestrator (empfohlen)
+# Import via orchestrator (recommended)
 from src.agents.orchestrator import (
     execute_agent_run,
     plan_task_decomposition,
@@ -41,32 +41,32 @@ from src.agents.orchestrator import (
     AgentResult,
 )
 
-# Oder direkte Imports
+# Or direct imports
 from src.agents.executor import execute_agent_run
 from src.agents.planner import plan_task_decomposition
 ```
 
-## Funktionen
+## 📚 Functions
 
 ### execute_agent_run()
-Führt einen Task mit Claude Agent SDK aus.
-- Erstellt Git Checkpoint vor Ausführung
-- Streamt Logs via SSE an Frontend
-- Erstellt Git Commit bei Erfolg
+Executes a task with Claude Agent SDK.
+- Creates Git checkpoint before execution
+- Streams logs via SSE to frontend
+- Creates Git commit on success
 
 ### plan_task_decomposition()
-Zerlegt einen Task in Subtasks.
-- Erstellt 3 Subtasks (Setup/Implement/Finalize)
-- Setzt Parent-Status auf NEEDS_REVIEW
+Decomposes a task into subtasks.
+- Creates 3 subtasks (Setup/Implement/Finalize)
+- Sets parent status to NEEDS_REVIEW
 
 ### execute_subtasks_sequentially()
-Führt alle Subtasks eines Parent-Tasks sequentiell aus.
-- Wird nach User-Approval aufgerufen
-- Aktualisiert Parent-Status am Ende
+Executes all subtasks of a parent task sequentially.
+- Called after user approval
+- Updates parent status at the end
 
-## Events
+## 📡 Events
 
-Das Modul sendet folgende SSE Events:
-- `task_updated`: Bei Status-Änderungen
-- `task_created`: Bei Subtask-Erstellung
-- `agent_log`: Für Live-Logs (inkl. `finished` Event am Ende)
+The module sends the following SSE events:
+- `task_updated`: On status changes
+- `task_created`: On subtask creation
+- `agent_log`: For live logs (including `finished` event at the end)

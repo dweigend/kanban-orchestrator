@@ -1,5 +1,8 @@
 # MCP Server Registry Configuration
 # Defines available MCP servers for agent orchestration
+#
+# Copy this file to mcps.yaml and adjust paths/credentials:
+#   cp mcps.yaml.example mcps.yaml
 
 defaults:
   allowed_mcps:
@@ -19,28 +22,28 @@ servers:
     description: "Filesystem operations in workspace"
 
   # ─────────────────────────────────────────────────────────────
-  # External MCP Servers (from ~/mcp_code)
+  # External MCP Servers (adjust paths to your setup)
   # ─────────────────────────────────────────────────────────────
   github_simple:
-    enabled: true
+    enabled: false  # Set to true and configure path
     command: uv
-    args: ["--directory", "/Users/davidweigend/mcp_code/github_simple", "run", "python", "main.py"]
+    args: ["--directory", "/path/to/your/github_simple", "run", "python", "main.py"]
     env:
       GITHUB_TOKEN: "${GITHUB_TOKEN}"
     description: "GitHub read-only access (search repos, code, get files)"
 
   perplexity:
-    enabled: true
+    enabled: false  # Set to true and configure path
     command: uv
-    args: ["--directory", "/Users/davidweigend/mcp_code/perplexity_code", "run", "python", "server.py"]
+    args: ["--directory", "/path/to/your/perplexity_mcp", "run", "python", "server.py"]
     env:
       PERPLEXITY_API_KEY: "${PERPLEXITY_API_KEY}"
     description: "Web search and research via Perplexity AI"
 
   openalex:
-    enabled: true
+    enabled: false  # Set to true and configure path
     command: uv
-    args: ["--directory", "/Users/davidweigend/mcp_code/openalex", "run", "python", "run_stdio.py"]
+    args: ["--directory", "/path/to/your/openalex_mcp", "run", "python", "run_stdio.py"]
     env:
       OPENALEX_EMAIL: "${OPENALEX_EMAIL}"
     description: "Academic paper search via OpenAlex (millions of papers, citations, authors)"

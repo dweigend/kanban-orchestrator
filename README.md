@@ -62,10 +62,9 @@ kanban-orchestrator/
 │   ├── src/agents/   # Agent implementations
 │   ├── src/api/      # REST endpoints
 │   └── src/models/   # Pydantic models
-├── frontend/         # SvelteKit UI
-│   ├── src/lib/      # Components, services, stores
-│   └── src/routes/   # Pages
-└── dev/              # Workflow documentation
+└── frontend/         # SvelteKit UI
+    ├── src/lib/      # Components, services, stores
+    └── src/routes/   # Pages
 ```
 
 ---

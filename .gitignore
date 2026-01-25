@@ -23,3 +23,18 @@ __pycache__/
 
 # Local data
 .claude/plans/
+
+# Development & Personal
+CLAUDE.md
+HANDOVER.md
+dev/
+.claude/
+
+# MCP Configuration (contains personal paths/API references)
+.mcp.json
+!.mcp.json.example
+backend/.kanban/*
+!backend/.kanban/*.example
+
+# Agent Output
+backend/output/

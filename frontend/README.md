@@ -1,38 +1,68 @@
-# sv
+# 🎨 Frontend
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+> SvelteKit 5 + bits-ui Kanban Board UI
 
-## Creating a project
+## 📋 Quick Start
 
-If you're seeing this, you've probably already done this step. Congrats!
+```bash
+# Install dependencies
+bun install
 
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+# Run dev server
+bun dev
 ```
 
-## Developing
+Open `http://localhost:5173`
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## 📁 Structure
 
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```
+frontend/
+├── src/
+│   ├── lib/
+│   │   ├── components/   # UI Components
+│   │   ├── services/     # API Client
+│   │   ├── stores/       # State Management
+│   │   ├── types/        # TypeScript Interfaces
+│   │   └── utils/        # Utility Functions
+│   └── routes/           # SvelteKit Pages
+├── static/               # Static assets
+└── package.json          # Dependencies
 ```
 
-## Building
+## 🔧 Commands
 
-To create a production version of your app:
+```bash
+# Development
+bun dev
 
-```sh
-npm run build
+# Lint + Format
+bunx biome check --write .
+
+# Type Check
+bunx svelte-check --threshold warning
+
+# Test
+bun test
+
+# All checks
+bunx biome check --write . && bunx svelte-check --threshold warning
 ```
 
-You can preview the production build with `npm run preview`.
+## 🧩 Key Components
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+| Component | Description |
+|-----------|-------------|
+| `KanbanBoard` | Main board with columns |
+| `TaskCard` | Draggable task cards |
+| `TaskEditor` | Task detail editor |
+| `AgentLog` | Real-time agent output |
+| `SettingsPanel` | App configuration |
+
+## 📚 Tech Stack
+
+- **Runtime**: Bun
+- **Framework**: SvelteKit 5
+- **UI**: bits-ui
+- **Styling**: Tailwind CSS 4
+- **Linting**: Biome

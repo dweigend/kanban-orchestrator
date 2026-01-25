@@ -1,18 +1,18 @@
-# Settings Components
+# ⚙️ Settings Components
 
-Modular settings panel components für die Kanban Orchestrator App.
+> Modular settings panel components for the Kanban Orchestrator app
 
-## Komponenten
+## 📋 Contents
 
-| Datei | Beschreibung |
-|-------|--------------|
-| `SettingsPanel.svelte` | Container/Orchestrator für alle Settings-Sections |
-| `SettingsAccordionItem.svelte` | Wiederverwendbarer Accordion-Container mit Icon |
-| `SettingToggle.svelte` | Toggle-Switch mit Label und Description |
-| `SettingSlider.svelte` | Slider mit Label und Value-Anzeige |
-| `SettingSelect.svelte` | Dropdown-Select mit Label |
+| File | Description |
+|------|-------------|
+| `SettingsPanel.svelte` | Container/Orchestrator for all settings sections |
+| `SettingsAccordionItem.svelte` | Reusable accordion container with icon |
+| `SettingToggle.svelte` | Toggle switch with label and description |
+| `SettingSlider.svelte` | Slider with label and value display |
+| `SettingSelect.svelte` | Dropdown select with label |
 
-## Architektur
+## 🏗️ Architecture
 
 ```
 SettingsPanel (Container)
@@ -30,17 +30,19 @@ SettingsPanel (Container)
     └── SettingToggle (Analytics)
 ```
 
-## Design-Prinzipien
+## 🎯 Design Principles
 
-1. **Props statt lokaler State**: Keine `state_referenced_locally` Warnings
-2. **Single Responsibility**: Jede Komponente hat eine Aufgabe
-3. **Wiederverwendbar**: Toggle, Slider, Select können überall genutzt werden
-4. **Konsistente Styles**: Alle Komponenten nutzen die gleichen CSS-Variablen
+1. **Props over local state**: No `state_referenced_locally` warnings
+2. **Single responsibility**: Each component has one job
+3. **Reusable**: Toggle, Slider, Select can be used anywhere
+4. **Consistent styles**: All components use the same CSS variables
 
-## Verwendung
+## 🔧 Usage
 
 ```svelte
-import SettingsPanel from '$lib/components/settings/SettingsPanel.svelte';
+<script>
+  import SettingsPanel from '$lib/components/settings/SettingsPanel.svelte';
+</script>
 
 <SettingsPanel />
 ```
